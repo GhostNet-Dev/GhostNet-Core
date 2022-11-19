@@ -1,3 +1,7 @@
 package bytes
 
-type HashBytes []byte
+const (
+	HashSize uint32 = 32
+)
+
+type HashBytes [HashSize]byte
