@@ -4,4 +4,4 @@ const (
 	HashSize uint32 = 32
 )
 
-type HashBytes [HashSize]byte
+type HashBytes []byte

@@ -13,8 +13,8 @@ import (
 type GhostNetBlock struct {
 	Header      GhostNetBlockHeader
 	HeaderEx    GhostNetBlockHeaderEx
-	Alice       GhostTrasaction
-	Transaction GhostTrasaction
+	Alice       GhostTransaction
+	Transaction GhostTransaction
 }
 
 type GhostNetBlockHeader struct {
@@ -35,16 +35,14 @@ type GhostNetBlockHeaderEx struct {
 	BlockSignature gvm.SigHash
 }
 
-func (header GhostNetBlockHeader) GetHashKey() (key []byte) {
+func (block GhostNetBlock) GetHashKey() (key []byte) {
 	var buf bytes.Buffer // Stand-in for a network connection
 	enc := gob.NewEncoder(&buf)
-	err := enc.Encode((header))
+	err := enc.Encode(block.Header)
 	if err != nil {
 		log.Fatal("encode error:", err)
 	}
 	hash := sha256.New()
-
 	hash.Write(buf.Bytes())
-
-	return hash.Sum((nil))
+	return hash.Sum(nil)
 }

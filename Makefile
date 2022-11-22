@@ -2,6 +2,9 @@ BINARY_NAME	:= GhostNet
 APP_BIN_PATH := $(CURDIR)/bin/$(BINARY_NAME)
 APP_SRC_PATH := $(CURDIR)/cmd/server
 
+ifneq ($(OS),Windows_NT)
+UNAME_S := $(shell uname -s)
+endif
 
 run:
 	go run $(APP_SRC_PATH)/main.go
@@ -20,7 +23,6 @@ build:
 ifeq ($(OS),Windows_NT)
 	GOARCH=amd64 GOOS=window go build -o $(APP_BIN_PATH)-windows ${APP_SRC_PATH}/main.go
 else
-    UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
 		GOARCH=amd64 GOOS=linux go build -o $(APP_BIN_PATH)-linux ${APP_SRC_PATH}/main.go
     endif
@@ -36,9 +38,16 @@ build_and_run: build run
 
 clean:
 	go clean
-	rm ${APP_BIN_PATH}-darwin
-	rm ${APP_BIN_PATH}-linux
+ifeq ($(OS),Windows_NT)
 	rm ${APP_BIN_PATH}-windows
+else
+    ifeq ($(UNAME_S),Linux)
+		rm ${APP_BIN_PATH}-linux
+    endif
+    ifeq ($(UNAME_S),Darwin)
+		rm ${APP_BIN_PATH}-darwin
+    endif
+endif
 
 test:
 	go test ./...
