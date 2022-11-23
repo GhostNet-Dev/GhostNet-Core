@@ -1,10 +1,12 @@
 package types
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	mems "github.com/traherom/memstream"
 )
 
 func makeTxOutput() TxOutput {
@@ -25,13 +27,30 @@ func makeTxOutput() TxOutput {
 
 func TestTxSerilalize(t *testing.T) {
 	tx := GhostTransaction{}
-	buf := tx.Serialize()
-	assert.Equal(t, tx.Size(), len(buf), "Size가 다릅니다.")
+	size := tx.Size()
+	stream := mems.NewCapacity(int(size))
+	tx.Serialize(stream)
+	assert.Equal(t, int(tx.Size()), len(stream.Bytes()), "Size가 다릅니다.")
 }
 func TestTxOutputSerializeDeserialize(t *testing.T) {
 	output := makeTxOutput()
+	size := output.Size()
+	stream := mems.NewCapacity(int(size))
+	output.Serialize(stream)
+	byteBuf := bytes.NewBuffer(stream.Bytes())
+
 	newOutput := TxOutput{}
-	buf := output.Serialize()
-	newOutput.DeserializeTxOutput(buf)
+	newOutput.DeserializeTxOutput(byteBuf)
+	assert.Equal(t, newOutput.Value, output.Value, "Value가 다릅니다.")
+}
+
+func TestTxOutputSerializeDeserialize2(t *testing.T) {
+	output := makeTxOutput()
+	size := output.Size()
+	seriBuf := bytes.NewBuffer(make([]byte, size))
+	output.Serialize2(seriBuf)
+
+	newOutput := TxOutput{}
+	newOutput.DeserializeTxOutput(seriBuf)
 	assert.Equal(t, newOutput.Value, output.Value, "Value가 다릅니다.")
 }

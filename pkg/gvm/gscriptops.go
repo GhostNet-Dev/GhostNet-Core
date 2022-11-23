@@ -1,9 +1,5 @@
 package gvm
 
-import (
-	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
-)
-
 const (
 	SIGHASH_ALL          = 0x1
 	SIGHASH_NONE         = 0x2
@@ -68,11 +64,20 @@ type SigHash struct {
 	DER           byte
 	SignatureSize byte
 	RType         byte
-	RBuf          ghostBytes.HashBytes
+	RSize         byte
+	RBuf          []byte
 	SType         byte
 	SSize         byte
-	SBuf          ghostBytes.HashBytes
+	SBuf          []byte
 	SignatureType uint32
 	PubKeySize    byte
-	PubKey        ghostBytes.HashBytes
+	PubKey        []byte
+}
+
+func (sig *SigHash) SigSize() int32 {
+	return int32(sig.SSize) + int32(sig.RSize) + 6
+}
+
+func (sig *SigHash) Size() int32 {
+	return sig.SigSize() + int32(sig.PubKeySize) + 1 /*byte*/ + 4 /*uint32*/
 }

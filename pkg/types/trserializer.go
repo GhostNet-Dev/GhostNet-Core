@@ -8,24 +8,33 @@ import (
 	mems "github.com/traherom/memstream"
 )
 
-func (output *TxOutput) Serialize() []byte {
-	size := output.Size()
-	stream := mems.NewCapacity(int(size))
-	bs := make([]byte, 8)
+func (output *TxOutput) Serialize(stream *mems.MemoryStream) {
+	bs4 := make([]byte, 4)
+	bs8 := make([]byte, 8)
 
 	stream.Write(output.Addr[:])
 	stream.Write(output.BrokerAddr[:])
-	binary.LittleEndian.PutUint64(bs, uint64(output.Value))
-	stream.Write(bs)
-	binary.LittleEndian.PutUint32(bs, uint32(output.ScriptSize))
-	stream.Write(bs)
+	binary.LittleEndian.PutUint64(bs8, uint64(output.Value))
+	stream.Write(bs8)
+	binary.LittleEndian.PutUint32(bs4, uint32(output.ScriptSize))
+	stream.Write(bs4)
 	stream.Write(output.ScriptPubKey)
-	return stream.Bytes()
 }
 
-func (output *TxOutput) DeserializeTxOutput(buf []byte) {
-	//txOutput.Addr = buf[:offset+len(txOutput.Addr)]
-	byteBuf := bytes.NewBuffer(buf)
+func (output *TxOutput) Serialize2(byteBuf *bytes.Buffer) {
+	bs4 := make([]byte, 4)
+	bs8 := make([]byte, 8)
+
+	byteBuf.Write(output.Addr[:])
+	byteBuf.Write(output.BrokerAddr[:])
+	binary.LittleEndian.PutUint64(bs8, uint64(output.Value))
+	byteBuf.Write(bs8)
+	binary.LittleEndian.PutUint32(bs4, uint32(output.ScriptSize))
+	byteBuf.Write(bs4)
+	byteBuf.Write(output.ScriptPubKey)
+}
+
+func (output *TxOutput) DeserializeTxOutput(byteBuf *bytes.Buffer) {
 	output.Addr = make([]byte, ghostBytes.HashSize)
 	output.BrokerAddr = make([]byte, ghostBytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, output.Addr)
@@ -34,12 +43,9 @@ func (output *TxOutput) DeserializeTxOutput(buf []byte) {
 	binary.Read(byteBuf, binary.LittleEndian, &output.ScriptSize)
 	output.ScriptPubKey = make([]byte, output.ScriptSize)
 	binary.Read(byteBuf, binary.LittleEndian, output.ScriptPubKey)
-	//binary.LittleEndian.PutUint32(buf[offset:], uint32(txOutput.Addr[]))
 }
 
-func (input *TxInput) Serialize() []byte {
-	size := input.Size()
-	stream := mems.NewCapacity(int(size))
+func (input *TxInput) Serialize(stream *mems.MemoryStream) {
 	bs := make([]byte, 4)
 
 	stream.Write(input.PrevOut.TxId[:])
@@ -50,11 +56,10 @@ func (input *TxInput) Serialize() []byte {
 	binary.LittleEndian.PutUint32(bs, input.ScriptSize)
 	stream.Write(bs)
 	stream.Write(input.ScriptSig)
-	return stream.Bytes()
 }
 
-func (input *TxInput) DeserializeTxInput(buf []byte) {
-	byteBuf := bytes.NewBuffer(buf)
+func (input *TxInput) DeserializeTxInput(byteBuf *bytes.Buffer) {
+	//byteBuf := bytes.NewBuffer(buf)
 	input.PrevOut.TxId = make([]byte, ghostBytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, input.PrevOut.TxId)
 	binary.Read(byteBuf, binary.LittleEndian, &input.PrevOut.TxOutIndex)
@@ -64,32 +69,47 @@ func (input *TxInput) DeserializeTxInput(buf []byte) {
 	binary.Read(byteBuf, binary.LittleEndian, input.ScriptSig)
 }
 
-func (body *TxBody) Serialize() []byte {
-	size := body.Size()
-	stream := mems.NewCapacity(int(size))
+func (body *TxBody) Serialize(stream *mems.MemoryStream) {
 	bs := make([]byte, 4)
-
 	binary.LittleEndian.PutUint32(bs, body.VinCounter)
 	stream.Write(bs)
 	for i := 0; i < int(body.VinCounter); i++ {
-		stream.Write(body.Vin[i].Serialize())
+		body.Vin[i].Serialize(stream)
 	}
 	binary.LittleEndian.PutUint32(bs, body.VoutCounter)
 	stream.Write(bs)
 	for i := 0; i < int(body.VoutCounter); i++ {
-		stream.Write(body.Vout[i].Serialize())
+		body.Vout[i].Serialize(stream)
 	}
 	binary.LittleEndian.PutUint32(bs, body.Nonce)
 	stream.Write(bs)
 	binary.LittleEndian.PutUint32(bs, body.LockTime)
 	stream.Write(bs)
-	return stream.Bytes()
 }
 
-func (tx *GhostTransaction) Serialize() []byte {
-	size := tx.Size()
-	stream := mems.NewCapacity(int(size))
+func (body *TxBody) DeserializeTxBody(byteBuf *bytes.Buffer) {
+	binary.Read(byteBuf, binary.LittleEndian, &body.VinCounter)
+	for i := 0; i < int(body.VinCounter); i++ {
+		body.Vin[i].DeserializeTxInput(byteBuf)
+	}
+	binary.Read(byteBuf, binary.LittleEndian, &body.VoutCounter)
+	for i := 0; i < int(body.VoutCounter); i++ {
+		body.Vout[i].DeserializeTxOutput(byteBuf)
+	}
+	binary.Read(byteBuf, binary.LittleEndian, &body.Nonce)
+	binary.Read(byteBuf, binary.LittleEndian, &body.LockTime)
+}
+
+func (tx *GhostTransaction) Serialize(stream *mems.MemoryStream) {
+	/*
+		size := tx.Size()
+		stream := mems.NewCapacity(int(size))*/
 	stream.Write(tx.TxId[:])
-	stream.Write((tx.Body.Serialize()))
-	return stream.Bytes()
+	tx.Body.Serialize(stream)
+}
+
+func (tx *GhostTransaction) Deserialize(byteBuf *bytes.Buffer) {
+	tx.TxId = make([]byte, ghostBytes.HashSize)
+	binary.Read(byteBuf, binary.LittleEndian, tx.TxId)
+	tx.Body.DeserializeTxBody(byteBuf)
 }
