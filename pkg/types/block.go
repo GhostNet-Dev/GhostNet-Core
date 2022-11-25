@@ -62,6 +62,7 @@ func (block GhostNetBlock) GetHashKey() []byte {
 	size := block.Header.Size()
 	stream := mems.NewCapacity(int(size))
 	hash := sha256.New()
+	block.Header.Serialize(stream)
 	hash.Write(stream.Bytes())
 	return hash.Sum(nil)
 }

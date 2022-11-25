@@ -4,6 +4,11 @@ option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/types";
 
 import "transaction.proto";
 
+message PairedBlocks {
+	GhostNetBlock Block = 1;
+	GhostNetDataBlock DataBlock = 2;
+}
+
 message GhostNetBlock {
 	GhostNetBlockHeader Header = 1;
 	repeated GhostTransaction Alice = 2;
@@ -24,5 +29,21 @@ message GhostNetBlockHeader {
 	uint32 SignatureSize = 11;
 	bytes BlockSignature = 12;
 }
+
+message GhostNetDataBlock {
+	GhostNetDataBlockHeader Header = 1;
+	repeated GhostDataTrasaction Transaction = 2;
+}
+
+message GhostNetDataBlockHeader {
+	uint32 Id = 1;
+	uint32 Version = 2;
+	bytes PreviousBlockHeaderHash = 3;
+	bytes MerkleRoot = 4;
+	uint32 Nonce = 5;
+	uint32 TransactionCount = 6;
+}
+
+
 // protoc --go_out=paths=source_relative:. -I . block.proto
 // protoc -I=$SRC_DIR --go_out=$DST_DIR $SRC_DIR/addressbook.proto

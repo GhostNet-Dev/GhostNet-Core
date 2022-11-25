@@ -31,8 +31,14 @@ message TxBody {
 	uint32 LockTime = 6;   
 }
 
-
 message GhostTransaction {
 	bytes TxId = 1;
 	TxBody Body  = 2;
+}
+
+message GhostDataTrasaction {
+	bytes TxId = 1;
+	bytes UniqHashKey = 2;
+	uint32 DataSize = 3;
+	bytes Data = 4;
 }

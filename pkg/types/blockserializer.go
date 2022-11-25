@@ -8,24 +8,6 @@ import (
 	mems "github.com/traherom/memstream"
 )
 
-type BinaryPairedBlockHeader struct {
-	BinaryVersion uint32
-	BlockSize     uint32
-}
-
-func (binaryHeader *BinaryPairedBlockHeader) Serialize(stream *mems.MemoryStream) {
-	bs4 := make([]byte, 4)
-	binary.LittleEndian.PutUint32(bs4, uint32(binaryHeader.BinaryVersion))
-	stream.Write(bs4)
-	binary.LittleEndian.PutUint32(bs4, uint32(binaryHeader.BlockSize))
-	stream.Write(bs4)
-}
-
-func (binaryHeader *BinaryPairedBlockHeader) Deserialize(byteBuf *bytes.Buffer) {
-	binary.Read(byteBuf, binary.LittleEndian, &binaryHeader.BinaryVersion)
-	binary.Read(byteBuf, binary.LittleEndian, &binaryHeader.BlockSize)
-}
-
 func (header *GhostNetBlockHeader) Serialize(stream *mems.MemoryStream) {
 	bs4 := make([]byte, 4)
 	bs8 := make([]byte, 8)
@@ -51,7 +33,7 @@ func (header *GhostNetBlockHeader) Serialize(stream *mems.MemoryStream) {
 	header.BlockSignature.Serialize(stream)
 }
 
-func (header *GhostNetBlockHeader) DeserializeBlockHeader(byteBuf *bytes.Buffer) {
+func (header *GhostNetBlockHeader) Deserialize(byteBuf *bytes.Buffer) {
 	header.PreviousBlockHeaderHash = make([]byte, ghostBytes.HashSize)
 	header.MerkleRoot = make([]byte, ghostBytes.HashSize)
 	header.DataBlockHeaderHash = make([]byte, ghostBytes.HashSize)
@@ -78,8 +60,8 @@ func (block *GhostNetBlock) Serialize(stream *mems.MemoryStream) {
 	}
 }
 
-func (block *GhostNetBlock) DeserializeBlock(byteBuf *bytes.Buffer) {
-	block.Header.DeserializeBlockHeader(byteBuf)
+func (block *GhostNetBlock) Deserialize(byteBuf *bytes.Buffer) {
+	block.Header.Deserialize(byteBuf)
 	block.Alice = make([]GhostTransaction, block.Header.AliceCount)
 	for i := 0; i < int(block.Header.AliceCount); i++ {
 		block.Alice[i].Deserialize(byteBuf)
@@ -91,15 +73,9 @@ func (block *GhostNetBlock) DeserializeBlock(byteBuf *bytes.Buffer) {
 }
 
 func (pair *PairedBlock) Serialize(stream *mems.MemoryStream) {
-	binaryPairHeader := BinaryPairedBlockHeader{
-		BlockSize: pair.Block.Size(),
-	}
-	binaryPairHeader.Serialize(stream)
 	pair.Block.Serialize(stream)
 }
 
 func (pair *PairedBlock) Deserialize(byteBuf *bytes.Buffer) {
-	binaryPairHeader := BinaryPairedBlockHeader{}
-	binaryPairHeader.Deserialize(byteBuf)
-	pair.Block.DeserializeBlock(byteBuf)
+	pair.Block.Deserialize(byteBuf)
 }
