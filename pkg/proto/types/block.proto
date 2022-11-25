@@ -1,0 +1,28 @@
+syntax = "proto3";
+package ghostnet.types;
+option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/types";
+
+import "transaction.proto";
+
+message GhostNetBlock {
+	GhostNetBlockHeader Header = 1;
+	repeated GhostTransaction Alice = 2;
+	repeated GhostTransaction Transaction = 3;
+}
+
+message GhostNetBlockHeader {
+	uint32 Id = 1;
+	uint32 Version = 2;
+	bytes PreviousBlockHeaderHash = 3;
+	bytes MerkleRoot = 4;
+	bytes DataBlockHeaderHash = 5;
+	uint64 TimeStamp = 6;
+	uint32 Bits = 7;
+	uint32 Nonce = 8;
+	uint32 AliceCount = 9;
+	uint32 TransactionCount = 10;
+	uint32 SignatureSize = 11;
+	bytes BlockSignature = 12;
+}
+// protoc --go_out=paths=source_relative:. -I . block.proto
+// protoc -I=$SRC_DIR --go_out=$DST_DIR $SRC_DIR/addressbook.proto

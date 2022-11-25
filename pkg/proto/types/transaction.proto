@@ -1,0 +1,38 @@
+syntax = "proto3";
+package ghostnet.types;
+option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/types";
+
+message TxOutPoint {
+    bytes TxId = 1;
+    uint32 TxOutIndex = 2;
+}
+
+message TxInput {
+    TxOutPoint  PrevOut = 1;
+	uint32 Sequence = 2;
+	uint32 ScriptSize = 3;
+	bytes ScriptSig = 4;
+}
+
+message TxOutput {
+    bytes  Addr = 1;
+	bytes BrokerAddr = 2;
+	uint64 Value = 3;
+	uint32 ScriptSize = 4;
+	bytes ScriptPubKey = 5;
+}
+
+message TxBody {
+    uint32 VinCounter = 1;
+    repeated TxInput Vin = 2;
+	uint32 VoutCounter = 3;
+	repeated TxOutput Vout = 4;    
+	uint32 Nonce = 5;
+	uint32 LockTime = 6;   
+}
+
+
+message GhostTransaction {
+	bytes TxId = 1;
+	TxBody Body  = 2;
+}

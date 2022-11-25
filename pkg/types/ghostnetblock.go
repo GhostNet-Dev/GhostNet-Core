@@ -15,10 +15,9 @@ type PairedBlock struct {
 }
 
 type GhostNetBlock struct {
-	Header      GhostNetBlockHeader   `json:"Header"`
-	HeaderEx    GhostNetBlockHeaderEx `json:"HeaderEx"`
-	Alice       GhostTransaction      `json:"Alice"`
-	Transaction []GhostTransaction    `json:"Transaction"`
+	Header      GhostNetBlockHeader `json:"Header"`
+	Alice       []GhostTransaction  `json:"Alice"`
+	Transaction []GhostTransaction  `json:"Transaction"`
 }
 
 type GhostNetBlockHeader struct {
@@ -30,13 +29,10 @@ type GhostNetBlockHeader struct {
 	TimeStamp               uint64               `json:"TimeStamp"`
 	Bits                    uint32               `json:"Bits"`
 	Nonce                   uint32               `json:"Nonce"`
+	AliceCount              uint32               `json:"AliceCount"`
 	TransactionCount        uint32               `json:"TransactionCount"`
-}
-
-type GhostNetBlockHeaderEx struct {
-	HeaderSize     uint32      `json:"HeaderSize"`
-	SignatureSize  uint32      `json:"SignatureSize"`
-	BlockSignature gvm.SigHash `json:"BlockSignature"`
+	SignatureSize           uint32               `json:"SignatureSize"`
+	BlockSignature          gvm.SigHash          `json:"BlockSignature"`
 }
 
 func (header *GhostNetBlockHeader) Size() uint32 {
@@ -45,12 +41,21 @@ func (header *GhostNetBlockHeader) Size() uint32 {
 		uint32(unsafe.Sizeof(header.TimeStamp)) +
 		uint32(unsafe.Sizeof(header.Bits)) +
 		uint32(unsafe.Sizeof(header.Nonce)) +
-		uint32(unsafe.Sizeof(header.TransactionCount))
+		uint32(unsafe.Sizeof(header.AliceCount)) +
+		uint32(unsafe.Sizeof(header.TransactionCount)) +
+		uint32(unsafe.Sizeof(header.SignatureSize)) +
+		uint32(header.BlockSignature.Size())
 }
 
-func (headerEx *GhostNetBlockHeaderEx) Size() uint32 {
-	return uint32(unsafe.Sizeof(headerEx.HeaderSize)) +
-		uint32(unsafe.Sizeof(headerEx.SignatureSize)) + uint32(headerEx.BlockSignature.Size())
+func (block *GhostNetBlock) Size() uint32 {
+	var txSize uint32 = 0
+	for _, tx := range block.Alice {
+		txSize += tx.Size()
+	}
+	for _, tx := range block.Transaction {
+		txSize += tx.Size()
+	}
+	return block.Header.Size() + txSize
 }
 
 func (block GhostNetBlock) GetHashKey() []byte {

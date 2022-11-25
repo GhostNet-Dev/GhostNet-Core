@@ -17,8 +17,8 @@ func OpenSQL(path string) {
 	sqlite, err := sql.Open("sqlite3", path+"foofile.db?cache=shared&mode=rwc")
 	if err != nil {
 		log.Fatal(err)
+		defer sqlite.Close()
 	}
-	defer sqlite.Close()
 }
 
 func CreateTable() {
@@ -30,6 +30,26 @@ func CreateTable() {
 	if err != nil {
 		log.Printf("%q: %s\n", err, sqlStmt)
 		return
+	}
+}
+
+func InsertQuery(query string, args ...interface{}) {
+	tx, err := sqlite.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	stmt, err := tx.Prepare(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(args)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 

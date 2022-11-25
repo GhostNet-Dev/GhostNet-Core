@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
+	"log"
 
 	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
 	mems "github.com/traherom/memstream"
@@ -89,10 +90,12 @@ func (body *TxBody) Serialize(stream *mems.MemoryStream) {
 
 func (body *TxBody) DeserializeTxBody(byteBuf *bytes.Buffer) {
 	binary.Read(byteBuf, binary.LittleEndian, &body.VinCounter)
+	body.Vin = make([]TxInput, body.VinCounter)
 	for i := 0; i < int(body.VinCounter); i++ {
 		body.Vin[i].DeserializeTxInput(byteBuf)
 	}
 	binary.Read(byteBuf, binary.LittleEndian, &body.VoutCounter)
+	body.Vout = make([]TxOutput, body.VoutCounter)
 	for i := 0; i < int(body.VoutCounter); i++ {
 		body.Vout[i].DeserializeTxOutput(byteBuf)
 	}
@@ -112,4 +115,28 @@ func (tx *GhostTransaction) Deserialize(byteBuf *bytes.Buffer) {
 	tx.TxId = make([]byte, ghostBytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, tx.TxId)
 	tx.Body.DeserializeTxBody(byteBuf)
+}
+
+func (dataTx *GhostDataTrasaction) Serialize(stream *mems.MemoryStream) {
+	bs := make([]byte, 4)
+	stream.Write(dataTx.TxId[:])
+	stream.Write(dataTx.UniqHashKey[:])
+	binary.LittleEndian.PutUint32(bs, dataTx.DataSize)
+	if dataTx.Data != nil {
+		stream.Write(dataTx.Data)
+	}
+}
+
+func (dataTx *GhostDataTrasaction) Deserialize(byteBuf *bytes.Buffer) {
+	dataTx.TxId = make([]byte, ghostBytes.HashSize)
+	dataTx.UniqHashKey = make([]byte, ghostBytes.HashSize)
+	binary.Read(byteBuf, binary.LittleEndian, dataTx.TxId)
+	binary.Read(byteBuf, binary.LittleEndian, dataTx.UniqHashKey)
+	binary.Read(byteBuf, binary.LittleEndian, &dataTx.DataSize)
+	if byteBuf.Len() > 0 {
+		dataTx.Data = make([]byte, dataTx.DataSize)
+		if err := binary.Read(byteBuf, binary.LittleEndian, dataTx.Data); err != nil {
+			log.Fatal("GhostDataTrasaction.Deserialize error: ", err)
+		}
+	}
 }

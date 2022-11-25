@@ -7,6 +7,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+
+	cfg "github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 )
 
 const (
@@ -34,8 +36,10 @@ var RootCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		// Working with OutOrStdout/OutOrStderr allows us to unit test our command easier
-
-		//ghostweb.StartGhostWeb(rootPath, host, port)
+		var config = cfg.DefaultConfig()
+		config.RootPath = rootPath
+		config.Ip = host
+		config.Port = port
 	},
 }
 
@@ -46,7 +50,7 @@ var (
 )
 
 func init() {
-	RootCmd.Flags().StringVarP(&host, "ip", "i", "127.0.0.1", "Host Address")
+	RootCmd.Flags().StringVarP(&host, "ip", "i", cfg.DefaultIp, "Host Address")
 	RootCmd.Flags().StringVarP(&port, "port", "p", "50129", "Port Number")
 	RootCmd.Flags().StringVarP(&rootPath, "rootPath", "", "", "Home Directory Path")
 }

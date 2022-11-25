@@ -11,8 +11,8 @@ import (
 var genesisBlock []byte
 
 func GenesisBlock() *types.GhostNetBlock {
-	var block *types.GhostNetBlock = new(types.GhostNetBlock)
+	var pair *types.PairedBlock = new(types.PairedBlock)
 	seriBuf := bytes.NewBuffer(genesisBlock)
-	block.DeserializeBlock(seriBuf)
-	return block
+	pair.Deserialize(seriBuf)
+	return &pair.Block
 }
