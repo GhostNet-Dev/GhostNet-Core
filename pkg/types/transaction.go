@@ -62,7 +62,7 @@ type GhostTransaction struct {
 }
 
 func (txOutPoint *TxOutPoint) Size() uint32 {
-	return uint32(unsafe.Sizeof(*txOutPoint))
+	return uint32(unsafe.Sizeof(txOutPoint.TxOutIndex)) + ghostBytes.HashSize
 }
 
 func (input *TxInput) Size() uint32 {
@@ -72,8 +72,8 @@ func (input *TxInput) Size() uint32 {
 }
 
 func (output *TxOutput) Size() uint32 {
-	return uint32(unsafe.Sizeof(output.Addr)) +
-		uint32(unsafe.Sizeof(output.BrokerAddr)) +
+	return uint32(ghostBytes.HashSize) + //address
+		uint32(ghostBytes.HashSize) + // brokeraddress
 		uint32(unsafe.Sizeof(output.Value)) +
 		uint32(unsafe.Sizeof(output.ScriptSize)) +
 		output.ScriptSize
@@ -99,5 +99,5 @@ func (body *TxBody) Size() uint32 {
 }
 
 func (tx *GhostTransaction) Size() uint32 {
-	return tx.Body.Size() + uint32(unsafe.Sizeof(tx.TxId))
+	return tx.Body.Size() + uint32(ghostBytes.HashSize)
 }

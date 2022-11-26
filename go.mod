@@ -3,7 +3,7 @@ module github.com/GhostNet-Dev/GhostNet-Core
 go 1.19
 
 require (
-	github.com/golang/protobuf v1.5.2
+	github.com/btcsuite/btcutil v1.0.2
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5

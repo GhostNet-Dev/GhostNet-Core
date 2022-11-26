@@ -41,6 +41,7 @@ func TestProtoBlock(t *testing.T) {
 		assert.Fail(t, "Failed to decode ", err)
 	}
 	fmt.Printf("%02x\n", newGhostNetBlock.Header.Id)
+	assert.Equal(t, ghostNetBlock.Header.AliceCount, newGhostNetBlock.Header.AliceCount, "Size가 다릅니다.")
 	/*
 		hash := ghostNetBlock.GetHashKey()
 		//fmt.Printf("%02x", hash)

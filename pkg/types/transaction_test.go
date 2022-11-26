@@ -9,10 +9,12 @@ import (
 )
 
 func TestOutPointGetSize(t *testing.T) {
-	txOutPoint := TxOutPoint{}
+	txOutPoint := TxOutPoint{
+		TxId: make([]byte, ghostBytes.HashSize),
+	}
 	size := txOutPoint.Size()
 	fmt.Println(size)
-	assert.Equal(t, size, ghostBytes.HashSize+4, "Size가 다릅니다.")
+	assert.Equal(t, ghostBytes.HashSize+4, size, "Size가 다릅니다.")
 }
 
 func TestTxInputGetSize(t *testing.T) {

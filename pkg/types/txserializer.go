@@ -22,20 +22,7 @@ func (output *TxOutput) Serialize(stream *mems.MemoryStream) {
 	stream.Write(output.ScriptPubKey)
 }
 
-func (output *TxOutput) Serialize2(byteBuf *bytes.Buffer) {
-	bs4 := make([]byte, 4)
-	bs8 := make([]byte, 8)
-
-	byteBuf.Write(output.Addr[:])
-	byteBuf.Write(output.BrokerAddr[:])
-	binary.LittleEndian.PutUint64(bs8, uint64(output.Value))
-	byteBuf.Write(bs8)
-	binary.LittleEndian.PutUint32(bs4, uint32(output.ScriptSize))
-	byteBuf.Write(bs4)
-	byteBuf.Write(output.ScriptPubKey)
-}
-
-func (output *TxOutput) DeserializeTxOutput(byteBuf *bytes.Buffer) {
+func (output *TxOutput) Deserialize(byteBuf *bytes.Buffer) {
 	output.Addr = make([]byte, ghostBytes.HashSize)
 	output.BrokerAddr = make([]byte, ghostBytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, output.Addr)
@@ -59,7 +46,7 @@ func (input *TxInput) Serialize(stream *mems.MemoryStream) {
 	stream.Write(input.ScriptSig)
 }
 
-func (input *TxInput) DeserializeTxInput(byteBuf *bytes.Buffer) {
+func (input *TxInput) Deserialize(byteBuf *bytes.Buffer) {
 	//byteBuf := bytes.NewBuffer(buf)
 	input.PrevOut.TxId = make([]byte, ghostBytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, input.PrevOut.TxId)
@@ -88,16 +75,16 @@ func (body *TxBody) Serialize(stream *mems.MemoryStream) {
 	stream.Write(bs)
 }
 
-func (body *TxBody) DeserializeTxBody(byteBuf *bytes.Buffer) {
+func (body *TxBody) Deserialize(byteBuf *bytes.Buffer) {
 	binary.Read(byteBuf, binary.LittleEndian, &body.VinCounter)
 	body.Vin = make([]TxInput, body.VinCounter)
 	for i := 0; i < int(body.VinCounter); i++ {
-		body.Vin[i].DeserializeTxInput(byteBuf)
+		body.Vin[i].Deserialize(byteBuf)
 	}
 	binary.Read(byteBuf, binary.LittleEndian, &body.VoutCounter)
 	body.Vout = make([]TxOutput, body.VoutCounter)
 	for i := 0; i < int(body.VoutCounter); i++ {
-		body.Vout[i].DeserializeTxOutput(byteBuf)
+		body.Vout[i].Deserialize(byteBuf)
 	}
 	binary.Read(byteBuf, binary.LittleEndian, &body.Nonce)
 	binary.Read(byteBuf, binary.LittleEndian, &body.LockTime)
@@ -114,7 +101,7 @@ func (tx *GhostTransaction) Serialize(stream *mems.MemoryStream) {
 func (tx *GhostTransaction) Deserialize(byteBuf *bytes.Buffer) {
 	tx.TxId = make([]byte, ghostBytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, tx.TxId)
-	tx.Body.DeserializeTxBody(byteBuf)
+	tx.Body.Deserialize(byteBuf)
 }
 
 func (dataTx *GhostDataTrasaction) Serialize(stream *mems.MemoryStream) {
