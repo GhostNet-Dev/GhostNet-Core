@@ -11,6 +11,8 @@ const (
 	PublicKeySize = 25
 	DummySize     = 4
 	DataHash      = ghostBytes.HashSize
+	AliceTx       = 0
+	NormalTx      = 1
 )
 
 type PrevOutputPackage struct {
@@ -42,18 +44,19 @@ type TxInput struct {
 type TxOutput struct {
 	Addr         ghostBytes.HashBytes
 	BrokerAddr   ghostBytes.HashBytes
+	Type         uint32
 	Value        uint64
 	ScriptSize   uint32
 	ScriptPubKey []byte
 }
 
 type TxBody struct {
-	VinCounter  uint32
-	Vin         []TxInput
-	VoutCounter uint32
-	Vout        []TxOutput
-	Nonce       uint32
-	LockTime    uint32
+	InputCounter  uint32
+	Vin           []TxInput
+	OutputCounter uint32
+	Vout          []TxOutput
+	Nonce         uint32
+	LockTime      uint32
 }
 
 type GhostTransaction struct {
@@ -75,24 +78,25 @@ func (output *TxOutput) Size() uint32 {
 	return uint32(ghostBytes.HashSize) + //address
 		uint32(ghostBytes.HashSize) + // brokeraddress
 		uint32(unsafe.Sizeof(output.Value)) +
+		uint32(unsafe.Sizeof(output.Type)) +
 		uint32(unsafe.Sizeof(output.ScriptSize)) +
 		output.ScriptSize
 }
 
 func (body *TxBody) Size() uint32 {
 	var size uint32 = 0
-	if body.VinCounter > 0 {
+	if body.InputCounter > 0 {
 		for _, vin := range body.Vin {
 			size += vin.Size()
 		}
 	}
-	if body.VoutCounter > 0 {
+	if body.OutputCounter > 0 {
 		for _, vout := range body.Vout {
 			size += vout.Size()
 		}
 	}
-	return uint32(unsafe.Sizeof(body.VinCounter)) +
-		uint32(unsafe.Sizeof(body.VoutCounter)) +
+	return uint32(unsafe.Sizeof(body.InputCounter)) +
+		uint32(unsafe.Sizeof(body.OutputCounter)) +
 		uint32(unsafe.Sizeof(body.Nonce)) +
 		uint32(unsafe.Sizeof(body.LockTime)) +
 		size

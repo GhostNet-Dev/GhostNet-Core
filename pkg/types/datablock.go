@@ -6,7 +6,7 @@ import (
 
 type GhostNetDataBlock struct {
 	Header      GhostNetDataBlockHeader
-	Transaction []GhostDataTrasaction
+	Transaction []GhostDataTransaction
 }
 
 type GhostNetDataBlockHeader struct {

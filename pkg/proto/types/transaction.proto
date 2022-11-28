@@ -17,15 +17,16 @@ message TxInput {
 message TxOutput {
     bytes  Addr = 1;
 	bytes BrokerAddr = 2;
-	uint64 Value = 3;
-	uint32 ScriptSize = 4;
-	bytes ScriptPubKey = 5;
+	uint64 Type = 3;
+	uint64 Value = 4;
+	uint32 ScriptSize = 5;
+	bytes ScriptPubKey = 6;
 }
 
 message TxBody {
-    uint32 VinCounter = 1;
+    uint32 InputCounter = 1;
     repeated TxInput Vin = 2;
-	uint32 VoutCounter = 3;
+	uint32 OutputCounter = 3;
 	repeated TxOutput Vout = 4;    
 	uint32 Nonce = 5;
 	uint32 LockTime = 6;   
@@ -38,7 +39,7 @@ message GhostTransaction {
 
 message GhostDataTrasaction {
 	bytes TxId = 1;
-	bytes UniqHashKey = 2;
+	uint64 LogicalAddress = 2;
 	uint32 DataSize = 3;
 	bytes Data = 4;
 }

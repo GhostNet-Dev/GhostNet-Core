@@ -69,3 +69,7 @@ lint:
 	install : 
 		if [! -d $(DIR)]; then mkdir $(NEWDIR); fi
 		cp -r $(DIR)/ $(COPYDIR)/
+
+protoc:
+	protoc --go_out=./pkg/proto/types --go_opt=paths=source_relative -I ./pkg/proto/types block.proto
+	protoc --go_out=./pkg/proto/types --go_opt=paths=source_relative -I ./pkg/proto/types transaction.proto

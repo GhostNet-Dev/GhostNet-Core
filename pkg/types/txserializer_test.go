@@ -20,7 +20,7 @@ func TestTxSerilalize(t *testing.T) {
 }
 
 func TestTxOutputSerializeDeserialize(t *testing.T) {
-	output := makeTxOutput()
+	output := MakeTxOutput()
 	size := output.Size()
 	stream := mems.NewCapacity(int(size))
 	output.Serialize(stream)
@@ -35,7 +35,7 @@ func TestTxOutputSerializeDeserialize(t *testing.T) {
 }
 
 func TestTxInputSerializeDeserialize(t *testing.T) {
-	input := makeTxInput()
+	input := MakeTxInput()
 	size := input.Size()
 	stream := mems.NewCapacity(int(size))
 	input.Serialize(stream)
@@ -48,7 +48,7 @@ func TestTxInputSerializeDeserialize(t *testing.T) {
 }
 
 func TestTxBodySerializeDeserialize(t *testing.T) {
-	body := makeTxBody()
+	body := MakeTxBody()
 	size := body.Size()
 	stream := mems.NewCapacity(int(size))
 	body.Serialize(stream)
@@ -62,7 +62,7 @@ func TestTxBodySerializeDeserialize(t *testing.T) {
 	assert.Equal(t, body.Nonce, newBody.Nonce, "Value가 다릅니다.")
 }
 
-func makeTxOutput() TxOutput {
+func MakeTxOutput() TxOutput {
 	dummy := make([]byte, 4)
 	hash := sha256.New()
 	hash.Write(dummy)
@@ -78,7 +78,7 @@ func makeTxOutput() TxOutput {
 	return output
 }
 
-func makeTxInput() TxInput {
+func MakeTxInput() TxInput {
 	dummy := make([]byte, 4)
 	hash := sha256.New()
 	hash.Write(dummy)
@@ -96,18 +96,28 @@ func makeTxInput() TxInput {
 	return input
 }
 
-func makeTxBody() TxBody {
+func MakeTxBody() TxBody {
 	return TxBody{
-		VinCounter: 2,
+		InputCounter: 2,
 		Vin: []TxInput{
-			makeTxInput(),
-			makeTxInput(),
+			MakeTxInput(),
+			MakeTxInput(),
 		},
-		VoutCounter: 1,
+		OutputCounter: 1,
 		Vout: []TxOutput{
-			makeTxOutput(),
+			MakeTxOutput(),
 		},
 		Nonce:    2233,
 		LockTime: 1234,
 	}
+}
+
+func MakeTx() GhostTransaction {
+	txBody := MakeTxBody()
+	stream := mems.NewCapacity(int(txBody.Size()))
+	txBody.Serialize(stream)
+	hash := sha256.New()
+	hash.Write(stream.Bytes())
+	txId := hash.Sum((nil))
+	return GhostTransaction{txId, txBody}
 }

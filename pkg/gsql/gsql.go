@@ -1,30 +1,29 @@
 package gsql
 
 import (
-	"database/sql"	
+	types "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
-
-// GSqler sql 접근을 위한 interface
-type GSqler interface {
-	OpenSQL()
-}
 
 // GSql sql Instance
-type GSql struct {
-	db *sql.DB
+type GSql interface {
+	OpenSQL(path string)
+	CreateTable(schemaFile string)
+	InsertTx(blockId uint32, tx types.GhostTransaction, txType uint32, txIndexInBlock uint32)
+	InsertDataTx(blockId uint32, dataTx types.GhostDataTransaction, txIndexInBlock uint32)
+	SelectTx(TxId []byte, txType uint32) *types.GhostTransaction
+	SelectData(TxId []byte) *types.GhostDataTransaction
+	InsertBlock(pair types.PairedBlock)
+	SelectBlock(blockId uint32) *types.PairedBlock
 }
 
-var (
-	gSql GSql
-)
-
 // NewGSql sql instance를 생성한다.
-func NewGSql(sqlType string) *GSql {
+func NewGSql(sqlType string) GSql {
+	var gSql GSql
 	switch sqlType {
-		case "postgres":
-		case "sqlite3":
-			gSql.db = sqlite
+	case "postgres":
+	case "sqlite3":
+		gSql = new(GSqlite3)
 	}
 
-	return &gSql
+	return gSql
 }
