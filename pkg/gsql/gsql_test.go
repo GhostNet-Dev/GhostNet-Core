@@ -5,7 +5,8 @@ import (
 	"crypto/sha256"
 	"testing"
 
-	types "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 	"github.com/stretchr/testify/assert"
 	mems "github.com/traherom/memstream"
 )
@@ -18,22 +19,85 @@ func TestSqlCreateTable(t *testing.T) {
 
 func TestSqlInsertAndSelectCheck(t *testing.T) {
 	gSql := NewGSql("sqlite3")
-	gSql.OpenSQL("./")
-	gSql.CreateTable("../../db.sqlite3.sql")
+	err := gSql.OpenSQL("./")
+	if err == nil {
+		defer gSql.CloseSQL()
+	}
+	if err = gSql.CreateTable("../../db.sqlite3.sql"); err == nil {
+		defer gSql.DropTable()
+	}
 	tx := MakeTx()
 	gSql.InsertTx(0, tx, 0, 0)
 	newTx := gSql.SelectTx(tx.TxId, 0)
 	size := tx.Size()
-	newSize := newTx.Size()
-	assert.Equal(t, size, newSize, "db tx 크기가 다릅니다.")
+	sizeNew := newTx.Size()
 
-	stream := mems.NewCapacity(int(size))
-	tx.Serialize(stream)
-	newStream := mems.NewCapacity(int(size))
-	newTx.Serialize(newStream)
-	result := bytes.Compare(stream.Bytes(), newStream.Bytes())
+	assert.Equal(t, size, sizeNew, "db tx 크기가 다릅니다.")
+
+	result := bytes.Compare(tx.SerializeToByte(), newTx.SerializeToByte())
 	assert.Equal(t, 0, result, "tx가 다릅니다.")
 
+}
+
+func TestSqlInAndOutBlock(t *testing.T) {
+	gSql := NewGSql("sqlite3")
+	err := gSql.OpenSQL("./")
+	if err == nil {
+		defer gSql.CloseSQL()
+	}
+	if err = gSql.CreateTable("../../db.sqlite3.sql"); err == nil {
+		defer gSql.DropTable()
+	}
+
+	pair := MakePairBlock()
+	gSql.InsertBlock(pair)
+	pairNew := gSql.SelectBlock(2)
+
+	size := pair.Size()
+	sizeNew := pairNew.Size()
+	assert.Equal(t, size, sizeNew, "db block 크기가 다릅니다.")
+
+	result := bytes.Compare(pair.SerializeToByte(), pairNew.SerializeToByte())
+	assert.Equal(t, 0, result, "block이 다릅니다.")
+}
+
+func MakePairBlock() types.PairedBlock {
+	dummy := make([]byte, 4)
+	hash := sha256.New()
+	hash.Write(dummy)
+	key := hash.Sum((nil))
+
+	pair := types.PairedBlock{
+		Block: types.GhostNetBlock{
+			Header: types.GhostNetBlockHeader{
+				Id:                      2,
+				Version:                 1,
+				PreviousBlockHeaderHash: key,
+				MerkleRoot:              key,
+				DataBlockHeaderHash:     key,
+				TimeStamp:               123,
+				Bits:                    456,
+				Nonce:                   789,
+				AliceCount:              1,
+				TransactionCount:        1,
+				SignatureSize:           4,
+				BlockSignature:          gvm.SigHash{},
+			},
+			Alice:       []types.GhostTransaction{MakeTx()},
+			Transaction: []types.GhostTransaction{MakeTx()},
+		},
+		DataBlock: types.GhostNetDataBlock{
+			Header: types.GhostNetDataBlockHeader{
+				Id:                      2,
+				Version:                 1,
+				PreviousBlockHeaderHash: key,
+				MerkleRoot:              key,
+				Nonce:                   123,
+				TransactionCount:        0,
+			},
+		},
+	}
+	return pair
 }
 
 func MakeTxOutput() types.TxOutput {

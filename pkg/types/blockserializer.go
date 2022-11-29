@@ -72,10 +72,19 @@ func (block *GhostNetBlock) Deserialize(byteBuf *bytes.Buffer) {
 	}
 }
 
+func (pair *PairedBlock) SerializeToByte() []byte {
+	size := pair.Size()
+	stream := mems.NewCapacity(int(size))
+	pair.Serialize(stream)
+	return stream.Bytes()
+}
+
 func (pair *PairedBlock) Serialize(stream *mems.MemoryStream) {
 	pair.Block.Serialize(stream)
+	pair.DataBlock.Serialize(stream)
 }
 
 func (pair *PairedBlock) Deserialize(byteBuf *bytes.Buffer) {
 	pair.Block.Deserialize(byteBuf)
+	pair.DataBlock.Deserialize(byteBuf)
 }

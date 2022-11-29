@@ -91,6 +91,13 @@ func (body *TxBody) Deserialize(byteBuf *bytes.Buffer) {
 	binary.Read(byteBuf, binary.LittleEndian, &body.LockTime)
 }
 
+func (tx *GhostTransaction) SerializeToByte() []byte {
+	size := tx.Size()
+	stream := mems.NewCapacity(int(size))
+	tx.Serialize(stream)
+	return stream.Bytes()
+}
+
 func (tx *GhostTransaction) Serialize(stream *mems.MemoryStream) {
 	/*
 		size := tx.Size()

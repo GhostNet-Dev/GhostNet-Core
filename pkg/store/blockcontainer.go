@@ -1,8 +1,8 @@
 package store
 
 import (
-	gsql "github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql"
-	types "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type BlockContainer struct {

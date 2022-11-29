@@ -7,6 +7,13 @@ import (
 	mems "github.com/traherom/memstream"
 )
 
+func (sig *SigHash) SerializeToByte() []byte {
+	size := sig.Size()
+	stream := mems.NewCapacity(int(size))
+	sig.Serialize(stream)
+	return stream.Bytes()
+}
+
 func (sig *SigHash) Serialize(stream *mems.MemoryStream) {
 	bs := []byte{sig.DER, sig.SignatureSize, sig.RType, sig.RSize}
 	bs4 := make([]byte, 4)
@@ -20,6 +27,11 @@ func (sig *SigHash) Serialize(stream *mems.MemoryStream) {
 	bs = []byte{sig.PubKeySize}
 	stream.Write(bs)
 	stream.Write(sig.PubKey)
+}
+
+func (sig *SigHash) DeserializeSigHashFromByte(buf []byte) {
+	byteBuf := bytes.NewBuffer(buf)
+	sig.DeserializeSigHash(byteBuf)
 }
 
 func (sig *SigHash) DeserializeSigHash(byteBuf *bytes.Buffer) {

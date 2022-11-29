@@ -58,11 +58,15 @@ func (block *GhostNetBlock) Size() uint32 {
 	return block.Header.Size() + txSize
 }
 
-func (block GhostNetBlock) GetHashKey() []byte {
+func (block *GhostNetBlock) GetHashKey() []byte {
 	size := block.Header.Size()
 	stream := mems.NewCapacity(int(size))
 	hash := sha256.New()
 	block.Header.Serialize(stream)
 	hash.Write(stream.Bytes())
 	return hash.Sum(nil)
+}
+
+func (pair *PairedBlock) Size() uint32 {
+	return pair.Block.Size() + pair.DataBlock.Size()
 }

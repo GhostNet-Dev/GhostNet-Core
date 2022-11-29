@@ -6,8 +6,10 @@ import (
 
 // GSql sql Instance
 type GSql interface {
-	OpenSQL(path string)
-	CreateTable(schemaFile string)
+	OpenSQL(path string) error
+	CloseSQL()
+	CreateTable(schemaFile string) error
+	DropTable()
 	InsertTx(blockId uint32, tx types.GhostTransaction, txType uint32, txIndexInBlock uint32)
 	InsertDataTx(blockId uint32, dataTx types.GhostDataTransaction, txIndexInBlock uint32)
 	SelectTx(TxId []byte, txType uint32) *types.GhostTransaction
