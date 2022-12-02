@@ -9,7 +9,7 @@ import (
 )
 
 type SignaturePackage struct {
-	Pubkey    []byte
+	PubKey    []byte
 	Signature []byte
 	Text      []byte
 	R         *big.Int
@@ -42,7 +42,7 @@ func Signer(text []byte, ghostAddr *GhostAddress) *SignaturePackage {
 func SignVerify(sig *SignaturePackage) bool {
 	pubkeyCurve := elliptic.P256()
 	sigLen := len(sig.Signature)
-	keyLen := len(sig.Pubkey)
+	keyLen := len(sig.PubKey)
 	var r, s big.Int
 	var x, y big.Int
 
@@ -51,8 +51,8 @@ func SignVerify(sig *SignaturePackage) bool {
 	s.SetBytes(sig.Signature[(sigLen / 2):])
 
 	// PublicKey is a pair of coordinates.
-	x.SetBytes(sig.Pubkey[:(keyLen / 2)])
-	y.SetBytes(sig.Pubkey[(keyLen / 2):])
+	x.SetBytes(sig.PubKey[:(keyLen / 2)])
+	y.SetBytes(sig.PubKey[(keyLen / 2):])
 
 	rawPublicKey := &ecdsa.PublicKey{Curve: pubkeyCurve, X: &x, Y: &y}
 	// Verify

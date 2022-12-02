@@ -6,27 +6,38 @@ import (
 	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
 )
 
+const ( // tx output type
+	None = uint32(iota)
+	TxTypeCoinTransfer
+	TxTypeDataTransfer
+	TxTypeFSRoot
+	TxTypeContract
+)
+
 const (
 	TxIdSize      = ghostBytes.HashSize
 	PublicKeySize = 25
 	DummySize     = 4
 	DataHash      = ghostBytes.HashSize
-	AliceTx       = 0
-	NormalTx      = 1
 )
 
-type PrevOutputPackage struct {
+const ( //tx type
+	AliceTx  = 0
+	NormalTx = 1
+)
+
+type PrevOutputParam struct {
 	TxType    uint32
 	VOutPoint TxOutPoint
 	Vout      TxOutput
 }
 
-type NewOutputPackage struct {
+type NextOutputParam struct {
 	TxType       uint32
 	RecvAddr     ghostBytes.HashBytes
 	Broker       ghostBytes.HashBytes
 	OutputScript []byte
-	TransferCoin int64
+	TransferCoin uint64
 }
 
 type TxOutPoint struct {

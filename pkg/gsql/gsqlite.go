@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	types "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -59,14 +59,15 @@ func (gSql *GSqlite3) InsertBlock(pair types.PairedBlock) {
 	header := pair.Block.Header
 	dataHeader := pair.DataBlock.Header
 	gSql.InsertQuery(`INSERT INTO "paired_block" 
-		("Id", "Version","PreviousBlockHeaderHash","MerkleRoot","DataBlockHeaderHash","Timestamp","Bits",
-		"Nonce", "AliceCount", "TransactionCount", "SignatureSize", "SigHash", 
-		"Data_PreviousBlockHeaderHash", "Data_MerkleRoot", "Data_Nonce", "Data_TransactionCount") 
-		VALUES (?,?,?,?, ?,?,?,? ,?,?,?,? ,?,?,?,?);
-		`, header.Id, header.Version, header.PreviousBlockHeaderHash, header.MerkleRoot, header.DataBlockHeaderHash,
-		header.TimeStamp, header.Bits, header.Nonce, header.AliceCount, header.TransactionCount,
-		header.SignatureSize, header.BlockSignature.SerializeToByte(),
-		dataHeader.PreviousBlockHeaderHash, dataHeader.MerkleRoot, dataHeader.Nonce, dataHeader.TransactionCount)
+		("Id", "Version","PreviousBlockHeaderHash","MerkleRoot","DataBlockHeaderHash"
+		,"Timestamp","Bits", "Nonce", "AliceCount", "TransactionCount", "SignatureSize"
+		, "SigHash", "Data_PreviousBlockHeaderHash", "Data_MerkleRoot", "Data_Nonce", 
+		"Data_TransactionCount") VALUES (?,?,?,?, ?,?,?,? ,?,?,?,? ,?,?,?,?);
+		`, header.Id, header.Version, header.PreviousBlockHeaderHash, header.MerkleRoot, 
+		header.DataBlockHeaderHash,	header.TimeStamp, header.Bits, header.Nonce, 
+		header.AliceCount, header.TransactionCount, header.SignatureSize, 
+		header.BlockSignature.SerializeToByte(), dataHeader.PreviousBlockHeaderHash, 
+		dataHeader.MerkleRoot, dataHeader.Nonce, dataHeader.TransactionCount)
 
 	for i, tx := range pair.Block.Alice {
 		gSql.InsertTx(header.Id, tx, types.AliceTx, uint32(i))
@@ -94,9 +95,11 @@ func (gSql *GSqlite3) SelectBlock(blockId uint32) *types.PairedBlock {
 	dataHeader := types.GhostNetDataBlockHeader{}
 	for rows.Next() {
 		blockSigHash := []byte{}
-		if err = rows.Scan(&header.Id, &header.Version, &header.PreviousBlockHeaderHash, &header.MerkleRoot, &header.DataBlockHeaderHash, &header.TimeStamp, &header.Bits,
-			&header.Nonce, &header.AliceCount, &header.TransactionCount, &header.SignatureSize, &blockSigHash,
-			&dataHeader.PreviousBlockHeaderHash, &dataHeader.MerkleRoot, &dataHeader.Nonce, &dataHeader.TransactionCount); err != nil {
+		if err = rows.Scan(&header.Id, &header.Version, &header.PreviousBlockHeaderHash, 
+			&header.MerkleRoot, &header.DataBlockHeaderHash, &header.TimeStamp, &header.Bits,
+			&header.Nonce, &header.AliceCount, &header.TransactionCount, &header.SignatureSize, 
+			&blockSigHash, &dataHeader.PreviousBlockHeaderHash, &dataHeader.MerkleRoot, 
+			&dataHeader.Nonce, &dataHeader.TransactionCount); err != nil {
 			log.Fatal(err)
 		}
 		header.BlockSignature.DeserializeSigHashFromByte(blockSigHash)
@@ -119,27 +122,27 @@ func (gSql *GSqlite3) SelectBlock(blockId uint32) *types.PairedBlock {
 
 // InsertTx ..
 func (gSql *GSqlite3) InsertTx(blockId uint32, tx types.GhostTransaction, txType uint32, txIndexInBlock uint32) {
-	gSql.InsertQuery(`INSERT INTO "transactions" ("TxId", "Type", "BlockId","InputCounter","OutputCounter","Nonce","LockTime","TxIndex") 
-		VALUES (?,?,?,?, ?,?,?,?);
+	gSql.InsertQuery(`INSERT INTO "transactions" ("TxId", "Type", "BlockId","InputCounter",
+	"OutputCounter","Nonce","LockTime","TxIndex") VALUES (?,?,?,?, ?,?,?,?);
 		`, tx.TxId, txType, blockId, tx.Body.InputCounter, tx.Body.OutputCounter, tx.Body.Nonce, tx.Body.LockTime, txIndexInBlock)
 	for i, input := range tx.Body.Vin {
 		gSql.InsertQuery(`INSERT INTO "inputs" 
-			("TxId","BlockId","prev_TxId","prev_OutIndex","Sequence","ScriptSize", "Script", "Index") 
-			VALUES (?,?,?,?, ?,?,?,?);
+			("TxId","BlockId","prev_TxId","prev_OutIndex","Sequence","ScriptSize", "Script", 
+			"Index") VALUES (?,?,?,?, ?,?,?,?);
 			`, tx.TxId, blockId, input.PrevOut.TxId, input.PrevOut.TxOutIndex, input.Sequence, input.ScriptSize, input.ScriptSig, i)
 	}
 	for i, output := range tx.Body.Vout {
 		gSql.InsertQuery(`INSERT INTO "outputs" 
-			("TxId","BlockId","ToAddr","BrokerAddr", "Type", "Value", "ScriptSize","Script","OutputIndex") 
-			VALUES (?,?,?,? ,?,?,?,?, ?);
+			("TxId","BlockId","ToAddr","BrokerAddr", "Type", "Value", "ScriptSize","Script",
+			"OutputIndex") VALUES (?,?,?,? ,?,?,?,?, ?);
 			`, tx.TxId, blockId, output.Addr, output.BrokerAddr, output.Type, output.Value, output.ScriptSize, output.ScriptPubKey, i)
 	}
 }
 
 // InsertDataTx ..
 func (gSql *GSqlite3) InsertDataTx(blockId uint32, dataTx types.GhostDataTransaction, txIndexInBlock uint32) {
-	gSql.InsertQuery(`INSERT INTO "data_transactions" ("TxId","BlockId","LogicalAddress","Data","DataSize","TxIndex") 
-		VALUES (?,?,?,?, ?,?);`,
+	gSql.InsertQuery(`INSERT INTO "data_transactions" ("TxId","BlockId","LogicalAddress","Data",
+		"DataSize","TxIndex") VALUES (?,?,?,?, ?,?);`,
 		dataTx.TxId, blockId, dataTx.LogicalAddress, dataTx.Data, dataTx.DataSize, txIndexInBlock)
 }
 
@@ -189,8 +192,8 @@ func (gSql *GSqlite3) SelectData(TxId []byte) *types.GhostDataTransaction {
 }
 
 func (gSql *GSqlite3) SelectTxs(blockId uint32, txType uint32) []types.GhostTransaction {
-	rows, err := gSql.db.Query(`select TxId, InputCounter, OutputCounter, Nonce, LockTime from transactions tx 
-		where BlockId = ? and Type = ? order by TxIndex`, blockId, txType)
+	rows, err := gSql.db.Query(`select TxId, InputCounter, OutputCounter, Nonce, LockTime 
+	from transactions tx where BlockId = ? and Type = ? order by TxIndex`, blockId, txType)
 	if err != nil {
 		log.Fatal(err)
 	}

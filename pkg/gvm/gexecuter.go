@@ -123,6 +123,9 @@ type OpTransferToken struct {
 }
 
 func (exec *OpTransferToken) ExcuteOp(param interface{}) bool {
+	if exec.Regs.stack.Count() < 2 {
+		return false
+	}
 	exec.Regs.r0 = exec.Regs.stack.Pop().([]byte)
 	exec.Regs.r1 = exec.Regs.stack.Pop().([]byte)
 	return true
@@ -133,10 +136,12 @@ type OpMapping struct {
 }
 
 func (exec *OpMapping) ExcuteOp(param interface{}) bool {
+	if exec.Regs.stack.Count() < 2 {
+		return false
+	}
 	exec.Regs.r0 = exec.Regs.stack.Pop().([]byte)
 	exec.Regs.r1 = exec.Regs.stack.Pop().([]byte)
 	return true
-	return false
 }
 
 type OpCreateToken struct {
