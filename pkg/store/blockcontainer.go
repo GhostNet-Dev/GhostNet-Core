@@ -23,3 +23,15 @@ func (blockContainer *BlockContainer) BlockContainerOpen(schemeSqlFilePath strin
 func (blockContainer *BlockContainer) SaveTransaction(blockId uint32, tx types.GhostTransaction, txIndexInBlock uint32) {
 	blockContainer.gSql.InsertTx(blockId, tx, types.NormalTx, txIndexInBlock)
 }
+
+func (blockContainer *BlockContainer) GetUnusedOutputList(txType uint32, toAddr []byte) []types.PrevOutputParam {
+	return blockContainer.gSql.SelectUnusedOutputs(txType, toAddr)
+}
+
+func (blockContainer *BlockContainer) CheckExistTxId(txId []byte) bool {
+	return blockContainer.gSql.CheckExistTxId(txId)
+}
+
+func (blockContainer *BlockContainer) GetTx(txId []byte) *types.GhostTransaction {
+	return blockContainer.gSql.SelectTx(txId)
+}

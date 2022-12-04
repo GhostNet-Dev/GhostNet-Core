@@ -27,7 +27,7 @@ func TestSqlInsertAndSelectCheck(t *testing.T) {
 	}
 	tx := MakeTx()
 	gSql.InsertTx(0, tx, 0, 0)
-	newTx := gSql.SelectTx(tx.TxId, 0)
+	newTx := gSql.SelectTx(tx.TxId)
 	size := tx.Size()
 	sizeNew := newTx.Size()
 
@@ -157,5 +157,5 @@ func MakeTx() types.GhostTransaction {
 	hash := sha256.New()
 	hash.Write(stream.Bytes())
 	txId := hash.Sum((nil))
-	return types.GhostTransaction{txId, txBody}
+	return types.GhostTransaction{TxId: txId, Body: txBody}
 }

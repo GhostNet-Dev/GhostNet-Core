@@ -12,10 +12,12 @@ type GSql interface {
 	DropTable()
 	InsertTx(blockId uint32, tx types.GhostTransaction, txType uint32, txIndexInBlock uint32)
 	InsertDataTx(blockId uint32, dataTx types.GhostDataTransaction, txIndexInBlock uint32)
-	SelectTx(TxId []byte, txType uint32) *types.GhostTransaction
+	SelectTx(TxId []byte) *types.GhostTransaction
 	SelectData(TxId []byte) *types.GhostDataTransaction
+	SelectUnusedOutputs(TxType uint32, ToAddr []byte) []types.PrevOutputParam
 	InsertBlock(pair types.PairedBlock)
 	SelectBlock(blockId uint32) *types.PairedBlock
+	CheckExistTxId(txId []byte) bool
 }
 
 // NewGSql sql instance를 생성한다.
