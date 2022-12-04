@@ -1,14 +1,13 @@
-package gvm
+package types
 
 import (
 	"bytes"
-	"testing"
 	"crypto/sha256"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 	mems "github.com/traherom/memstream"
 )
-
 
 func TestSigHashSerializeDeserialize(t *testing.T) {
 	dummy := make([]byte, 4)
@@ -17,9 +16,9 @@ func TestSigHashSerializeDeserialize(t *testing.T) {
 	key := hash.Sum((nil))
 	sig := SigHash{
 		SSize: 32,
-		SBuf: key,
+		SBuf:  key,
 		RSize: 32,
-		RBuf: key,
+		RBuf:  key,
 	}
 	size := sig.Size()
 	stream := mems.NewCapacity(int(size))

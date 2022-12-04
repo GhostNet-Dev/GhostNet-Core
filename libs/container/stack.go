@@ -37,3 +37,7 @@ func (s *Stack) Peek() interface{} {
 		return data
 	}
 }
+
+func (s *Stack) Clear() {
+	*s = (*s)[:0]
+}

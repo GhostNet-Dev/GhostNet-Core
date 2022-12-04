@@ -1,6 +1,7 @@
 package types
 
 import (
+	"crypto/sha256"
 	"unsafe"
 
 	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
@@ -18,4 +19,10 @@ func (dataTx *GhostDataTransaction) Size() uint32 {
 		uint32(unsafe.Sizeof(dataTx.LogicalAddress)) +
 		uint32(unsafe.Sizeof(dataTx.DataSize)) +
 		dataTx.DataSize
+}
+
+func (dataTx *GhostDataTransaction) GetHashKey() []byte {
+	hash := sha256.New()
+	hash.Write(dataTx.SerializeToByte())
+	return hash.Sum(nil)
 }

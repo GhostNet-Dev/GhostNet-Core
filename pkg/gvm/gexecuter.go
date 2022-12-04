@@ -7,6 +7,7 @@ import (
 	"log"
 
 	gcrypto "github.com/GhostNet-Dev/GhostNet-Core/pkg/crypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type GExecuter interface {
@@ -102,7 +103,7 @@ type OpPushSig struct {
 
 func (exec *OpPushSig) ExcuteOp(param interface{}) bool {
 	buf := param.([]byte)
-	sigHash := SigHash{}
+	sigHash := types.SigHash{}
 	sigHash.DeserializeSigHashFromByte(buf)
 	sigRS := append(sigHash.RBuf, sigHash.SBuf...)
 	exec.Regs.stack.Push(sigRS)

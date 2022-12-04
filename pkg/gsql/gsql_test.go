@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"testing"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 	"github.com/stretchr/testify/assert"
 	mems "github.com/traherom/memstream"
@@ -81,7 +80,7 @@ func MakePairBlock() types.PairedBlock {
 				AliceCount:              1,
 				TransactionCount:        1,
 				SignatureSize:           4,
-				BlockSignature:          gvm.SigHash{},
+				BlockSignature:          types.SigHash{},
 			},
 			Alice:       []types.GhostTransaction{MakeTx()},
 			Transaction: []types.GhostTransaction{MakeTx()},

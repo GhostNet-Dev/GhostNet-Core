@@ -1,4 +1,4 @@
-package gvm
+package types
 
 import (
 	"bytes"

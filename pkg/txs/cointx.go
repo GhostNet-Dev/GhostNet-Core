@@ -19,7 +19,7 @@ type TransferCoinInfo struct {
 	TransferCoin uint64
 }
 
-func TransferCoin(info TransferCoinInfo) *types.GhostTransaction {
+func (txs *TXs) TransferCoin(info TransferCoinInfo) *types.GhostTransaction {
 	nextOutputParam := map[uint32][]types.NextOutputParam{
 		types.TxTypeCoinTransfer: {
 			{
@@ -36,5 +36,5 @@ func TransferCoin(info TransferCoinInfo) *types.GhostTransaction {
 			},
 		},
 	}
-	return MakeTransaction(info.Broker, info.Prevs, nextOutputParam)
+	return txs.MakeTransaction(info, info.Prevs, nextOutputParam)
 }

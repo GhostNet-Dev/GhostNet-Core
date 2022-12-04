@@ -5,7 +5,6 @@ import (
 	"unsafe"
 
 	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
-	gvm "github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	mems "github.com/traherom/memstream"
 )
 
@@ -32,7 +31,7 @@ type GhostNetBlockHeader struct {
 	AliceCount              uint32               `json:"AliceCount"`
 	TransactionCount        uint32               `json:"TransactionCount"`
 	SignatureSize           uint32               `json:"SignatureSize"`
-	BlockSignature          gvm.SigHash          `json:"BlockSignature"`
+	BlockSignature          SigHash              `json:"BlockSignature"`
 }
 
 func (header *GhostNetBlockHeader) Size() uint32 {

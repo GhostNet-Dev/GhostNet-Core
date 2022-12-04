@@ -7,6 +7,12 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/libs/container"
 )
 
+type GFuncParam struct {
+	Input         []byte
+	ScriptPubbKey []byte
+	TxType        uint32
+}
+
 type GVMRegister struct {
 	stack container.Stack
 	r0    []byte
@@ -41,6 +47,48 @@ func NewGVM() *GVM {
 	return &gvm
 }
 
+func (gvm *GVM) ExecuteGFunction(buf []byte, params []GFuncParam) bool {
+	verify := false
+	for _, param := range params {
+		gvm.Clear()
+
+		if verify = gvm.PushParam(param.Input); verify == false {
+			return false
+		}
+
+		if verify = gvm.ExecuteScript(param.ScriptPubbKey, buf); verify == false {
+			return false
+		}
+	}
+
+	return verify
+}
+
+func (gvm *GVM) PushParam(param []byte) bool {
+	var op uint16
+	result := false
+	byteBuf := bytes.NewBuffer(param)
+	for {
+		if err := binary.Read(byteBuf, binary.LittleEndian, &op); err != nil {
+			break
+		}
+
+		exec, ok := gvm.exec[op]
+		if ok == false {
+			break
+		}
+
+		if op == OP_PUSH || op == OP_PUSHTOKEN {
+			var length byte
+			binary.Read(byteBuf, binary.LittleEndian, &length)
+			pushData := make([]byte, length)
+			binary.Read(byteBuf, binary.LittleEndian, pushData)
+			result = exec.ExcuteOp(pushData)
+		}
+	}
+	return result
+}
+
 func (gvm *GVM) ExecuteScript(scriptPubKey []byte, param []byte) bool {
 	var op uint16
 	result := false
@@ -68,4 +116,8 @@ func (gvm *GVM) ExecuteScript(scriptPubKey []byte, param []byte) bool {
 		}
 	}
 	return result
+}
+
+func (gvm *GVM) Clear() {
+	gvm.Regs.stack.Clear()
 }

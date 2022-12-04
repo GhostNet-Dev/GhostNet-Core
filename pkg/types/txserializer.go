@@ -112,27 +112,34 @@ func (tx *GhostTransaction) Deserialize(byteBuf *bytes.Buffer) {
 	tx.Body.Deserialize(byteBuf)
 }
 
-func (dataTx *GhostDataTransaction) Serialize(stream *mems.MemoryStream) {
+func (tx *GhostDataTransaction) SerializeToByte() []byte {
+	size := tx.Size()
+	stream := mems.NewCapacity(int(size))
+	tx.Serialize(stream)
+	return stream.Bytes()
+}
+
+func (tx *GhostDataTransaction) Serialize(stream *mems.MemoryStream) {
 	bs4 := make([]byte, 4)
 	bs8 := make([]byte, 8)
-	stream.Write(dataTx.TxId[:])
-	binary.LittleEndian.PutUint64(bs8, dataTx.LogicalAddress)
+	stream.Write(tx.TxId[:])
+	binary.LittleEndian.PutUint64(bs8, tx.LogicalAddress)
 	stream.Write(bs8)
-	binary.LittleEndian.PutUint32(bs4, dataTx.DataSize)
+	binary.LittleEndian.PutUint32(bs4, tx.DataSize)
 	stream.Write(bs4)
-	if dataTx.Data != nil {
-		stream.Write(dataTx.Data)
+	if tx.Data != nil {
+		stream.Write(tx.Data)
 	}
 }
 
-func (dataTx *GhostDataTransaction) Deserialize(byteBuf *bytes.Buffer) {
-	dataTx.TxId = make([]byte, ghostBytes.HashSize)
-	binary.Read(byteBuf, binary.LittleEndian, dataTx.TxId)
-	binary.Read(byteBuf, binary.LittleEndian, &dataTx.LogicalAddress)
-	binary.Read(byteBuf, binary.LittleEndian, &dataTx.DataSize)
+func (tx *GhostDataTransaction) Deserialize(byteBuf *bytes.Buffer) {
+	tx.TxId = make([]byte, ghostBytes.HashSize)
+	binary.Read(byteBuf, binary.LittleEndian, tx.TxId)
+	binary.Read(byteBuf, binary.LittleEndian, &tx.LogicalAddress)
+	binary.Read(byteBuf, binary.LittleEndian, &tx.DataSize)
 	if byteBuf.Len() > 0 {
-		dataTx.Data = make([]byte, dataTx.DataSize)
-		if err := binary.Read(byteBuf, binary.LittleEndian, dataTx.Data); err != nil {
+		tx.Data = make([]byte, tx.DataSize)
+		if err := binary.Read(byteBuf, binary.LittleEndian, tx.Data); err != nil {
 			log.Fatal("GhostDataTrasaction.Deserialize error: ", err)
 		}
 	}
