@@ -9,7 +9,7 @@ func (txs *TXs) CandidateUTXO(withDrawCoin uint64, account []byte) ([]types.Prev
 	getherCoin := uint64(0)
 	checkBalance := false
 
-	for _, outputParam := range txs.blockContainer.GetUnusedOutputList(types.TxTypeCoinTransfer, account) {
+	for _, outputParam := range txs.blockContainer.TxContainer.GetUnusedOutputList(types.TxTypeCoinTransfer, account) {
 		getherCoin += outputParam.Vout.Value
 		outputParams = append(outputParams, outputParam)
 		if getherCoin >= withDrawCoin {

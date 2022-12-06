@@ -8,7 +8,7 @@ import (
 )
 
 type GFuncParam struct {
-	Input         []byte
+	InputSig      []byte
 	ScriptPubbKey []byte
 	TxType        uint32
 }
@@ -52,7 +52,7 @@ func (gvm *GVM) ExecuteGFunction(buf []byte, params []GFuncParam) bool {
 	for _, param := range params {
 		gvm.Clear()
 
-		if verify = gvm.PushParam(param.Input); verify == false {
+		if verify = gvm.PushParam(param.InputSig); verify == false {
 			return false
 		}
 

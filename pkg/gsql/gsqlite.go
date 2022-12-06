@@ -392,3 +392,28 @@ func (gSql *GSqlite3) CheckExistTxId(txId []byte) bool {
 	err = query.QueryRow(txId).Scan(&count)
 	return count > 0
 }
+
+func (gSql *GSqlite3) CheckExistRefOutout(refTxId []byte, outIndex uint32, notTxId []byte) bool {
+	var count uint32
+	query, err := gSql.db.Prepare(`select count(*) from inputs where 
+		prev_TxId == ? and prev_OutputIndex == ? and TxId != ?`)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	err = query.QueryRow(refTxId, outIndex, notTxId).Scan(&count)
+	return count > 0
+}
+
+func (gSql *GSqlite3) GetBlockHeight() uint32 {
+	var id uint32
+	query, err := gSql.db.Prepare(`select Id from paired_block order by Id desc limit 0, 1`)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	err = query.QueryRow().Scan(&id)
+	return id
+}

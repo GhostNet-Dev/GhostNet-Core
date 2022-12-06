@@ -3,14 +3,14 @@ package gvm
 import (
 	"testing"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/crypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMakeLockScriptOut(t *testing.T) {
 	gvm := NewGVM()
 	gScript := NewGScript()
-	ghostAddr := crypto.GenerateKeyPair()
+	ghostAddr := gcrypto.GenerateKeyPair()
 	toAddr := ghostAddr.PubKey
 	scriptBuf := gScript.MakeLockScriptOut(toAddr)
 	inputParam := gScript.MakeInputParam(scriptBuf, ghostAddr)

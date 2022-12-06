@@ -18,6 +18,8 @@ type GSql interface {
 	InsertBlock(pair types.PairedBlock)
 	SelectBlock(blockId uint32) *types.PairedBlock
 	CheckExistTxId(txId []byte) bool
+	CheckExistRefOutout(refTxId []byte, outIndex uint32, notTxId []byte) bool
+	GetBlockHeight() uint32
 }
 
 // NewGSql sql instance를 생성한다.

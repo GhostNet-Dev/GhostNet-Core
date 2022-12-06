@@ -1,17 +1,26 @@
 package store
 
 import (
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/container"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type BlockContainer struct {
-	gSql gsql.GSql
+	gSql                 gsql.GSql
+	TxContainer          *TxContainer
+	CandidateTxContainer *TxContainer
+
+	CandidateTxPools *container.Queue
 }
 
 func NewBlockContainer() *BlockContainer {
+	g := gsql.NewGSql("sqlite")
 	return &BlockContainer{
-		gSql: gsql.NewGSql("sqlite"),
+		gSql:                 g,
+		TxContainer:          NewTxContainer(g, "transactions"),
+		CandidateTxContainer: NewTxContainer(g, "c_transactions"),
+		CandidateTxPools:     container.NewQueue(),
 	}
 }
 
@@ -20,18 +29,21 @@ func (blockContainer *BlockContainer) BlockContainerOpen(schemeSqlFilePath strin
 	blockContainer.gSql.CreateTable(schemeSqlFilePath)
 }
 
-func (blockContainer *BlockContainer) SaveTransaction(blockId uint32, tx types.GhostTransaction, txIndexInBlock uint32) {
-	blockContainer.gSql.InsertTx(blockId, tx, types.NormalTx, txIndexInBlock)
+func (blockContainer *BlockContainer) GetBlock(blockId uint32) *types.PairedBlock {
+	return blockContainer.gSql.SelectBlock(blockId)
 }
 
-func (blockContainer *BlockContainer) GetUnusedOutputList(txType uint32, toAddr []byte) []types.PrevOutputParam {
-	return blockContainer.gSql.SelectUnusedOutputs(txType, toAddr)
+func (blockContainer *BlockContainer) BlockHeight() uint32 {
+	return blockContainer.gSql.GetBlockHeight()
 }
 
-func (blockContainer *BlockContainer) CheckExistTxId(txId []byte) bool {
-	return blockContainer.gSql.CheckExistTxId(txId)
+type CandidateTxPool struct {
+	BlockId         uint32
+	PoolId          uint32
+	TxCandidate     []types.GhostTransaction
+	DataTxCandidate []types.GhostDataTransaction
 }
 
-func (blockContainer *BlockContainer) GetTx(txId []byte) *types.GhostTransaction {
-	return blockContainer.gSql.SelectTx(txId)
+func (blockContainer *BlockContainer) GetCandidateTxPool() *CandidateTxPool {
+	return blockContainer.CandidateTxPools.Pop().(*CandidateTxPool)
 }

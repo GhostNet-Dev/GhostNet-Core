@@ -1,6 +1,11 @@
 package txs
 
-import "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
+import (
+	gbytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
+)
 
 const (
 	TxChkResult_Success = iota
@@ -34,7 +39,11 @@ func (txResult *TxChkResult) Error() string {
 	return resultString
 }
 
-func (txs *TXs) TransactionChecker(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction) *TxChkResult {
+func (txs *TXs) TransactionChecker(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction,
+	txContainer *store.TxContainer) *TxChkResult {
+	var transferCoin, getherCoin uint64 = 0, 0
+	var gFuncParam []gvm.GFuncParam
+
 	if tx.Body.InputCounter != uint32(len(tx.Body.Vin)) {
 		return &TxChkResult{TxChkResult_CounterMismatch}
 	}
@@ -43,15 +52,56 @@ func (txs *TXs) TransactionChecker(tx *types.GhostTransaction, dataTx *types.Gho
 	}
 
 	for _, input := range tx.Body.Vin {
-		prevOutput := input.PrevOut
-		prevTx := txs.blockContainer.GetTx(prevOutput.TxId)
+		prevOutpointer := input.PrevOut
+		// Check Validate TxId
+		prevTx := txContainer.GetTx(prevOutpointer.TxId)
 		if prevTx == nil {
 			return &TxChkResult{TxChkResult_MissingRefTx}
 		}
-		loadedPrevOutput := prevTx.Body.Vout[prevOutput.TxOutIndex]
-		if loadedPrevOutput.ScriptSize != uint32(len(loadedPrevOutput.ScriptPubKey)) {
+		// Check Script Format
+		prevOutput := prevTx.Body.Vout[prevOutpointer.TxOutIndex]
+		if prevOutput.ScriptSize != uint32(len(prevOutput.ScriptPubKey)) {
 			return &TxChkResult{TxChkResult_FormatMismatch}
 		}
+		// Check Coin
+		if prevOutput.Type == types.TxTypeCoinTransfer {
+			getherCoin += prevOutput.Value
+		}
+
+		if prevOutput.Type != types.TxTypeFSRoot {
+			txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId)
+		}
+
+		if input.ScriptSig == nil {
+			return &TxChkResult{TxChkResult_FormatMismatch}
+		}
+
+		scriptSig := input.ScriptSig
+		input.ScriptSig = prevOutput.ScriptPubKey
+		input.ScriptSize = prevOutput.ScriptSize
+
+		gFuncParam = append(gFuncParam, gvm.GFuncParam{
+			InputSig:      scriptSig,
+			ScriptPubbKey: prevOutput.ScriptPubKey,
+			TxType:        prevOutput.Type,
+		})
+	}
+
+	for _, output := range tx.Body.Vout {
+		if output.Type == types.TxTypeCoinTransfer {
+			transferCoin += output.Value
+		}
+	}
+
+	if transferCoin != getherCoin {
+		return &TxChkResult{TxChkResult_Error}
+	}
+
+	dummy := make([]byte, gbytes.HashSize)
+	tx.TxId = dummy
+
+	if txs.gVmExe.ExecuteGFunction(tx.SerializeToByte(), gFuncParam) == false {
+		return &TxChkResult{TxChkResult_ScriptError}
 	}
 
 	return nil

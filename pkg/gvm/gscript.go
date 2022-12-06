@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/crypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -15,7 +15,7 @@ func NewGScript() *GScript {
 	return &GScript{}
 }
 
-func (gScript *GScript) MakeScriptSigExecuteUnlock(tx *types.GhostTransaction, ghostAddr *crypto.GhostAddress) {
+func (gScript *GScript) MakeScriptSigExecuteUnlock(tx *types.GhostTransaction, ghostAddr *gcrypto.GhostAddress) {
 	inputParam := gScript.MakeInputParam(tx.SerializeToByte(), ghostAddr)
 	for _, input := range tx.Body.Vin {
 		input.ScriptSig = inputParam
@@ -23,7 +23,7 @@ func (gScript *GScript) MakeScriptSigExecuteUnlock(tx *types.GhostTransaction, g
 	}
 }
 
-func (gScript *GScript) MakeInputParam(buf []byte, myAddress *crypto.GhostAddress) []byte {
+func (gScript *GScript) MakeInputParam(buf []byte, myAddress *gcrypto.GhostAddress) []byte {
 	sig := gScript.makeSignature(buf, myAddress)
 	sigBuf := sig.SerializeToByte()
 	scriptBuf := new(bytes.Buffer)
@@ -33,8 +33,8 @@ func (gScript *GScript) MakeInputParam(buf []byte, myAddress *crypto.GhostAddres
 	return resultBuf
 }
 
-func (gScript *GScript) makeSignature(buf []byte, myAddress *crypto.GhostAddress) *types.SigHash {
-	signPack := crypto.Signer(buf, myAddress)
+func (gScript *GScript) makeSignature(buf []byte, myAddress *gcrypto.GhostAddress) *types.SigHash {
+	signPack := gcrypto.Signer(buf, myAddress)
 	r, s := signPack.R.Bytes(), signPack.S.Bytes()
 	sig := &types.SigHash{
 		RBuf:          r,

@@ -2,7 +2,7 @@ package txs
 
 import (
 	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/crypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
@@ -10,18 +10,20 @@ import (
 
 type TXs struct {
 	gScript        *gvm.GScript
+	gVmExe         *gvm.GVM
 	blockContainer *store.BlockContainer
 }
 
-func NewTXs(g *gvm.GScript, b *store.BlockContainer) *TXs {
+func NewTXs(g *gvm.GScript, b *store.BlockContainer, e *gvm.GVM) *TXs {
 	return &TXs{
 		gScript:        g,
 		blockContainer: b,
+		gVmExe:         e,
 	}
 }
 
 func (txs *TXs) InkTheContract(tx *types.GhostTransaction,
-	ghostAddr *crypto.GhostAddress) *types.GhostTransaction {
+	ghostAddr *gcrypto.GhostAddress) *types.GhostTransaction {
 	txs.gScript.MakeScriptSigExecuteUnlock(tx, ghostAddr)
 	tx.TxId = tx.GetHashKey()
 	return tx

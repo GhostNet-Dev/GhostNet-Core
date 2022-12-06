@@ -1,9 +1,11 @@
 package types
 
 import (
+	"crypto/sha256"
 	"unsafe"
 
 	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	mems "github.com/traherom/memstream"
 )
 
 type GhostNetDataBlock struct {
@@ -33,4 +35,13 @@ func (dataBlock *GhostNetDataBlock) Size() uint32 {
 		txSize += tx.Size()
 	}
 	return dataBlock.Header.Size() + txSize
+}
+
+func (block *GhostNetDataBlock) GetHashKey() []byte {
+	size := block.Header.Size()
+	stream := mems.NewCapacity(int(size))
+	hash := sha256.New()
+	block.Header.Serialize(stream)
+	hash.Write(stream.Bytes())
+	return hash.Sum(nil)
 }

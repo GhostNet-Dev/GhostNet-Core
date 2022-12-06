@@ -1,4 +1,4 @@
-package crypto
+package gcrypto
 
 type Wallet struct {
 	myAddr GhostAddress

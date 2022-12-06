@@ -1,4 +1,4 @@
-package crypto
+package gcrypto
 
 import (
 	"crypto/ecdsa"
