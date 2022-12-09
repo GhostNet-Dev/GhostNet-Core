@@ -1,7 +1,7 @@
 package txs
 
 import (
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/crypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -10,7 +10,7 @@ const (
 )
 
 type TransferCoinInfo struct {
-	MyWallet     crypto.Wallet
+	MyWallet     gcrypto.Wallet
 	ToAddr       []byte
 	Broker       []byte
 	FeeAddr      []byte

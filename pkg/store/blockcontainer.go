@@ -12,6 +12,8 @@ type BlockContainer struct {
 	CandidateTxContainer *TxContainer
 
 	CandidateTxPools *container.Queue
+
+	CurrentPoolId uint32
 }
 
 func NewBlockContainer() *BlockContainer {
@@ -21,6 +23,7 @@ func NewBlockContainer() *BlockContainer {
 		TxContainer:          NewTxContainer(g, "transactions"),
 		CandidateTxContainer: NewTxContainer(g, "c_transactions"),
 		CandidateTxPools:     container.NewQueue(),
+		CurrentPoolId:        g.GetMaxPoolId(),
 	}
 }
 
@@ -44,6 +47,25 @@ type CandidateTxPool struct {
 	DataTxCandidate []types.GhostDataTransaction
 }
 
-func (blockContainer *BlockContainer) GetCandidateTxPool() *CandidateTxPool {
+func (blockContainer *BlockContainer) GetCandidateTxPool(blockId uint32) *CandidateTxPool {
 	return blockContainer.CandidateTxPools.Pop().(*CandidateTxPool)
+}
+
+func (blockContainer *BlockContainer) MakeCandidateTrPool(blockId uint32, minTxCount uint32) *CandidateTxPool {
+	minPoolId := blockContainer.gSql.GetMinPoolId()
+	if blockContainer.CurrentPoolId-minPoolId > 5 {
+		blockContainer.gSql.UpdatePoolId(minPoolId, blockContainer.CurrentPoolId)
+	}
+	txList := blockContainer.gSql.SelectTxsPool(blockContainer.CurrentPoolId)
+	dataTxList := blockContainer.gSql.SelectDataTxsPool(blockContainer.CurrentPoolId)
+	// validation은 여기서 하지 않는다. 밖에서 하고 들어온다.
+	if minTxCount < 2 || len(txList) == 0 || len(txList)+len(dataTxList) < int(minTxCount) {
+		return nil
+	}
+	blockContainer.CurrentPoolId++
+	return &CandidateTxPool{
+		BlockId:         blockId,
+		TxCandidate:     txList,
+		DataTxCandidate: dataTxList,
+	}
 }

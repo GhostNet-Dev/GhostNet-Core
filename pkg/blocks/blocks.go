@@ -6,10 +6,12 @@ import (
 
 type Blocks struct {
 	blockContainer *store.BlockContainer
+	Version        uint32
 }
 
 func NewBlocks(b *store.BlockContainer) *Blocks {
 	return &Blocks{
 		blockContainer: b,
+		Version:        1,
 	}
 }

@@ -6,7 +6,7 @@ import (
 	"crypto/sha256"
 	"log"
 
-	gcrypto "github.com/GhostNet-Dev/GhostNet-Core/pkg/crypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 

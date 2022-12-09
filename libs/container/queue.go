@@ -5,15 +5,20 @@ import (
 )
 
 type Queue struct {
-	v *list.List
+	v     *list.List
+	Count uint32
 }
 
 func NewQueue() *Queue {
-	return &Queue{list.New()}
+	return &Queue{
+		v:     list.New(),
+		Count: 0,
+	}
 }
 
 func (q *Queue) Push(v interface{}) {
 	q.v.PushBack(v)
+	q.Count++
 }
 
 func (q *Queue) Pop() interface{} {
@@ -21,6 +26,8 @@ func (q *Queue) Pop() interface{} {
 	if front == nil {
 		return nil
 	}
+
+	q.Count--
 
 	return q.v.Remove(front)
 }

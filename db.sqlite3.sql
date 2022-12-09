@@ -113,4 +113,99 @@ CREATE INDEX IF NOT EXISTS "data_transactions_TxId" ON "data_transactions" (
 CREATE INDEX IF NOT EXISTS "data_transactions_BlockId" ON "data_transactions" (
 	"BlockId"
 );
+
+
+-- name: create-transaction
+CREATE TABLE IF NOT EXISTS "c_transactions" (
+	"Id"	integer NOT NULL,
+	"TxId"	blob,
+	"Type"	integer,
+	"BlockId"	integer,
+	"InputCounter"	integer,
+	"OutputCounter"	integer,
+	"Nonce"	integer,
+	"LockTime"	integer,
+	"TxIndex"	integer,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+-- name: create-inputs
+CREATE TABLE IF NOT EXISTS "c_inputs" (
+	"Id"	integer NOT NULL,
+	"TxId"	blob,
+	"BlockId"	integer,
+	"prev_TxId"	blob,
+	"prev_OutIndex"	integer,
+	"Sequence"	integer,
+	"ScriptSize"	integer,
+	"Script"	blob,
+	"Index"	integer,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+-- name: create-outputs
+CREATE TABLE IF NOT EXISTS "c_outputs" (
+	"Id"	integer NOT NULL,
+	"TxId"	blob,
+	"BlockId"	integer,
+	"ToAddr"	blob,
+	"BrokerAddr"	blob,
+	"Type"	integer,
+	"Value"	integer,
+	"ScriptSize"	integer,
+	"Script"	blob,
+	"OutputIndex"	integer,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+-- name: create-data-transactions
+CREATE TABLE IF NOT EXISTS "c_data_transactions" (
+	"Id"	integer NOT NULL,
+	"TxId"	blob,
+	"BlockId"	integer,
+	"LogicalAddress"	integer,
+	"Data"	blob,
+	"DataSize"	integer,
+	"TxIndex"	integer,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+-- name: create-id
+CREATE INDEX IF NOT EXISTS "c_transactions_TxId" ON "c_transactions" (
+	"TxId"
+);
+-- name: create-id
+CREATE INDEX IF NOT EXISTS "c_transactions_BlockId" ON "c_transactions" (
+	"BlockId"
+);
+-- name: create-id
+CREATE INDEX IF NOT EXISTS "c_inputs_TxId" ON "c_inputs" (
+	"TxId"
+);
+-- name: create-id
+CREATE INDEX IF NOT EXISTS "c_inputs_BlockId" ON "c_inputs" (
+	"BlockId"
+);
+-- name: create-id
+CREATE INDEX IF NOT EXISTS "c_inputs_prev_TxId" ON "c_inputs" (
+	"prev_TxId"
+);
+-- name: create-id
+CREATE INDEX IF NOT EXISTS "c_outputs_TxId" ON "c_outputs" (
+	"TxId"
+);
+-- name: create-id
+CREATE INDEX IF NOT EXISTS "c_outputs_BlockId" ON "c_outputs" (
+	"BlockId"
+);
+-- name: create-id
+CREATE INDEX IF NOT EXISTS "c_outputs_ToAddr" ON "c_outputs" (
+	"ToAddr"
+);
+-- name: create-id
+CREATE INDEX IF NOT EXISTS "c_data_transactions_TxId" ON "c_data_transactions" (
+	"TxId"
+);
+-- name: create-id
+CREATE INDEX IF NOT EXISTS "c_data_transactions_BlockId" ON "c_data_transactions" (
+	"BlockId"
+);
+
 COMMIT;

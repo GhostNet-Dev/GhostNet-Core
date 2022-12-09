@@ -154,19 +154,7 @@ func (gSql *GSqlite3) SelectDataTxs(blockId uint32) []types.GhostDataTransaction
 	}
 	defer rows.Close()
 
-	dataTxs := []types.GhostDataTransaction{}
-	for rows.Next() {
-		dataTx := types.GhostDataTransaction{}
-		if err = rows.Scan(&dataTx.TxId, &dataTx.LogicalAddress, &dataTx.DataSize, &dataTx.Data); err != nil {
-			log.Fatal(err)
-		}
-		dataTxs = append(dataTxs, dataTx)
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return dataTxs
+	return gSql.GetDataTxRows(rows)
 }
 
 func (gSql *GSqlite3) SelectData(TxId []byte) *types.GhostDataTransaction {
@@ -199,52 +187,8 @@ func (gSql *GSqlite3) SelectTxs(blockId uint32, txType uint32) []types.GhostTran
 	}
 	defer rows.Close()
 
-	txs := []types.GhostTransaction{}
-	for rows.Next() {
-		tx := types.GhostTransaction{}
-		if err = rows.Scan(&tx.TxId, &tx.Body.InputCounter, &tx.Body.OutputCounter,
-			&tx.Body.Nonce, &tx.Body.LockTime); err != nil {
-			log.Fatal(err)
-		}
-		tx.Body.Vin = gSql.SelectInputs(tx.TxId, tx.Body.InputCounter)
-		tx.Body.Vout = gSql.SelectOutputs(tx.TxId, tx.Body.OutputCounter)
-		txs = append(txs, tx)
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return txs
+	return gSql.GetTxRows(rows)
 }
-
-/*
-// SelectTx 역시나 여긴 인터페이스 역할을하고 아래 쿼리들은 하위 클래스에 할당해야할 것 같음
-func (gSql *GSqlite3) SelectTx(TxId []byte, txType uint32) *types.GhostTransaction {
-	tx := types.GhostTransaction{TxId: TxId}
-
-	rows, err := gSql.db.Query(`select InputCounter, OutputCounter, Nonce, LockTime from transactions tx
-		where TxId = ? and Type = ? order by TxIndex`, TxId, txType)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		if err = rows.Scan(&tx.Body.InputCounter, &tx.Body.OutputCounter,
-			&tx.Body.Nonce, &tx.Body.LockTime); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	tx.Body.Vin = gSql.SelectInputs(TxId, tx.Body.InputCounter)
-	tx.Body.Vout = gSql.SelectOutputs(TxId, tx.Body.OutputCounter)
-
-	return &tx
-}*/
 
 // SelectTx 역시나 여긴 인터페이스 역할을하고 아래 쿼리들은 하위 클래스에 할당해야할 것 같음
 func (gSql *GSqlite3) SelectTx(TxId []byte) *types.GhostTransaction {
@@ -416,4 +360,90 @@ func (gSql *GSqlite3) GetBlockHeight() uint32 {
 
 	err = query.QueryRow().Scan(&id)
 	return id
+}
+
+func (gSql *GSqlite3) GetMinPoolId() uint32 {
+	var min uint32
+	query, err := gSql.db.Prepare(`select min(TxIndex) from c_transactions`)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	err = query.QueryRow().Scan(&min)
+	return min
+}
+
+func (gSql *GSqlite3) GetMaxPoolId() uint32 {
+	var min uint32
+	query, err := gSql.db.Prepare(`select mmax(TxIndex) from c_transactions`)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	err = query.QueryRow().Scan(&min)
+	return min
+}
+
+func (gSql *GSqlite3) UpdatePoolId(oldPoolId uint32, newPoolId uint32) {
+	gSql.InsertQuery(`update c_transactions set TxIndex = ? where TxIndex == ?;`,
+		oldPoolId, newPoolId)
+}
+
+func (gSql *GSqlite3) SelectTxsPool(poolId uint32) []types.GhostTransaction {
+	rows, err := gSql.db.Query(`select TxId, InputCounter, OutputCounter, Nonce, LockTime 
+	from c_transactions tx where TxIndex = ?`, poolId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	return gSql.GetTxRows(rows)
+}
+
+func (gSql *GSqlite3) SelectDataTxsPool(poolId uint32) []types.GhostDataTransaction {
+	rows, err := gSql.db.Query(`select TxId, LogicalAddress, DataSize, Data from data_transactions 
+		where TxIndex = ?`, poolId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	return gSql.GetDataTxRows(rows)
+}
+
+func (gSql *GSqlite3) GetTxRows(rows *sql.Rows) []types.GhostTransaction {
+	txs := []types.GhostTransaction{}
+	for rows.Next() {
+		tx := types.GhostTransaction{}
+		if err := rows.Scan(&tx.TxId, &tx.Body.InputCounter, &tx.Body.OutputCounter,
+			&tx.Body.Nonce, &tx.Body.LockTime); err != nil {
+			log.Fatal(err)
+		}
+		tx.Body.Vin = gSql.SelectInputs(tx.TxId, tx.Body.InputCounter)
+		tx.Body.Vout = gSql.SelectOutputs(tx.TxId, tx.Body.OutputCounter)
+		txs = append(txs, tx)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return txs
+}
+
+func (gSql *GSqlite3) GetDataTxRows(rows *sql.Rows) []types.GhostDataTransaction {
+	dataTxs := []types.GhostDataTransaction{}
+	for rows.Next() {
+		dataTx := types.GhostDataTransaction{}
+		if err := rows.Scan(&dataTx.TxId, &dataTx.LogicalAddress, &dataTx.DataSize, &dataTx.Data); err != nil {
+			log.Fatal(err)
+		}
+		dataTxs = append(dataTxs, dataTx)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return dataTxs
 }

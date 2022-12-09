@@ -20,6 +20,11 @@ type GSql interface {
 	CheckExistTxId(txId []byte) bool
 	CheckExistRefOutout(refTxId []byte, outIndex uint32, notTxId []byte) bool
 	GetBlockHeight() uint32
+	SelectTxsPool(poolId uint32) []types.GhostTransaction
+	SelectDataTxsPool(poolId uint32) []types.GhostDataTransaction
+	GetMinPoolId() uint32
+	GetMaxPoolId() uint32
+	UpdatePoolId(oldPoolId uint32, newPoolId uint32)
 }
 
 // NewGSql sql instance를 생성한다.
