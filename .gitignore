@@ -5,6 +5,7 @@
 *.so
 *.dylib
 *.db
+*.ghost
 
 # Test binary, built with `go test -c`
 *.test

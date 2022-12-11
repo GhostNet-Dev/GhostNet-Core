@@ -4,7 +4,8 @@ import (
 	"bytes"
 	_ "embed"
 
-	types "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 //go:embed GenesisBlocks
@@ -15,4 +16,9 @@ func GenesisBlock() *types.GhostNetBlock {
 	seriBuf := bytes.NewBuffer(genesisBlock)
 	pair.Deserialize(seriBuf)
 	return &pair.Block
+}
+
+func AdamsAddress() []byte {
+	address := gcrypto.GenerateKeyPair()
+	return address.PubKey
 }

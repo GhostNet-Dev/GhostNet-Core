@@ -17,19 +17,20 @@ type BlockContainer struct {
 }
 
 func NewBlockContainer() *BlockContainer {
-	g := gsql.NewGSql("sqlite")
+	g := gsql.NewGSql("sqlite3")
 	return &BlockContainer{
 		gSql:                 g,
 		TxContainer:          NewTxContainer(g, "transactions"),
 		CandidateTxContainer: NewTxContainer(g, "c_transactions"),
 		CandidateTxPools:     container.NewQueue(),
-		CurrentPoolId:        g.GetMaxPoolId(),
 	}
 }
 
 func (blockContainer *BlockContainer) BlockContainerOpen(schemeSqlFilePath string, dbFilePath string) {
 	blockContainer.gSql.OpenSQL(dbFilePath)
 	blockContainer.gSql.CreateTable(schemeSqlFilePath)
+
+	blockContainer.CurrentPoolId = blockContainer.gSql.GetMaxPoolId()
 }
 
 func (blockContainer *BlockContainer) GetBlock(blockId uint32) *types.PairedBlock {

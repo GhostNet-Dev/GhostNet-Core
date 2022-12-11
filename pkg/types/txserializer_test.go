@@ -16,7 +16,7 @@ func TestTxSerilalize(t *testing.T) {
 	size := tx.Size()
 	stream := mems.NewCapacity(int(size))
 	tx.Serialize(stream)
-	assert.Equal(t, int(tx.Size()), len(stream.Bytes()), "Size가 다릅니다.")
+	assert.Equal(t, int(tx.Size()), len(stream.Bytes()), "Size is different.")
 }
 
 func TestTxOutputSerializeDeserialize(t *testing.T) {
@@ -29,9 +29,9 @@ func TestTxOutputSerializeDeserialize(t *testing.T) {
 	newOutput := TxOutput{}
 	newOutput.Deserialize(byteBuf)
 	result := bytes.Compare(output.Addr, newOutput.Addr)
-	assert.Equal(t, 0, result, "binary가 다릅니다.")
-	assert.Equal(t, int(size), len(stream.Bytes()), "Size가 다릅니다.")
-	assert.Equal(t, output.Value, newOutput.Value, "Value가 다릅니다.")
+	assert.Equal(t, 0, result, "binary is different.")
+	assert.Equal(t, int(size), len(stream.Bytes()), "Size is different.")
+	assert.Equal(t, output.Value, newOutput.Value, "Value is different.")
 }
 
 func TestTxInputSerializeDeserialize(t *testing.T) {
@@ -43,8 +43,8 @@ func TestTxInputSerializeDeserialize(t *testing.T) {
 
 	newInput := TxInput{}
 	newInput.Deserialize(byteBuf)
-	assert.Equal(t, int(size), len(stream.Bytes()), "Size가 다릅니다.")
-	assert.Equal(t, input.Sequence, newInput.Sequence, "Value가 다릅니다.")
+	assert.Equal(t, int(size), len(stream.Bytes()), "Size is different.")
+	assert.Equal(t, input.Sequence, newInput.Sequence, "Value is different.")
 }
 
 func TestTxBodySerializeDeserialize(t *testing.T) {
@@ -57,9 +57,9 @@ func TestTxBodySerializeDeserialize(t *testing.T) {
 	newBody := TxBody{}
 	newBody.Deserialize(byteBuf)
 	result := bytes.Compare(body.Vout[0].Addr, newBody.Vout[0].Addr)
-	assert.Equal(t, 0, result, "binary가 다릅니다.")
-	assert.Equal(t, int(size), len(stream.Bytes()), "Size가 다릅니다.")
-	assert.Equal(t, body.Nonce, newBody.Nonce, "Value가 다릅니다.")
+	assert.Equal(t, 0, result, "binary is different.")
+	assert.Equal(t, int(size), len(stream.Bytes()), "Size is different.")
+	assert.Equal(t, body.Nonce, newBody.Nonce, "Value is different.")
 }
 
 func MakeTxOutput() TxOutput {

@@ -68,3 +68,16 @@ func lockOutputScript(scriptBuf *bytes.Buffer, ToAddr []byte) {
 	binary.Write(scriptBuf, binary.LittleEndian, OP_EQUALVERIFY)
 	binary.Write(scriptBuf, binary.LittleEndian, OP_CHECKSIG)
 }
+
+func (gScript *GScript) MakeRootAccount(ToAddr []byte, Nickname string) []byte {
+	nickname := []byte(Nickname)
+	uint9Buf := make([]uint8, len(nickname))
+	copy(uint9Buf[:], nickname[:])
+	scriptBuf := new(bytes.Buffer)
+	lockOutputScript(scriptBuf, ToAddr)
+	binary.Write(scriptBuf, binary.LittleEndian, OP_PUSH)
+	binary.Write(scriptBuf, binary.LittleEndian, uint8(len(uint9Buf)))
+	binary.Write(scriptBuf, binary.LittleEndian, uint9Buf)
+	binary.Write(scriptBuf, binary.LittleEndian, OP_RETURN)
+	return scriptBuf.Bytes()
+}

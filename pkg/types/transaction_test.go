@@ -14,7 +14,7 @@ func TestOutPointGetSize(t *testing.T) {
 	}
 	size := txOutPoint.Size()
 	fmt.Println(size)
-	assert.Equal(t, ghostBytes.HashSize+4, size, "Size가 다릅니다.")
+	assert.Equal(t, ghostBytes.HashSize+4, size, "Size is different.")
 }
 
 func TestTxInputGetSize(t *testing.T) {

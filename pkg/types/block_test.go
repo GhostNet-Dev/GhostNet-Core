@@ -16,7 +16,7 @@ func TestGetHashKey(t *testing.T) {
 	hash := ghostNetBlock.GetHashKey()
 	//fmt.Printf("%02x", hash)
 	size := uint32(len(hash))
-	assert.Equal(t, size, ghostBytes.HashSize, "Size가 다릅니다.")
+	assert.Equal(t, size, ghostBytes.HashSize, "Size is different.")
 }
 
 func TestProtoBlock(t *testing.T) {
@@ -41,11 +41,11 @@ func TestProtoBlock(t *testing.T) {
 		assert.Fail(t, "Failed to decode ", err)
 	}
 	fmt.Printf("%02x\n", newGhostNetBlock.Header.Id)
-	assert.Equal(t, ghostNetBlock.Header.AliceCount, newGhostNetBlock.Header.AliceCount, "Size가 다릅니다.")
+	assert.Equal(t, ghostNetBlock.Header.AliceCount, newGhostNetBlock.Header.AliceCount, "Size is different.")
 	/*
 		hash := ghostNetBlock.GetHashKey()
 		//fmt.Printf("%02x", hash)
 		size := uint32(len(hash))
-		assert.Equal(t, size, ghostBytes.HashSize, "Size가 다릅니다.")
+		assert.Equal(t, size, ghostBytes.HashSize, "Size is different.")
 	*/
 }

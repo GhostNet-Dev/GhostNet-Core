@@ -60,6 +60,13 @@ func (block *GhostNetBlock) Serialize(stream *mems.MemoryStream) {
 	}
 }
 
+func (block *GhostNetBlock) SerializeToByte() []byte {
+	size := block.Size()
+	stream := mems.NewCapacity(int(size))
+	block.Serialize(stream)
+	return stream.Bytes()
+}
+
 func (block *GhostNetBlock) Deserialize(byteBuf *bytes.Buffer) {
 	block.Header.Deserialize(byteBuf)
 	block.Alice = make([]GhostTransaction, block.Header.AliceCount)

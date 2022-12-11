@@ -1,6 +1,8 @@
 package gsql
 
 import (
+	"log"
+
 	types "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -34,6 +36,10 @@ func NewGSql(sqlType string) GSql {
 	case "postgres":
 	case "sqlite3":
 		gSql = new(GSqlite3)
+	}
+
+	if gSql == nil {
+		log.Fatal("Failed to create db.")
 	}
 
 	return gSql

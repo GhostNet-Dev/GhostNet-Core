@@ -27,8 +27,8 @@ func TestSigHashSerializeDeserialize(t *testing.T) {
 
 	newSig := SigHash{}
 	newSig.DeserializeSigHash(byteBuf)
-	assert.Equal(t, sig.SSize, newSig.SSize, "Value가 다릅니다.")
+	assert.Equal(t, sig.SSize, newSig.SSize, "Value is different.")
 
 	result := bytes.Compare(sig.RBuf, newSig.RBuf)
-	assert.Equal(t, 0, result, "buffer 내용이 다릅니다.")
+	assert.Equal(t, 0, result, "The buffer contents are different.")
 }

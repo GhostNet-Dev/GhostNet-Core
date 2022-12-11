@@ -27,9 +27,9 @@ func (blocks *Blocks) GetMinimumReqTrCount() uint32 {
 	return maxTransactionCnt
 }
 
-func (blocks *Blocks) CoreCalculator(currTime uint64, prevTime uint64, prevTxCount uint32) uint32 {
-	span := currTime - prevTime
-	result := uint32(1 / (span / CREATE_BLOCK_INTERVAL) * uint64(prevTxCount))
+func CoreCalculator(currTime uint64, prevTime uint64, prevTxCount uint32) uint32 {
+	span := float64(currTime - prevTime)
+	result := uint32((1 / (span / CREATE_BLOCK_INTERVAL)) * float64(prevTxCount))
 	if result >= INIT_MAX_TRANSACTION_COUNT {
 		return result
 	}
@@ -53,7 +53,7 @@ func (blocks *Blocks) CalculateMaxTransactionCount(height uint32) uint32 {
 
 	currTimestamp := pairedBlock.Block.Header.TimeStamp
 	prevTimestamp := prevPairedBlock.Block.Header.TimeStamp
-	return blocks.CoreCalculator(currTimestamp, prevTimestamp, pairedBlock.Block.Header.TransactionCount)
+	return CoreCalculator(currTimestamp, prevTimestamp, pairedBlock.Block.Header.TransactionCount)
 }
 
 func (blocks *Blocks) GetMaxTransactionCount(height uint32) uint32 {
