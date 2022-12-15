@@ -26,7 +26,9 @@ func GenerateKeyPair() *GhostAddress {
 		fmt.Println(err)
 	}
 
-	publicKey := append(privatekey.PublicKey.X.Bytes(), privatekey.PublicKey.Y.Bytes()...)
+	//publicKey := append(privatekey.PublicKey.X.Bytes(), privatekey.PublicKey.Y.Bytes()...)
+	//https://stackoverflow.com/questions/73721296/go-language-ecdsa-verify-the-valid-signature-to-invalid
+	publicKey := elliptic.MarshalCompressed(privatekey.Curve, privatekey.PublicKey.X, privatekey.PublicKey.Y)
 	return &GhostAddress{
 		*privatekey,
 		publicKey,

@@ -5,6 +5,7 @@
 *.so
 *.dylib
 *.db
+*.db-journal
 *.ghost
 
 # Test binary, built with `go test -c`
@@ -18,3 +19,4 @@
 .vscode
 vscode/
 vscode/*
+samples/*

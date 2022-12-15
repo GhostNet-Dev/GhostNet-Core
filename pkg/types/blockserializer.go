@@ -43,6 +43,7 @@ func (header *GhostNetBlockHeader) Deserialize(byteBuf *bytes.Buffer) {
 	binary.Read(byteBuf, binary.LittleEndian, header.MerkleRoot)
 	binary.Read(byteBuf, binary.LittleEndian, header.DataBlockHeaderHash)
 	binary.Read(byteBuf, binary.LittleEndian, &header.TimeStamp)
+	binary.Read(byteBuf, binary.LittleEndian, &header.Bits)
 	binary.Read(byteBuf, binary.LittleEndian, &header.Nonce)
 	binary.Read(byteBuf, binary.LittleEndian, &header.AliceCount)
 	binary.Read(byteBuf, binary.LittleEndian, &header.TransactionCount)

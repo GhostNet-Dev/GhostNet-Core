@@ -20,6 +20,10 @@ var (
 	blockContainer = store.NewBlockContainer()
 )
 
+func init() {
+	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
+}
+
 func TestMakeCoinTx(t *testing.T) {
 	transferCoin := uint64(10)
 	txs := NewTXs(gScript, blockContainer, gVm)
@@ -27,7 +31,7 @@ func TestMakeCoinTx(t *testing.T) {
 
 	assert.Equal(t, true, ok, "output이 없습니다. test를 다시 검토하세요")
 
-	var prevMap map[uint32][]types.PrevOutputParam
+	prevMap := map[uint32][]types.PrevOutputParam{}
 	prevMap[types.TxTypeCoinTransfer] = outputParams
 
 	txInfo := TransferCoinInfo{

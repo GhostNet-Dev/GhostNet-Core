@@ -87,8 +87,8 @@ func (input *TxInput) Size() uint32 {
 }
 
 func (output *TxOutput) Size() uint32 {
-	return uint32(ghostBytes.HashSize) + //address
-		uint32(ghostBytes.HashSize) + // brokeraddress
+	return uint32(ghostBytes.PubKeySize) + //address
+		uint32(ghostBytes.PubKeySize) + // brokeraddress
 		uint32(unsafe.Sizeof(output.Value)) +
 		uint32(unsafe.Sizeof(output.Type)) +
 		uint32(unsafe.Sizeof(output.ScriptSize)) +

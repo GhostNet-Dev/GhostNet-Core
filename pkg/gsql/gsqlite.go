@@ -44,6 +44,7 @@ func (gSql *GSqlite3) CreateTable(schemaFile string) error {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
 	return err
 }
 
@@ -300,7 +301,8 @@ func (gSql *GSqlite3) InsertQuery(query string, args ...interface{}) {
 func (gSql *GSqlite3) SelectUnusedOutputs(txType uint32, toAddr []byte) []types.PrevOutputParam {
 	outputs := []types.PrevOutputParam{}
 
-	rows, err := gSql.db.Query(`select TxId, ToAddr, BrokerAddr, Script, ScriptSize, Type, Value, OutputIndex from outputs 
+	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
+		outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
 		left outer join inputs  on inputs.prev_TxId = outputs.TxId and inputs.prev_OutIndex = outputs.OutputIndex 
 		where outputs.ToAddr = ? and  outputs.Type = ?  and  inputs.Id is NULL
 		order by outputs.BlockId ASC`, toAddr, txType)
@@ -376,7 +378,7 @@ func (gSql *GSqlite3) GetMinPoolId() uint32 {
 
 func (gSql *GSqlite3) GetMaxPoolId() uint32 {
 	var min uint32
-	query, err := gSql.db.Prepare(`select mmax(TxIndex) from c_transactions`)
+	query, err := gSql.db.Prepare(`select max(TxIndex) from c_transactions`)
 	if err != nil {
 		log.Printf("%s", err)
 	}

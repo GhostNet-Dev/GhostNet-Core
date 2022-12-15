@@ -15,6 +15,8 @@ func (output *TxOutput) Serialize(stream *mems.MemoryStream) {
 
 	stream.Write(output.Addr[:])
 	stream.Write(output.BrokerAddr[:])
+	binary.LittleEndian.PutUint32(bs4, uint32(output.Type))
+	stream.Write(bs4)
 	binary.LittleEndian.PutUint64(bs8, uint64(output.Value))
 	stream.Write(bs8)
 	binary.LittleEndian.PutUint32(bs4, uint32(output.ScriptSize))
@@ -23,8 +25,8 @@ func (output *TxOutput) Serialize(stream *mems.MemoryStream) {
 }
 
 func (output *TxOutput) Deserialize(byteBuf *bytes.Buffer) {
-	output.Addr = make([]byte, ghostBytes.HashSize)
-	output.BrokerAddr = make([]byte, ghostBytes.HashSize)
+	output.Addr = make([]byte, ghostBytes.PubKeySize)
+	output.BrokerAddr = make([]byte, ghostBytes.PubKeySize)
 	binary.Read(byteBuf, binary.LittleEndian, output.Addr)
 	binary.Read(byteBuf, binary.LittleEndian, output.BrokerAddr)
 	binary.Read(byteBuf, binary.LittleEndian, &output.Type)

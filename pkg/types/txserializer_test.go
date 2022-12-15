@@ -5,18 +5,21 @@ import (
 	"crypto/sha256"
 	"testing"
 
+	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
 	"github.com/stretchr/testify/assert"
 	mems "github.com/traherom/memstream"
 )
 
 func TestTxSerilalize(t *testing.T) {
-	tx := GhostTransaction{
-		TxId: make([]byte, 32),
-	}
-	size := tx.Size()
-	stream := mems.NewCapacity(int(size))
-	tx.Serialize(stream)
-	assert.Equal(t, int(tx.Size()), len(stream.Bytes()), "Size is different.")
+	tx := MakeTx()
+	buf := tx.SerializeToByte()
+	byteBuf := bytes.NewBuffer(buf)
+
+	newTx := GhostTransaction{}
+	newTx.Deserialize(byteBuf)
+	newBuf := newTx.SerializeToByte()
+	result := bytes.Compare(buf, newBuf)
+	assert.Equal(t, 0, result, "bytes are different.")
 }
 
 func TestTxOutputSerializeDeserialize(t *testing.T) {
@@ -63,16 +66,13 @@ func TestTxBodySerializeDeserialize(t *testing.T) {
 }
 
 func MakeTxOutput() TxOutput {
-	dummy := make([]byte, 4)
-	hash := sha256.New()
-	hash.Write(dummy)
-	key := hash.Sum((nil))
+	dummy := make([]byte, ghostBytes.PubKeySize)
 
 	output := TxOutput{
-		Addr:         key,
-		BrokerAddr:   key,
+		Addr:         dummy,
+		BrokerAddr:   dummy,
 		Value:        1212,
-		ScriptSize:   4,
+		ScriptSize:   ghostBytes.PubKeySize,
 		ScriptPubKey: dummy,
 	}
 	return output
@@ -118,6 +118,6 @@ func MakeTx() GhostTransaction {
 	txBody.Serialize(stream)
 	hash := sha256.New()
 	hash.Write(stream.Bytes())
-	txId := hash.Sum((nil))
+	txId := hash.Sum(nil)
 	return GhostTransaction{txId, txBody}
 }
