@@ -78,7 +78,7 @@ func (gvm *GVM) PushParam(param []byte) bool {
 			break
 		}
 
-		if op == OP_PUSH || op == OP_PUSHTOKEN {
+		if op == OP_PUSH || op == OP_PUSHSIG {
 			var length byte
 			binary.Read(byteBuf, binary.LittleEndian, &length)
 			pushData := make([]byte, length)
@@ -91,9 +91,9 @@ func (gvm *GVM) PushParam(param []byte) bool {
 
 func (gvm *GVM) ExecuteScript(scriptPubKey []byte, param []byte) bool {
 	var op uint16
-	result := false
+	result := true
 	byteBuf := bytes.NewBuffer(scriptPubKey)
-	for {
+	for result {
 		if err := binary.Read(byteBuf, binary.LittleEndian, &op); err != nil {
 			break
 		}

@@ -18,7 +18,6 @@ func GenesisBlock() *types.GhostNetBlock {
 	return &pair.Block
 }
 
-func AdamsAddress() []byte {
-	address := gcrypto.GenerateKeyPair()
-	return address.PubKey
+func AdamsAddress() *gcrypto.GhostAddress {
+	return gcrypto.GenerateKeyPair()
 }

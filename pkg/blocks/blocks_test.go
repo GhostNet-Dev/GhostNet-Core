@@ -34,7 +34,7 @@ func TestMerkleTree(t *testing.T) {
 		{0x22, 0x33, 0x44}, {0x33, 0x44, 0x55}}
 	hashs := make([][]byte, 3)
 	hash := sha256.New()
-	for i, _ := range hashs {
+	for i := range hashs {
 		hash.Write(testBuf[i])
 		hashs[i] = hash.Sum(nil)
 		hash.Reset()

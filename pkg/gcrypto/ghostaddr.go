@@ -1,7 +1,6 @@
 package gcrypto
 
 import (
-	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -10,12 +9,15 @@ import (
 	"fmt"
 	"log"
 
+	"golang.org/x/crypto/ripemd160"
+
 	"github.com/btcsuite/btcutil/base58"
 )
 
 type GhostAddress struct {
-	PriKey ecdsa.PrivateKey
-	PubKey []byte
+	PriKey    ecdsa.PrivateKey
+	pubKey    []byte
+	pubKey160 []byte
 }
 
 func GenerateKeyPair() *GhostAddress {
@@ -30,17 +32,17 @@ func GenerateKeyPair() *GhostAddress {
 	//https://stackoverflow.com/questions/73721296/go-language-ecdsa-verify-the-valid-signature-to-invalid
 	publicKey := elliptic.MarshalCompressed(privatekey.Curve, privatekey.PublicKey.X, privatekey.PublicKey.Y)
 	return &GhostAddress{
-		*privatekey,
-		publicKey,
+		PriKey: *privatekey,
+		pubKey: publicKey,
 	}
 }
 
 func (ghostAddr *GhostAddress) GetPubAddress() string {
-	pubKey := ghostAddr.PubKey
+	pubKey := ghostAddr.pubKey
 	publicSHA256 := sha256.Sum256(pubKey) // Public key를 SHA-256으로 해싱
 
 	// RIPEMD-160으로 다시 해싱
-	RIPEMD160Hasher := crypto.RIPEMD160.New()
+	RIPEMD160Hasher := ripemd160.New()
 	_, err := RIPEMD160Hasher.Write(publicSHA256[:])
 	if err != nil {
 		log.Panic(err)
@@ -48,6 +50,27 @@ func (ghostAddr *GhostAddress) GetPubAddress() string {
 
 	publicRIPEMD160 := RIPEMD160Hasher.Sum(nil)
 	return base58.CheckEncode(publicRIPEMD160, 0)
+}
+
+func (ghostAddr *GhostAddress) GetSignPubKey() []byte {
+	return ghostAddr.pubKey
+}
+
+func (ghostAddr *GhostAddress) Get160PubKey() []byte {
+	if ghostAddr.pubKey160 == nil {
+		pubKey := ghostAddr.pubKey
+		publicSHA256 := sha256.Sum256(pubKey) // Public key를 SHA-256으로 해싱
+
+		// RIPEMD-160으로 다시 해싱
+		RIPEMD160Hasher := ripemd160.New()
+		_, err := RIPEMD160Hasher.Write(publicSHA256[:])
+		if err != nil {
+			log.Panic(err)
+		}
+
+		ghostAddr.pubKey160 = RIPEMD160Hasher.Sum(nil)
+	}
+	return ghostAddr.pubKey160
 }
 
 func (ghostAddr *GhostAddress) PrivateKeySerialize() []byte {

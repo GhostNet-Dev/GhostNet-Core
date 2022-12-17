@@ -8,7 +8,7 @@ import (
 
 func (txs *TXs) MakeSampleRootAccount(nickname string, brokerAddr []byte) (*types.GhostTransaction, *gcrypto.GhostAddress) {
 	address := gcrypto.GenerateKeyPair()
-	toAddr := address.PubKey
+	toAddr := address.Get160PubKey()
 	if nickname == "Adam" {
 		brokerAddr = toAddr
 	}

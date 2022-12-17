@@ -11,9 +11,10 @@ func TestMakeLockScriptOut(t *testing.T) {
 	gvm := NewGVM()
 	gScript := NewGScript()
 	ghostAddr := gcrypto.GenerateKeyPair()
-	toAddr := ghostAddr.PubKey
-	scriptBuf := gScript.MakeLockScriptOut(toAddr)
+	scriptBuf := gScript.MakeLockScriptOut(ghostAddr.Get160PubKey())
 	inputParam := gScript.MakeInputParam(scriptBuf, ghostAddr)
-	result := gvm.ExecuteScript(scriptBuf, inputParam)
+	result := gvm.PushParam(inputParam)
+	assert.Equal(t, true, result, "pushparam 실행에 실패했습니다.")
+	result = gvm.ExecuteScript(scriptBuf, scriptBuf)
 	assert.Equal(t, true, result, "script 실행에 실패했습니다.")
 }

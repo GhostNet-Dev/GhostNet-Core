@@ -11,8 +11,9 @@ import (
 func TestGenerateKey(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		ghostAddr := GenerateKeyPair()
-		if len(ghostAddr.PubKey) != 33 {
-			fmt.Println(int32(ghostAddr.PubKey[0]), len(ghostAddr.PubKey))
+		pubkey := ghostAddr.GetSignPubKey()
+		if len(pubkey) != 33 {
+			fmt.Println(int32(pubkey[0]), len(pubkey))
 		}
 	}
 }

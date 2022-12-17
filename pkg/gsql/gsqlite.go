@@ -71,13 +71,13 @@ func (gSql *GSqlite3) InsertBlock(pair types.PairedBlock) {
 		dataHeader.MerkleRoot, dataHeader.Nonce, dataHeader.TransactionCount)
 
 	for i, tx := range pair.Block.Alice {
-		gSql.InsertTx(header.Id, tx, types.AliceTx, uint32(i))
+		gSql.InsertTx(header.Id, &tx, types.AliceTx, uint32(i))
 	}
 	for i, tx := range pair.Block.Transaction {
-		gSql.InsertTx(header.Id, tx, types.NormalTx, uint32(i))
+		gSql.InsertTx(header.Id, &tx, types.NormalTx, uint32(i))
 	}
 	for i, tx := range pair.DataBlock.Transaction {
-		gSql.InsertDataTx(header.Id, tx, uint32(i))
+		gSql.InsertDataTx(header.Id, &tx, uint32(i))
 	}
 }
 
@@ -122,7 +122,7 @@ func (gSql *GSqlite3) SelectBlock(blockId uint32) *types.PairedBlock {
 }
 
 // InsertTx ..
-func (gSql *GSqlite3) InsertTx(blockId uint32, tx types.GhostTransaction, txType uint32, txIndexInBlock uint32) {
+func (gSql *GSqlite3) InsertTx(blockId uint32, tx *types.GhostTransaction, txType uint32, txIndexInBlock uint32) {
 	gSql.InsertQuery(`INSERT INTO "transactions" ("TxId", "Type", "BlockId","InputCounter",
 	"OutputCounter","Nonce","LockTime","TxIndex") VALUES (?,?,?,?, ?,?,?,?);
 		`, tx.TxId, txType, blockId, tx.Body.InputCounter, tx.Body.OutputCounter, tx.Body.Nonce, tx.Body.LockTime, txIndexInBlock)
@@ -141,7 +141,7 @@ func (gSql *GSqlite3) InsertTx(blockId uint32, tx types.GhostTransaction, txType
 }
 
 // InsertDataTx ..
-func (gSql *GSqlite3) InsertDataTx(blockId uint32, dataTx types.GhostDataTransaction, txIndexInBlock uint32) {
+func (gSql *GSqlite3) InsertDataTx(blockId uint32, dataTx *types.GhostDataTransaction, txIndexInBlock uint32) {
 	gSql.InsertQuery(`INSERT INTO "data_transactions" ("TxId","BlockId","LogicalAddress","Data",
 		"DataSize","TxIndex") VALUES (?,?,?,?, ?,?);`,
 		dataTx.TxId, blockId, dataTx.LogicalAddress, dataTx.Data, dataTx.DataSize, txIndexInBlock)
@@ -311,13 +311,14 @@ func (gSql *GSqlite3) SelectUnusedOutputs(txType uint32, toAddr []byte) []types.
 	}
 	defer rows.Close()
 
-	for i, output := range outputs {
-		rows.Next()
+	for rows.Next() {
+		output := types.PrevOutputParam{}
 		if err = rows.Scan(&output.VOutPoint.TxId, &output.Vout.Addr, &output.Vout.BrokerAddr, &output.Vout.ScriptPubKey,
 			&output.Vout.ScriptSize, &output.Vout.Type, &output.Vout.Value, &output.VOutPoint.TxOutIndex); err != nil {
 			log.Fatal(err)
 		}
-		outputs[i] = output
+		output.TxType = txType
+		outputs = append(outputs, output)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -342,7 +343,7 @@ func (gSql *GSqlite3) CheckExistTxId(txId []byte) bool {
 func (gSql *GSqlite3) CheckExistRefOutout(refTxId []byte, outIndex uint32, notTxId []byte) bool {
 	var count uint32
 	query, err := gSql.db.Prepare(`select count(*) from inputs where 
-		prev_TxId == ? and prev_OutputIndex == ? and TxId != ?`)
+		prev_TxId == ? and prev_OutIndex == ? and TxId != ?`)
 	if err != nil {
 		log.Printf("%s", err)
 	}

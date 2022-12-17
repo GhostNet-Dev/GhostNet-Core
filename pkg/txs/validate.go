@@ -31,6 +31,9 @@ func (txResult *TxChkResult) Result() bool {
 }
 
 func (txResult *TxChkResult) Error() string {
+	if txResult == nil {
+		return "success"
+	}
 	resultString := "error"
 	switch txResult.result {
 	case TxChkResult_Success:
@@ -68,8 +71,9 @@ func (txs *TXs) TransactionChecker(tx *types.GhostTransaction, dataTx *types.Gho
 			getherCoin += prevOutput.Value
 		}
 
-		if prevOutput.Type != types.TxTypeFSRoot {
-			txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId)
+		if prevOutput.Type != types.TxTypeFSRoot &&
+			txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) == true {
+			return &TxChkResult{TxChkResult_MissingRefTx}
 		}
 
 		if input.ScriptSig == nil {

@@ -9,5 +9,5 @@ func NewWallet(path string) *Wallet {
 }
 
 func (w *Wallet) MyPubKey() []byte {
-	return w.myAddr.PubKey
+	return w.myAddr.Get160PubKey()
 }

@@ -17,7 +17,7 @@ func NewTxContainer(g gsql.GSql, tableName string) *TxContainer {
 	}
 }
 
-func (txContainer *TxContainer) SaveTransaction(blockId uint32, tx types.GhostTransaction, txIndexInBlock uint32) {
+func (txContainer *TxContainer) SaveTransaction(blockId uint32, tx *types.GhostTransaction, txIndexInBlock uint32) {
 	txContainer.gSql.InsertTx(blockId, tx, types.NormalTx, txIndexInBlock)
 }
 

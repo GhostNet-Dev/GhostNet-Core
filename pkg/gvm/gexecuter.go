@@ -2,9 +2,10 @@ package gvm
 
 import (
 	"bytes"
-	"crypto"
 	"crypto/sha256"
 	"log"
+
+	"golang.org/x/crypto/ripemd160"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
@@ -40,7 +41,7 @@ func (exec *OpHash160) ExcuteOp(param interface{}) bool {
 	publicSHA256 := sha256.Sum256(pubKey) // Public key를 SHA-256으로 해싱
 
 	// RIPEMD-160으로 다시 해싱
-	RIPEMD160Hasher := crypto.RIPEMD160.New()
+	RIPEMD160Hasher := ripemd160.New()
 	_, err := RIPEMD160Hasher.Write(publicSHA256[:])
 	if err != nil {
 		log.Panic(err)
@@ -49,7 +50,7 @@ func (exec *OpHash160) ExcuteOp(param interface{}) bool {
 	publicRIPEMD160 := RIPEMD160Hasher.Sum(nil)
 	exec.Regs.stack.Push(publicRIPEMD160)
 
-	return false
+	return true
 }
 
 type OpEqualVerify struct {
@@ -108,7 +109,7 @@ func (exec *OpPushSig) ExcuteOp(param interface{}) bool {
 	sigRS := append(sigHash.RBuf, sigHash.SBuf...)
 	exec.Regs.stack.Push(sigRS)
 	exec.Regs.stack.Push(sigHash.PubKey)
-	return false
+	return true
 }
 
 type OpPay struct {

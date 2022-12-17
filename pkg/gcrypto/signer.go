@@ -35,7 +35,7 @@ func Signer(text []byte, ghostAddr *GhostAddress) *SignaturePackage {
 	signature = append(signature, s.Bytes()...)
 
 	return &SignaturePackage{
-		ghostAddr.PubKey, signature, text, r, s,
+		ghostAddr.GetSignPubKey(), signature, text, r, s,
 	}
 }
 
@@ -56,5 +56,5 @@ func SignVerify(sig *SignaturePackage) bool {
 
 	rawPublicKey := &ecdsa.PublicKey{Curve: pubkeyCurve, X: x, Y: y}
 	// Verify
-	return ecdsa.Verify(rawPublicKey, sig.Text, sig.R, sig.S)
+	return ecdsa.Verify(rawPublicKey, sig.Text, &r, &s)
 }

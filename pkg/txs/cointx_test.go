@@ -18,16 +18,41 @@ var (
 	gScript        = gvm.NewGScript()
 	gVm            = gvm.NewGVM()
 	blockContainer = store.NewBlockContainer()
+	txs            = NewTXs(gScript, blockContainer, gVm)
 )
 
 func init() {
 	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
+	txInfo := TransferCoinInfo{
+		ToAddr:       Recver.Get160PubKey(),
+		Broker:       Broker.Get160PubKey(),
+		FeeAddr:      Broker.Get160PubKey(),
+		FeeBroker:    Broker.Get160PubKey(),
+		Prevs:        nil,
+		TransferCoin: 9999,
+	}
+	tx := txs.TransferCoin(txInfo)
+	tx = txs.InkTheContract(tx, Recver)
+	blockContainer.TxContainer.SaveTransaction(0, tx, 0)
+}
+
+func TestSaveCoinTx(t *testing.T) {
+	txInfo := TransferCoinInfo{
+		ToAddr:       Recver.Get160PubKey(),
+		Broker:       Broker.Get160PubKey(),
+		FeeAddr:      Broker.Get160PubKey(),
+		FeeBroker:    Broker.Get160PubKey(),
+		Prevs:        nil,
+		TransferCoin: 9999,
+	}
+	tx := txs.TransferCoin(txInfo)
+	tx = txs.InkTheContract(tx, Recver)
+	blockContainer.TxContainer.SaveTransaction(0, tx, 0)
 }
 
 func TestMakeCoinTx(t *testing.T) {
 	transferCoin := uint64(10)
-	txs := NewTXs(gScript, blockContainer, gVm)
-	outputParams, ok := txs.CandidateUTXO(transferCoin, Sender.PubKey)
+	outputParams, ok := txs.CandidateUTXO(transferCoin, Recver.Get160PubKey())
 
 	assert.Equal(t, true, ok, "output이 없습니다. test를 다시 검토하세요")
 
@@ -35,15 +60,16 @@ func TestMakeCoinTx(t *testing.T) {
 	prevMap[types.TxTypeCoinTransfer] = outputParams
 
 	txInfo := TransferCoinInfo{
-		ToAddr:       Sender.PubKey,
-		Broker:       Broker.PubKey,
-		FeeAddr:      Broker.PubKey,
-		FeeBroker:    Broker.PubKey,
+		ToAddr:       Recver.Get160PubKey(),
+		Broker:       Broker.Get160PubKey(),
+		FeeAddr:      Broker.Get160PubKey(),
+		FeeBroker:    Broker.Get160PubKey(),
 		Prevs:        prevMap,
 		TransferCoin: transferCoin,
 	}
 	tx := txs.TransferCoin(txInfo)
+	tx = txs.InkTheContract(tx, Recver)
 
 	err := txs.TransactionChecker(tx, nil, blockContainer.TxContainer)
-	assert.Equal(t, nil, err, "tx validate error: "+err.Error())
+	assert.Equal(t, true, err == nil, "tx validate error: "+err.Error())
 }

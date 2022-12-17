@@ -89,7 +89,7 @@ func (blocks *Blocks) DateTimeToUnixTimeNow() uint64 {
 
 func (blocks *Blocks) MakeAliceCoin(blockId uint32, adamsAddr *gcrypto.GhostAddress,
 	txs []types.GhostTransaction) *types.GhostTransaction {
-	brokerGather := map[string]uint64 {}
+	brokerGather := map[string]uint64{}
 	if len(txs) < 1 {
 		log.Fatal("not enough tx")
 	}
@@ -111,7 +111,7 @@ func (blocks *Blocks) MakeAliceCoin(blockId uint32, adamsAddr *gcrypto.GhostAddr
 
 	if totalRealSum != CoinBase {
 		remain := CoinBase - totalRealSum
-		broker := string(adamsAddr.PubKey)
+		broker := string(adamsAddr.Get160PubKey())
 		if _, ok := brokerGather[broker]; ok == true {
 			brokerGather[broker] += remain
 		} else {

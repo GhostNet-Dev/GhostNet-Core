@@ -17,9 +17,9 @@ func NewGScript() *GScript {
 
 func (gScript *GScript) MakeScriptSigExecuteUnlock(tx *types.GhostTransaction, ghostAddr *gcrypto.GhostAddress) {
 	inputParam := gScript.MakeInputParam(tx.SerializeToByte(), ghostAddr)
-	for _, input := range tx.Body.Vin {
-		input.ScriptSig = inputParam
-		input.ScriptSize = uint32(len(input.ScriptSig))
+	for i := range tx.Body.Vin {
+		tx.Body.Vin[i].ScriptSig = inputParam
+		tx.Body.Vin[i].ScriptSize = uint32(len(tx.Body.Vin[i].ScriptSig))
 	}
 }
 
@@ -39,8 +39,8 @@ func (gScript *GScript) makeSignature(buf []byte, myAddress *gcrypto.GhostAddres
 	sig := &types.SigHash{
 		RBuf:          r,
 		SBuf:          s,
-		PubKey:        myAddress.PubKey,
-		PubKeySize:    byte(len(myAddress.PubKey)),
+		PubKey:        myAddress.GetSignPubKey(),
+		PubKeySize:    byte(len(myAddress.GetSignPubKey())),
 		RSize:         byte(len(r)),
 		SSize:         byte(len(s)),
 		SignatureType: SIGHASH_ALL,

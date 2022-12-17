@@ -82,8 +82,9 @@ func (txs *TXs) MakeTransaction(info TransferCoinInfo, prev map[uint32][]types.P
 	inputs := []types.TxInput{}
 	outputs := []types.TxOutput{}
 
-	for txType, prevOutputParams := range prev {
-		input, output := txs.MakeInputOutput(txType, info, prevOutputParams, next[txType])
+	// prev가 없을 수도 있다.
+	for txType, nextOutputParams := range next {
+		input, output := txs.MakeInputOutput(txType, info, prev[txType], nextOutputParams)
 		inputs = append(inputs, input...)
 		outputs = append(outputs, output...)
 	}
@@ -123,6 +124,7 @@ func (txs *TXs) MakeInputOutput(txType uint32, info TransferCoinInfo, prev []typ
 			Addr:         newOutput.RecvAddr,
 			BrokerAddr:   newOutput.Broker,
 			Value:        newOutput.TransferCoin,
+			Type:         txType,
 			ScriptSize:   uint32(len(newOutput.OutputScript)),
 			ScriptPubKey: newOutput.OutputScript,
 		}
@@ -135,6 +137,7 @@ func (txs *TXs) MakeInputOutput(txType uint32, info TransferCoinInfo, prev []typ
 		output := types.TxOutput{
 			Addr:         info.MyWallet.MyPubKey(),
 			BrokerAddr:   info.Broker,
+			Type:         txType,
 			Value:        totalCoin - transferCoin,
 			ScriptPubKey: script,
 			ScriptSize:   uint32(len(script)),
