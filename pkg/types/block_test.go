@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	pb "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/types"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,7 @@ func TestGetHashKey(t *testing.T) {
 	hash := ghostNetBlock.GetHashKey()
 	//fmt.Printf("%02x", hash)
 	size := uint32(len(hash))
-	assert.Equal(t, size, ghostBytes.HashSize, "Size is different.")
+	assert.Equal(t, size, gbytes.HashSize, "Size is different.")
 }
 
 func TestProtoBlock(t *testing.T) {
@@ -42,10 +42,4 @@ func TestProtoBlock(t *testing.T) {
 	}
 	fmt.Printf("%02x\n", newGhostNetBlock.Header.Id)
 	assert.Equal(t, ghostNetBlock.Header.AliceCount, newGhostNetBlock.Header.AliceCount, "Size is different.")
-	/*
-		hash := ghostNetBlock.GetHashKey()
-		//fmt.Printf("%02x", hash)
-		size := uint32(len(hash))
-		assert.Equal(t, size, ghostBytes.HashSize, "Size is different.")
-	*/
 }

@@ -17,14 +17,15 @@ var (
 	creator = []string{
 		"Alice", "Bob", "Carol", "Dave", "Eve", "Frank", "Grace",
 		"Heidi", "Ivan", "Judy", "Michael", "Niaj", "Oscar", "Peggy",
-		"Rupert", "Sybil", "Theo", "Terry", "Victor", "Walter", "Wendy",
+		"Root", "Sybil", "Theo", "Terry", "Victor", "Walter", "Wendy",
 	}
 )
 
 func TestMakeGenesisHeader(t *testing.T) {
 	//todo block sign을 만들어야함
 	genesis, _ := blocks.MakeGenesisBlock(creator)
-	header := genesis.Header
+	block := genesis.Block
+	header := block.Header
 	size := header.Size()
 	stream := mems.NewCapacity(int(size))
 	header.Serialize(stream)
@@ -46,7 +47,7 @@ func TestMakeGenesis(t *testing.T) {
 	genesis, _ := blocks.MakeGenesisBlock(creator)
 	blockByte := genesis.SerializeToByte()
 
-	newBlock := types.GhostNetBlock{}
+	newBlock := types.PairedBlock{}
 	byteBuf := bytes.NewBuffer(blockByte)
 	newBlock.Deserialize(byteBuf)
 	newBlockByte := newBlock.SerializeToByte()
@@ -57,19 +58,23 @@ func TestMakeGenesis(t *testing.T) {
 }
 
 func TestMakeGenesisFileIo(t *testing.T) {
+	if err := os.RemoveAll("./samples"); err != nil {
+		log.Fatal(err)
+	}
 	if err := os.Mkdir("./samples", os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
 
 	genesis, accountFile := blocks.MakeGenesisBlock(creator)
-	blockFilename := "./samples/1@" + base58.Encode(genesis.GetHashKey()) + ".ghost"
+	blockFilename := "./samples/1@" + base58.Encode(genesis.Block.GetHashKey()) + ".ghost"
 	genesisBuf := genesis.SerializeToByte()
 	if err := ioutil.WriteFile(blockFilename, genesisBuf, 0); err != nil {
 		log.Fatal(err)
 	}
 
-	for filename, privateKey := range accountFile {
-		if err := ioutil.WriteFile("./samples/"+filename, privateKey, 0); err != nil {
+	for name, ghostAddr := range accountFile {
+		filename := name + "@" + ghostAddr.GetPubAddress() + ".ghost"
+		if err := ioutil.WriteFile("./samples/"+filename, ghostAddr.PrivateKeySerialize(), 0); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -79,7 +84,7 @@ func TestMakeGenesisFileIo(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	newBlock := types.GhostNetBlock{}
+	newBlock := types.PairedBlock{}
 	byteBuf := bytes.NewBuffer(loadedGenesis)
 	newBlock.Deserialize(byteBuf)
 	newBlockByte := newBlock.SerializeToByte()

@@ -1,7 +1,7 @@
 package txs
 
 import (
-	gbytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"

@@ -15,6 +15,15 @@ func NewGScript() *GScript {
 	return &GScript{}
 }
 
+func (gScript *GScript) MakeBlockSignature(block *types.GhostNetBlock, ghostAddr *gcrypto.GhostAddress) {
+	block.Header.BlockSignature = types.SigHash{}
+	block.Header.SignatureSize = uint32(block.Header.BlockSignature.Size())
+
+	sig := gScript.makeSignature(block.Header.SerializeToByte(), ghostAddr)
+	block.Header.SignatureSize = uint32(sig.Size())
+	block.Header.BlockSignature = *sig
+}
+
 func (gScript *GScript) MakeScriptSigExecuteUnlock(tx *types.GhostTransaction, ghostAddr *gcrypto.GhostAddress) {
 	inputParam := gScript.MakeInputParam(tx.SerializeToByte(), ghostAddr)
 	for i := range tx.Body.Vin {
@@ -71,13 +80,13 @@ func lockOutputScript(scriptBuf *bytes.Buffer, ToAddr []byte) {
 
 func (gScript *GScript) MakeRootAccount(ToAddr []byte, Nickname string) []byte {
 	nickname := []byte(Nickname)
-	uint9Buf := make([]uint8, len(nickname))
-	copy(uint9Buf[:], nickname[:])
+	nickBuf := make([]uint8, len(nickname))
+	copy(nickBuf[:], nickname[:])
 	scriptBuf := new(bytes.Buffer)
 	lockOutputScript(scriptBuf, ToAddr)
 	binary.Write(scriptBuf, binary.LittleEndian, OP_PUSH)
-	binary.Write(scriptBuf, binary.LittleEndian, uint8(len(uint9Buf)))
-	binary.Write(scriptBuf, binary.LittleEndian, uint9Buf)
+	binary.Write(scriptBuf, binary.LittleEndian, uint8(len(nickBuf)))
+	binary.Write(scriptBuf, binary.LittleEndian, nickBuf)
 	binary.Write(scriptBuf, binary.LittleEndian, OP_RETURN)
 	return scriptBuf.Bytes()
 }

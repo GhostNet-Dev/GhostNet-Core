@@ -1,7 +1,7 @@
 package txs
 
 import (
-	"github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
@@ -13,7 +13,7 @@ func (txs *TXs) MakeSampleRootAccount(nickname string, brokerAddr []byte) (*type
 		brokerAddr = toAddr
 	}
 	outputScript := txs.gScript.MakeRootAccount(toAddr, nickname)
-	dummyTxId := make([]byte, bytes.HashSize)
+	dummyTxId := make([]byte, gbytes.HashSize)
 
 	tx := &types.GhostTransaction{
 		Body: types.TxBody{

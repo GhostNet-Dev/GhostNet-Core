@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	gbytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	"github.com/stretchr/testify/assert"
 	mems "github.com/traherom/memstream"
 )
@@ -64,6 +64,6 @@ func MakeHeader(aliceCount uint32, txsCount uint32) *GhostNetBlockHeader {
 		TransactionCount:        txsCount,
 		TimeStamp:               uint64(time.Now().Unix()),
 		BlockSignature:          sigHash,
-		SignatureSize:           uint32(sigHash.Size()),
+		SignatureSize:           uint32(len(hashByte)),
 	}
 }

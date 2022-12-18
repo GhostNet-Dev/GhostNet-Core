@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"unsafe"
 
-	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	mems "github.com/traherom/memstream"
 )
 
@@ -16,15 +16,15 @@ type GhostNetDataBlock struct {
 type GhostNetDataBlockHeader struct {
 	Id                      uint32
 	Version                 uint32
-	PreviousBlockHeaderHash ghostBytes.HashBytes
-	MerkleRoot              ghostBytes.HashBytes
+	PreviousBlockHeaderHash gbytes.HashBytes
+	MerkleRoot              gbytes.HashBytes
 	Nonce                   uint32
 	TransactionCount        uint32
 }
 
 func (header *GhostNetDataBlockHeader) Size() uint32 {
 	return uint32(unsafe.Sizeof(header.Id)) +
-		uint32(unsafe.Sizeof(header.Version)) + ghostBytes.HashSize*2 +
+		uint32(unsafe.Sizeof(header.Version)) + gbytes.HashSize*2 +
 		uint32(unsafe.Sizeof(header.Nonce)) +
 		uint32(unsafe.Sizeof(header.TransactionCount))
 }

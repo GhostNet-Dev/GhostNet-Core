@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"testing"
 
-	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	"github.com/stretchr/testify/assert"
 	mems "github.com/traherom/memstream"
 )
@@ -66,13 +66,13 @@ func TestTxBodySerializeDeserialize(t *testing.T) {
 }
 
 func MakeTxOutput() TxOutput {
-	dummy := make([]byte, ghostBytes.PubKeySize)
+	dummy := make([]byte, gbytes.PubKeySize)
 
 	output := TxOutput{
 		Addr:         dummy,
 		BrokerAddr:   dummy,
 		Value:        1212,
-		ScriptSize:   ghostBytes.PubKeySize,
+		ScriptSize:   gbytes.PubKeySize,
 		ScriptPubKey: dummy,
 	}
 	return output

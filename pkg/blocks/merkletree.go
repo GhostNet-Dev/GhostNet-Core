@@ -3,14 +3,14 @@ package blocks
 import (
 	"crypto/sha256"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
 	"github.com/GhostNet-Dev/GhostNet-Core/libs/container"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 )
 
 func CreateMerkleRoot(txHashList [][]byte) []byte {
 	depth := GetDepth(len(txHashList))
 	if depth == 0 {
-		return make([]byte, bytes.HashSize)
+		return make([]byte, gbytes.HashSize)
 	}
 	hashList := container.NewQueue()
 	for _, hash := range txHashList {

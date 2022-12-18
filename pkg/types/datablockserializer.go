@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	mems "github.com/traherom/memstream"
 )
 
@@ -23,8 +23,8 @@ func (header *GhostNetDataBlockHeader) Serialize(stream *mems.MemoryStream) {
 }
 
 func (header *GhostNetDataBlockHeader) Deserialize(byteBuf *bytes.Buffer) {
-	header.PreviousBlockHeaderHash = make([]byte, ghostBytes.HashSize)
-	header.MerkleRoot = make([]byte, ghostBytes.HashSize)
+	header.PreviousBlockHeaderHash = make([]byte, gbytes.HashSize)
+	header.MerkleRoot = make([]byte, gbytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, &header.Id)
 	binary.Read(byteBuf, binary.LittleEndian, &header.Version)
 	binary.Read(byteBuf, binary.LittleEndian, header.PreviousBlockHeaderHash)

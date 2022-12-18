@@ -9,7 +9,7 @@ var (
 	maxTxCountDic map[uint32]uint32
 )
 
-func (blocks *Blocks) InitConcensus() {
+func (blocks *Blocks) InitInterval() {
 	maxTxCountDic[0] = INIT_MAX_TRANSACTION_COUNT
 }
 

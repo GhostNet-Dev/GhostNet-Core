@@ -1,27 +1,33 @@
 package blocks
 
 import (
-	"github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
-func (blocks *Blocks) MakeGenesisBlock(creator []string) (*types.GhostNetBlock, map[string][]byte) {
-	accountFile := map[string][]byte{}
+func (blocks *Blocks) MakeGenesisBlock(creator []string) (*types.PairedBlock, map[string]*gcrypto.GhostAddress) {
+	accountFile := map[string]*gcrypto.GhostAddress{}
 	txs := blocks.txs
-	tx, broker := txs.MakeSampleRootAccount("Adam", nil)
-	accountFile["Adam@"+broker.GetPubAddress()+".ghost"] = broker.PrivateKeySerialize()
+	tx, root := txs.MakeSampleRootAccount("Adam", nil)
+	accountFile["Adam@"+root.GetPubAddress()+".ghost"] = root
 
 	newTxs := []types.GhostTransaction{*tx}
 	for _, name := range creator {
-		tx, address := txs.MakeSampleRootAccount(name, broker.Get160PubKey())
+		tx, address := txs.MakeSampleRootAccount(name, root.Get160PubKey())
 		newTxs = append(newTxs, *tx)
-		accountFile[name+"@"+address.GetPubAddress()+".ghost"] = address.PrivateKeySerialize()
+		accountFile[name+"@"+address.GetPubAddress()+".ghost"] = address
 	}
 
-	msg := make([]byte, bytes.HashSize)
-	msg2 := make([]byte, bytes.HashSize)
+	msg := make([]byte, gbytes.HashSize)
+	msg2 := make([]byte, gbytes.HashSize)
 	copy(msg, []byte("Was it a cat I saw?"))
 	copy(msg2, []byte("I show you how deep the rabbit hole goes."))
 
-	return blocks.CreateGhostNetBlock(1, msg, msg2, broker, newTxs), accountFile
+	pair := &types.PairedBlock{
+		Block:     *blocks.CreateGhostNetBlock(1, msg, msg2, root, root.Get160PubKey(), newTxs),
+		DataBlock: *blocks.CreateGhostNetDataBlock(1, msg, nil),
+	}
+
+	return pair, accountFile
 }

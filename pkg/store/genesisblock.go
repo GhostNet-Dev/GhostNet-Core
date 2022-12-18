@@ -8,14 +8,19 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
-//go:embed GenesisBlocks
-var genesisBlock []byte
+var (
+	//go:embed genesisblock
+	genesisBlockByte   []byte
+	genesisPairedBlock *types.PairedBlock
+)
 
-func GenesisBlock() *types.GhostNetBlock {
-	var pair *types.PairedBlock = new(types.PairedBlock)
-	seriBuf := bytes.NewBuffer(genesisBlock)
-	pair.Deserialize(seriBuf)
-	return &pair.Block
+func GenesisBlock() *types.PairedBlock {
+	if genesisPairedBlock == nil {
+		genesisPairedBlock = new(types.PairedBlock)
+		seriBuf := bytes.NewBuffer(genesisBlockByte)
+		genesisPairedBlock.Deserialize(seriBuf)
+	}
+	return genesisPairedBlock
 }
 
 func AdamsAddress() *gcrypto.GhostAddress {

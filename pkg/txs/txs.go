@@ -1,7 +1,7 @@
 package txs
 
 import (
-	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
@@ -30,7 +30,7 @@ func (txs *TXs) InkTheContract(tx *types.GhostTransaction,
 }
 
 func (txs *TXs) MakeDataTx(logicalAddr uint64, data []byte) *types.GhostDataTransaction {
-	dummy := make([]byte, ghostBytes.HashSize)
+	dummy := make([]byte, gbytes.HashSize)
 	dataTx := types.GhostDataTransaction{
 		TxId:           dummy,
 		LogicalAddress: logicalAddr,
@@ -43,7 +43,7 @@ func (txs *TXs) MakeDataTx(logicalAddr uint64, data []byte) *types.GhostDataTran
 
 func (txs *TXs) MakeContractTx(prev types.PrevOutputParam,
 	next []types.NextOutputParam) *types.GhostTransaction {
-	dummy := make([]byte, ghostBytes.HashSize)
+	dummy := make([]byte, gbytes.HashSize)
 	inputs := []types.TxInput{
 		{
 			PrevOut:    prev.VOutPoint,
@@ -78,7 +78,7 @@ func (txs *TXs) MakeContractTx(prev types.PrevOutputParam,
 
 func (txs *TXs) MakeTransaction(info TransferCoinInfo, prev map[uint32][]types.PrevOutputParam,
 	next map[uint32][]types.NextOutputParam) *types.GhostTransaction {
-	dummy := make([]byte, ghostBytes.HashSize)
+	dummy := make([]byte, gbytes.HashSize)
 	inputs := []types.TxInput{}
 	outputs := []types.TxOutput{}
 

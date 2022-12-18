@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"unsafe"
 
-	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 )
 
 const ( // tx output type
@@ -16,10 +16,10 @@ const ( // tx output type
 )
 
 const (
-	TxIdSize      = ghostBytes.HashSize
+	TxIdSize      = gbytes.HashSize
 	PublicKeySize = 25
 	DummySize     = 4
-	DataHash      = ghostBytes.HashSize
+	DataHash      = gbytes.HashSize
 )
 
 const ( //tx type
@@ -35,14 +35,14 @@ type PrevOutputParam struct {
 
 type NextOutputParam struct {
 	TxType       uint32
-	RecvAddr     ghostBytes.HashBytes
-	Broker       ghostBytes.HashBytes
+	RecvAddr     gbytes.HashBytes
+	Broker       gbytes.HashBytes
 	OutputScript []byte
 	TransferCoin uint64
 }
 
 type TxOutPoint struct {
-	TxId       ghostBytes.HashBytes
+	TxId       gbytes.HashBytes
 	TxOutIndex uint32
 }
 
@@ -54,8 +54,8 @@ type TxInput struct {
 }
 
 type TxOutput struct {
-	Addr         ghostBytes.HashBytes
-	BrokerAddr   ghostBytes.HashBytes
+	Addr         gbytes.HashBytes
+	BrokerAddr   gbytes.HashBytes
 	Type         uint32
 	Value        uint64
 	ScriptSize   uint32
@@ -72,12 +72,12 @@ type TxBody struct {
 }
 
 type GhostTransaction struct {
-	TxId ghostBytes.HashBytes
+	TxId gbytes.HashBytes
 	Body TxBody
 }
 
 func (txOutPoint *TxOutPoint) Size() uint32 {
-	return uint32(unsafe.Sizeof(txOutPoint.TxOutIndex)) + ghostBytes.HashSize
+	return uint32(unsafe.Sizeof(txOutPoint.TxOutIndex)) + gbytes.HashSize
 }
 
 func (input *TxInput) Size() uint32 {
@@ -87,8 +87,8 @@ func (input *TxInput) Size() uint32 {
 }
 
 func (output *TxOutput) Size() uint32 {
-	return uint32(ghostBytes.PubKeySize) + //address
-		uint32(ghostBytes.PubKeySize) + // brokeraddress
+	return uint32(gbytes.PubKeySize) + //address
+		uint32(gbytes.PubKeySize) + // brokeraddress
 		uint32(unsafe.Sizeof(output.Value)) +
 		uint32(unsafe.Sizeof(output.Type)) +
 		uint32(unsafe.Sizeof(output.ScriptSize)) +
@@ -115,7 +115,7 @@ func (body *TxBody) Size() uint32 {
 }
 
 func (tx *GhostTransaction) Size() uint32 {
-	return tx.Body.Size() + uint32(ghostBytes.HashSize)
+	return tx.Body.Size() + uint32(gbytes.HashSize)
 }
 
 func (tx *GhostTransaction) GetHashKey() []byte {

@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"unsafe"
 
-	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	mems "github.com/traherom/memstream"
 )
 
@@ -20,23 +20,23 @@ type GhostNetBlock struct {
 }
 
 type GhostNetBlockHeader struct {
-	Id                      uint32               `json:"Id"`
-	Version                 uint32               `json:"Version"`
-	PreviousBlockHeaderHash ghostBytes.HashBytes `json:"PreviousBlockHeaderHash"`
-	MerkleRoot              ghostBytes.HashBytes `json:"MerkleRoot"`
-	DataBlockHeaderHash     ghostBytes.HashBytes `json:"DataBlockHeaderHash"`
-	TimeStamp               uint64               `json:"TimeStamp"`
-	Bits                    uint32               `json:"Bits"`
-	Nonce                   uint32               `json:"Nonce"`
-	AliceCount              uint32               `json:"AliceCount"`
-	TransactionCount        uint32               `json:"TransactionCount"`
-	SignatureSize           uint32               `json:"SignatureSize"`
-	BlockSignature          SigHash              `json:"BlockSignature"`
+	Id                      uint32           `json:"Id"`
+	Version                 uint32           `json:"Version"`
+	PreviousBlockHeaderHash gbytes.HashBytes `json:"PreviousBlockHeaderHash"`
+	MerkleRoot              gbytes.HashBytes `json:"MerkleRoot"`
+	DataBlockHeaderHash     gbytes.HashBytes `json:"DataBlockHeaderHash"`
+	TimeStamp               uint64           `json:"TimeStamp"`
+	Bits                    uint32           `json:"Bits"`
+	Nonce                   uint32           `json:"Nonce"`
+	AliceCount              uint32           `json:"AliceCount"`
+	TransactionCount        uint32           `json:"TransactionCount"`
+	SignatureSize           uint32           `json:"SignatureSize"`
+	BlockSignature          SigHash          `json:"BlockSignature"`
 }
 
 func (header *GhostNetBlockHeader) Size() uint32 {
 	return uint32(unsafe.Sizeof(header.Id)) +
-		uint32(unsafe.Sizeof(header.Version)) + ghostBytes.HashSize*3 +
+		uint32(unsafe.Sizeof(header.Version)) + gbytes.HashSize*3 +
 		uint32(unsafe.Sizeof(header.TimeStamp)) +
 		uint32(unsafe.Sizeof(header.Bits)) +
 		uint32(unsafe.Sizeof(header.Nonce)) +

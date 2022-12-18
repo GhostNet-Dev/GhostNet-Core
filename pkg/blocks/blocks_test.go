@@ -5,15 +5,18 @@ import (
 	"crypto/sha256"
 	"testing"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/txs"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var (
+	Miner  = gcrypto.GenerateKeyPair()
 	Sender = gcrypto.GenerateKeyPair()
 	Broker = gcrypto.GenerateKeyPair()
 	Recver = gcrypto.GenerateKeyPair()
@@ -26,7 +29,29 @@ var (
 )
 
 func TestNewBlocks(t *testing.T) {
-	assert.Equal(t, nil, blocks, "")
+}
+
+func TestBlockSignature(t *testing.T) {
+	tx, _ := Txs.MakeSampleRootAccount("test", Broker.Get160PubKey())
+	txs := []types.GhostTransaction{*tx}
+	msg := make([]byte, gbytes.HashSize)
+	msg2 := make([]byte, gbytes.HashSize)
+	copy(msg, []byte("test"))
+	copy(msg2, []byte("test is important"))
+	block := blocks.CreateGhostNetBlock(1, msg, msg2, Miner, Broker.Get160PubKey(), txs)
+
+	// verify
+	sig := block.Header.BlockSignature
+
+	block.Header.BlockSignature = types.SigHash{}
+	block.Header.SignatureSize = uint32(block.Header.BlockSignature.Size())
+	sigPack := gcrypto.SignaturePackage{
+		PubKey:    sig.PubKey,
+		Signature: append(sig.RBuf, sig.SBuf...),
+		Text:      block.Header.SerializeToByte(),
+	}
+	result := gcrypto.SignVerify(&sigPack)
+	assert.Equal(t, true, result, "block signature is not valid")
 }
 
 func TestMerkleTree(t *testing.T) {

@@ -4,9 +4,16 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	ghostBytes "github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	mems "github.com/traherom/memstream"
 )
+
+func (header *GhostNetBlockHeader) SerializeToByte() []byte {
+	size := header.Size()
+	stream := mems.NewCapacity(int(size))
+	header.Serialize(stream)
+	return stream.Bytes()
+}
 
 func (header *GhostNetBlockHeader) Serialize(stream *mems.MemoryStream) {
 	bs4 := make([]byte, 4)
@@ -30,13 +37,13 @@ func (header *GhostNetBlockHeader) Serialize(stream *mems.MemoryStream) {
 	stream.Write(bs4)
 	binary.LittleEndian.PutUint32(bs4, uint32(header.SignatureSize))
 	stream.Write(bs4)
-	header.BlockSignature.Serialize(stream)
+	stream.Write(header.BlockSignature.SerializeToByte())
 }
 
 func (header *GhostNetBlockHeader) Deserialize(byteBuf *bytes.Buffer) {
-	header.PreviousBlockHeaderHash = make([]byte, ghostBytes.HashSize)
-	header.MerkleRoot = make([]byte, ghostBytes.HashSize)
-	header.DataBlockHeaderHash = make([]byte, ghostBytes.HashSize)
+	header.PreviousBlockHeaderHash = make([]byte, gbytes.HashSize)
+	header.MerkleRoot = make([]byte, gbytes.HashSize)
+	header.DataBlockHeaderHash = make([]byte, gbytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, &header.Id)
 	binary.Read(byteBuf, binary.LittleEndian, &header.Version)
 	binary.Read(byteBuf, binary.LittleEndian, header.PreviousBlockHeaderHash)

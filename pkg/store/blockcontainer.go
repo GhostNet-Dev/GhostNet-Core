@@ -10,10 +10,8 @@ type BlockContainer struct {
 	gSql                 gsql.GSql
 	TxContainer          *TxContainer
 	CandidateTxContainer *TxContainer
-
-	CandidateTxPools *container.Queue
-
-	CurrentPoolId uint32
+	CandidateTxPools     *container.Queue
+	CurrentPoolId        uint32
 }
 
 func NewBlockContainer() *BlockContainer {

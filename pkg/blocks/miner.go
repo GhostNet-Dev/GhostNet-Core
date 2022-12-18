@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/libs/bytes"
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
@@ -13,7 +13,7 @@ const (
 	CoinBase uint64 = 1_000_000
 )
 
-func (blocks *Blocks) MakeNewBlock(ghostAddrss *gcrypto.GhostAddress) *types.PairedBlock {
+func (blocks *Blocks) MakeNewBlock(ghostAddrss *gcrypto.GhostAddress, creator []byte) *types.PairedBlock {
 	height := blocks.blockContainer.BlockHeight()
 	if height < 2 {
 		return nil
@@ -33,7 +33,7 @@ func (blocks *Blocks) MakeNewBlock(ghostAddrss *gcrypto.GhostAddress) *types.Pai
 	}
 
 	dataBlock := blocks.CreateGhostNetDataBlock(newId, prevDataHash, newUsedTxPool.DataTxCandidate)
-	block := blocks.CreateGhostNetBlock(newId, prevHash, dataBlock.GetHashKey(), ghostAddrss,
+	block := blocks.CreateGhostNetBlock(newId, prevHash, dataBlock.GetHashKey(), ghostAddrss, creator,
 		newUsedTxPool.TxCandidate)
 
 	return &types.PairedBlock{
@@ -43,7 +43,7 @@ func (blocks *Blocks) MakeNewBlock(ghostAddrss *gcrypto.GhostAddress) *types.Pai
 }
 
 func (blocks *Blocks) CreateGhostNetBlock(newBlockId uint32, prevBlockHash []byte, dataBlockhash []byte,
-	adamsAddress *gcrypto.GhostAddress, newTxList []types.GhostTransaction) *types.GhostNetBlock {
+	miner *gcrypto.GhostAddress, creator []byte, newTxList []types.GhostTransaction) *types.GhostNetBlock {
 	hashs := make([][]byte, len(newTxList))
 	for i, tx := range newTxList {
 		hashs[i] = tx.GetHashKey()
@@ -59,10 +59,15 @@ func (blocks *Blocks) CreateGhostNetBlock(newBlockId uint32, prevBlockHash []byt
 			TransactionCount:        uint32(len(newTxList)),
 			TimeStamp:               blocks.DateTimeToUnixTimeNow(),
 		},
-		Alice:       []types.GhostTransaction{*blocks.MakeAliceCoin(newBlockId, adamsAddress, newTxList)},
+		Alice:       []types.GhostTransaction{*blocks.MakeAliceCoin(newBlockId, creator, newTxList)},
 		Transaction: newTxList,
 	}
 
+	return blocks.InkTheBlock(block, miner)
+}
+
+func (blocks *Blocks) InkTheBlock(block *types.GhostNetBlock, ghostAddr *gcrypto.GhostAddress) *types.GhostNetBlock {
+	blocks.gScript.MakeBlockSignature(block, ghostAddr)
 	return block
 }
 
@@ -80,6 +85,7 @@ func (blocks *Blocks) CreateGhostNetDataBlock(newBlockId uint32, prevBlockHash [
 			MerkleRoot:              CreateMerkleRoot(hashs),
 			TransactionCount:        uint32(len(newTxList)),
 		},
+		Transaction: newTxList,
 	}
 }
 
@@ -87,7 +93,7 @@ func (blocks *Blocks) DateTimeToUnixTimeNow() uint64 {
 	return uint64(time.Now().Unix())
 }
 
-func (blocks *Blocks) MakeAliceCoin(blockId uint32, adamsAddr *gcrypto.GhostAddress,
+func (blocks *Blocks) MakeAliceCoin(blockId uint32, adamsAddr []byte,
 	txs []types.GhostTransaction) *types.GhostTransaction {
 	brokerGather := map[string]uint64{}
 	if len(txs) < 1 {
@@ -111,7 +117,7 @@ func (blocks *Blocks) MakeAliceCoin(blockId uint32, adamsAddr *gcrypto.GhostAddr
 
 	if totalRealSum != CoinBase {
 		remain := CoinBase - totalRealSum
-		broker := string(adamsAddr.Get160PubKey())
+		broker := string(adamsAddr)
 		if _, ok := brokerGather[broker]; ok == true {
 			brokerGather[broker] += remain
 		} else {
@@ -134,7 +140,7 @@ func (blocks *Blocks) MakeAliceCoin(blockId uint32, adamsAddr *gcrypto.GhostAddr
 	}
 
 	tx := &types.GhostTransaction{
-		TxId: make([]byte, bytes.HashSize),
+		TxId: make([]byte, gbytes.HashSize),
 		Body: types.TxBody{
 			InputCounter:  0,
 			Vout:          outputs,
