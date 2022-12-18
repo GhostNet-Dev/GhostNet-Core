@@ -70,6 +70,6 @@ func TestMakeCoinTx(t *testing.T) {
 	tx := txs.TransferCoin(txInfo)
 	tx = txs.InkTheContract(tx, Recver)
 
-	err := txs.TransactionChecker(tx, nil, blockContainer.TxContainer)
-	assert.Equal(t, true, err == nil, "tx validate error: "+err.Error())
+	err := txs.TransactionValidation(tx, nil, blockContainer.TxContainer)
+	assert.Equal(t, true, err.Result(), "tx validate error: "+err.Error())
 }

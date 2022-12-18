@@ -28,18 +28,18 @@ var (
 	blocks         = NewBlocks(BlockContainer, Txs, 1)
 )
 
+func init() {
+	BlockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
+}
+
 func TestNewBlocks(t *testing.T) {
+	pair := MakeNewPair()
+	result := blocks.BlockValidation(pair, nil)
+	assert.Equal(t, true, result, "block is not valid")
 }
 
 func TestBlockSignature(t *testing.T) {
-	tx, _ := Txs.MakeSampleRootAccount("test", Broker.Get160PubKey())
-	txs := []types.GhostTransaction{*tx}
-	msg := make([]byte, gbytes.HashSize)
-	msg2 := make([]byte, gbytes.HashSize)
-	copy(msg, []byte("test"))
-	copy(msg2, []byte("test is important"))
-	block := blocks.CreateGhostNetBlock(1, msg, msg2, Miner, Broker.Get160PubKey(), txs)
-
+	block := MakeNewPair().Block
 	// verify
 	sig := block.Header.BlockSignature
 
@@ -76,4 +76,17 @@ func TestMerkleTree(t *testing.T) {
 	result2 = CreateMerkleRoot(hashs)
 	compareResult = bytes.Compare(result, result2)
 	assert.Equal(t, true, compareResult != 0, "The merkle root has not changed.")
+}
+
+func MakeNewPair() *types.PairedBlock {
+	tx, _ := Txs.MakeSampleRootAccount("test", Broker.Get160PubKey())
+	txs := []types.GhostTransaction{*tx}
+	msg := make([]byte, gbytes.HashSize)
+	msg2 := make([]byte, gbytes.HashSize)
+	copy(msg, []byte("test"))
+	copy(msg2, []byte("test is important"))
+	return &types.PairedBlock{
+		*blocks.CreateGhostNetBlock(1, msg, msg2, Miner, Broker.Get160PubKey(), txs),
+		*blocks.CreateGhostNetDataBlock(1, msg, nil),
+	}
 }

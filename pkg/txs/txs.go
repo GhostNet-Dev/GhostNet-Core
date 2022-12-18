@@ -108,15 +108,30 @@ func (txs *TXs) MakeInputOutput(txType uint32, info TransferCoinInfo, prev []typ
 	var totalCoin uint64 = 0
 	var transferCoin uint64 = 0
 
-	for _, outputParam := range prev {
-		input := types.TxInput{
-			PrevOut:    outputParam.VOutPoint,
+	// for rootfs tx, it's not necessary previous tx
+	if len(prev) == 0 && txType == types.TxTypeFSRoot {
+		dummyBuf4 := make([]byte, 4)
+		dummyHash := make([]byte, gbytes.HashSize)
+		inputs = append(inputs, types.TxInput{
+			PrevOut: types.TxOutPoint{
+				TxId: dummyHash,
+			},
 			Sequence:   0xFFFFFFFF,
-			ScriptSize: outputParam.Vout.ScriptSize,
-			ScriptSig:  outputParam.Vout.ScriptPubKey, // 서명후 새로 생성된 서명으로 교체된다.
+			ScriptSize: uint32(len(dummyBuf4)),
+			ScriptSig:  dummyBuf4,
+		})
+	} else {
+		// for normal tx
+		for _, outputParam := range prev {
+			input := types.TxInput{
+				PrevOut:    outputParam.VOutPoint,
+				Sequence:   0xFFFFFFFF,
+				ScriptSize: outputParam.Vout.ScriptSize,
+				ScriptSig:  outputParam.Vout.ScriptPubKey, // 서명후 새로 생성된 서명으로 교체된다.
+			}
+			inputs = append(inputs, input)
+			totalCoin += outputParam.Vout.Value
 		}
-		inputs = append(inputs, input)
-		totalCoin += outputParam.Vout.Value
 	}
 
 	for _, newOutput := range next {

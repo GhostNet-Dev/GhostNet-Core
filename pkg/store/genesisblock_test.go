@@ -30,5 +30,6 @@ func TestGenesisBlockLoad(t *testing.T) {
 }
 
 func TestAdamLoad(t *testing.T) {
-
+	pubKey := AdamsAddress()
+	assert.Equal(t, true, pubKey != nil, "could not find adams address")
 }

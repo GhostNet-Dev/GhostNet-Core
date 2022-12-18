@@ -3,6 +3,7 @@ package blocks
 import (
 	"bytes"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -38,10 +39,23 @@ func (blocks *Blocks) BlockValidation(pairedBlock *types.PairedBlock, prevPaired
 	if header.AliceCount != uint32(len(alice)) || header.TransactionCount != uint32(len(txs)) {
 		return false
 	}
+
+	if blocks.AliceTransactionValidation(alice, txs) == false {
+		return false
+	}
+
+	for _, tx := range txs {
+		txChkResult := blocks.txs.TransactionValidation(&tx, nil, blocks.blockContainer.TxContainer)
+		if txChkResult.Result() == false {
+			return false
+		}
+	}
+
 	return true
 }
 
-func (blocks *Blocks) AliceTransactionValidation(alice []types.GhostTransaction, txs []types.GhostTransaction) {
+func (blocks *Blocks) AliceTransactionValidation(alice []types.GhostTransaction,
+	txs []types.GhostTransaction) bool {
 	brokerGather := map[string]uint64{}
 	txCoin := CoinBase / uint64(len(txs))
 	totalRealSum := uint64(0)
@@ -56,7 +70,21 @@ func (blocks *Blocks) AliceTransactionValidation(alice []types.GhostTransaction,
 	}
 
 	if totalRealSum != CoinBase {
-		//remainCoin := CoinBase - totalRealSum
-
+		remainCoin := CoinBase - totalRealSum
+		broker := string(store.AdamsAddress())
+		brokerGather[broker] += remainCoin
 	}
+
+	aliceOutput := alice[0].Body.Vout
+	for _, output := range aliceOutput {
+		broker := string(output.Addr)
+		if _, err := brokerGather[broker]; err == false {
+			return false
+		}
+		if brokerGather[broker] != output.Value {
+			return false
+		}
+	}
+
+	return true
 }

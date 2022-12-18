@@ -56,6 +56,19 @@ func (ghostAddr *GhostAddress) GetSignPubKey() []byte {
 	return ghostAddr.pubKey
 }
 
+func TranslateSigPubTo160PubKey(sigPubKey []byte) []byte {
+	publicSHA256 := sha256.Sum256(sigPubKey) // Public key를 SHA-256으로 해싱
+
+	// RIPEMD-160으로 다시 해싱
+	RIPEMD160Hasher := ripemd160.New()
+	_, err := RIPEMD160Hasher.Write(publicSHA256[:])
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return RIPEMD160Hasher.Sum(nil)
+}
+
 func (ghostAddr *GhostAddress) Get160PubKey() []byte {
 	if ghostAddr.pubKey160 == nil {
 		pubKey := ghostAddr.pubKey

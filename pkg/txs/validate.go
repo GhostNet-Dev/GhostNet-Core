@@ -42,7 +42,7 @@ func (txResult *TxChkResult) Error() string {
 	return resultString
 }
 
-func (txs *TXs) TransactionChecker(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction,
+func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction,
 	txContainer *store.TxContainer) *TxChkResult {
 	var transferCoin, getherCoin uint64 = 0, 0
 	var gFuncParam []gvm.GFuncParam
@@ -54,46 +54,59 @@ func (txs *TXs) TransactionChecker(tx *types.GhostTransaction, dataTx *types.Gho
 		return &TxChkResult{TxChkResult_CounterMismatch}
 	}
 
-	for _, input := range tx.Body.Vin {
-		prevOutpointer := input.PrevOut
-		// Check Validate TxId
-		prevTx := txContainer.GetTx(prevOutpointer.TxId)
-		if prevTx == nil {
-			return &TxChkResult{TxChkResult_MissingRefTx}
-		}
-		// Check Script Format
-		prevOutput := prevTx.Body.Vout[prevOutpointer.TxOutIndex]
-		if prevOutput.ScriptSize != uint32(len(prevOutput.ScriptPubKey)) {
-			return &TxChkResult{TxChkResult_FormatMismatch}
-		}
-		// Check Coin
-		if prevOutput.Type == types.TxTypeCoinTransfer {
-			getherCoin += prevOutput.Value
-		}
-
-		if prevOutput.Type != types.TxTypeFSRoot &&
-			txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) == true {
-			return &TxChkResult{TxChkResult_MissingRefTx}
-		}
-
-		if input.ScriptSig == nil {
-			return &TxChkResult{TxChkResult_FormatMismatch}
-		}
-
+	if tx.Body.Vout[0].Type == types.TxTypeFSRoot {
+		dummyBuf4 := make([]byte, 4)
+		input := tx.Body.Vin[0]
 		scriptSig := input.ScriptSig
-		input.ScriptSig = prevOutput.ScriptPubKey
-		input.ScriptSize = prevOutput.ScriptSize
+		input.ScriptSig = dummyBuf4
+		input.ScriptSize = uint32(len(dummyBuf4))
 
 		gFuncParam = append(gFuncParam, gvm.GFuncParam{
 			InputSig:      scriptSig,
-			ScriptPubbKey: prevOutput.ScriptPubKey,
-			TxType:        prevOutput.Type,
+			ScriptPubbKey: tx.Body.Vout[0].ScriptPubKey,
+			TxType:        types.TxTypeFSRoot,
 		})
-	}
+	} else {
+		for _, output := range tx.Body.Vout {
+			if output.Type == types.TxTypeCoinTransfer {
+				transferCoin += output.Value
+			}
+		}
 
-	for _, output := range tx.Body.Vout {
-		if output.Type == types.TxTypeCoinTransfer {
-			transferCoin += output.Value
+		for _, input := range tx.Body.Vin {
+			prevOutpointer := input.PrevOut
+			// Check Validate TxId
+			prevTx := txContainer.GetTx(prevOutpointer.TxId)
+			if prevTx == nil {
+				return &TxChkResult{TxChkResult_MissingRefTx}
+			}
+			// Check Script Format
+			prevOutput := prevTx.Body.Vout[prevOutpointer.TxOutIndex]
+			if prevOutput.ScriptSize != uint32(len(prevOutput.ScriptPubKey)) {
+				return &TxChkResult{TxChkResult_FormatMismatch}
+			}
+			// Check Coin
+			if prevOutput.Type == types.TxTypeCoinTransfer {
+				getherCoin += prevOutput.Value
+			}
+
+			if txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) == true {
+				return &TxChkResult{TxChkResult_MissingRefTx}
+			}
+
+			if input.ScriptSig == nil {
+				return &TxChkResult{TxChkResult_FormatMismatch}
+			}
+
+			scriptSig := input.ScriptSig
+			input.ScriptSig = prevOutput.ScriptPubKey
+			input.ScriptSize = prevOutput.ScriptSize
+
+			gFuncParam = append(gFuncParam, gvm.GFuncParam{
+				InputSig:      scriptSig,
+				ScriptPubbKey: prevOutput.ScriptPubKey,
+				TxType:        prevOutput.Type,
+			})
 		}
 	}
 
@@ -108,5 +121,5 @@ func (txs *TXs) TransactionChecker(tx *types.GhostTransaction, dataTx *types.Gho
 		return &TxChkResult{TxChkResult_ScriptError}
 	}
 
-	return nil
+	return &TxChkResult{TxChkResult_Success}
 }
