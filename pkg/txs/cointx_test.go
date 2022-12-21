@@ -73,3 +73,5 @@ func TestMakeCoinTx(t *testing.T) {
 	err := txs.TransactionValidation(tx, nil, blockContainer.TxContainer)
 	assert.Equal(t, true, err.Result(), "tx validate error: "+err.Error())
 }
+
+//TODO Execute Tx Script Test

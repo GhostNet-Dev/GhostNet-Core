@@ -49,7 +49,7 @@ func TestSqlInAndOutBlock(t *testing.T) {
 	}
 
 	pair := MakePairBlock()
-	gSql.InsertBlock(pair)
+	gSql.InsertBlock(&pair)
 	pairNew := gSql.SelectBlock(2)
 
 	size := pair.Size()

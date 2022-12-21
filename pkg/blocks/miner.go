@@ -13,7 +13,8 @@ const (
 	CoinBase uint64 = 1_000_000
 )
 
-func (blocks *Blocks) MakeNewBlock(ghostAddrss *gcrypto.GhostAddress, creator []byte) *types.PairedBlock {
+func (blocks *Blocks) MakeNewBlock(ghostAddrss *gcrypto.GhostAddress, creator []byte,
+	minimumRequiredTxCount uint32) *types.PairedBlock {
 	height := blocks.blockContainer.BlockHeight()
 	if height < 2 {
 		return nil
@@ -27,7 +28,7 @@ func (blocks *Blocks) MakeNewBlock(ghostAddrss *gcrypto.GhostAddress, creator []
 	newId := pairedBlock.Block.Header.Id + 1
 	prevHash := pairedBlock.Block.GetHashKey()
 	prevDataHash := pairedBlock.DataBlock.GetHashKey()
-	newUsedTxPool := blocks.blockContainer.MakeCandidateTrPool(newId, blocks.GetMinimumReqTrCount())
+	newUsedTxPool := blocks.blockContainer.MakeCandidateTrPool(newId, minimumRequiredTxCount)
 	if newUsedTxPool == nil {
 		return nil
 	}

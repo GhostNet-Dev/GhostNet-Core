@@ -17,7 +17,7 @@ type GSql interface {
 	SelectTx(TxId []byte) *types.GhostTransaction
 	SelectData(TxId []byte) *types.GhostDataTransaction
 	SelectUnusedOutputs(TxType uint32, ToAddr []byte) []types.PrevOutputParam
-	InsertBlock(pair types.PairedBlock)
+	InsertBlock(pair *types.PairedBlock)
 	SelectBlock(blockId uint32) *types.PairedBlock
 	CheckExistTxId(txId []byte) bool
 	CheckExistRefOutout(refTxId []byte, outIndex uint32, notTxId []byte) bool

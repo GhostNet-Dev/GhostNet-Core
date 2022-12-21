@@ -9,14 +9,7 @@ import (
 )
 
 func TestMakeRootFsTxSerDesrialize(t *testing.T) {
-	tx := txs.CreateRootFsTx(TransferCoinInfo{
-		ToAddr:    Recver.Get160PubKey(),
-		Broker:    Broker.Get160PubKey(),
-		FeeAddr:   Sender.Get160PubKey(),
-		FeeBroker: Broker.Get160PubKey(),
-	}, "test")
-	tx = txs.InkTheContract(tx, Sender)
-
+	tx := MakeRootFsTx()
 	buf := tx.SerializeToByte()
 	byteBuf := bytes.NewBuffer(buf)
 
@@ -25,4 +18,18 @@ func TestMakeRootFsTxSerDesrialize(t *testing.T) {
 	newBuf := newTx.SerializeToByte()
 	result := bytes.Compare(buf, newBuf)
 	assert.Equal(t, 0, result, "bytes are different.")
+}
+
+func TestRootFsTxExecution(t *testing.T) {
+
+}
+
+func MakeRootFsTx() *types.GhostTransaction {
+	tx := txs.CreateRootFsTx(TransferCoinInfo{
+		ToAddr:    Recver.Get160PubKey(),
+		Broker:    Broker.Get160PubKey(),
+		FeeAddr:   Sender.Get160PubKey(),
+		FeeBroker: Broker.Get160PubKey(),
+	}, "test")
+	return txs.InkTheContract(tx, Sender)
 }

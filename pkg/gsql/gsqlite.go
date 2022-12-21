@@ -56,7 +56,7 @@ func (gSql *GSqlite3) DropTable() {
 	}
 }
 
-func (gSql *GSqlite3) InsertBlock(pair types.PairedBlock) {
+func (gSql *GSqlite3) InsertBlock(pair *types.PairedBlock) {
 	header := pair.Block.Header
 	dataHeader := pair.DataBlock.Header
 	gSql.InsertQuery(`INSERT INTO "paired_block" 
