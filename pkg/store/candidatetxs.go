@@ -9,7 +9,11 @@ type CandidateTxPool struct {
 	DataTxCandidate []types.GhostDataTransaction
 }
 
-func (blockContainer *BlockContainer) GetCandidateTxPool(blockId uint32) *CandidateTxPool {
+func (blockContainer *BlockContainer) GetCandidateTxCount() uint32 {
+	return blockContainer.gSql.SelectCandidateTxCount()
+}
+
+func (blockContainer *BlockContainer) GetCandidateTxPool() *CandidateTxPool {
 	return blockContainer.CandidateTxPools.Pop().(*CandidateTxPool)
 }
 

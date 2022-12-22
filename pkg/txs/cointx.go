@@ -15,12 +15,12 @@ type TransferCoinInfo struct {
 	Broker       []byte
 	FeeAddr      []byte
 	FeeBroker    []byte
-	Prevs        map[uint32][]types.PrevOutputParam
+	Prevs        map[types.TxOutputType][]types.PrevOutputParam
 	TransferCoin uint64
 }
 
 func (txs *TXs) TransferCoin(info TransferCoinInfo) *types.GhostTransaction {
-	nextOutputParam := map[uint32][]types.NextOutputParam{
+	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
 		types.TxTypeCoinTransfer: {
 			{
 				TxType:       types.TxTypeCoinTransfer,

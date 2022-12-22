@@ -21,7 +21,7 @@ func (txContainer *TxContainer) SaveTransaction(blockId uint32, tx *types.GhostT
 	txContainer.gSql.InsertTx(blockId, tx, types.NormalTx, txIndexInBlock)
 }
 
-func (txContainer *TxContainer) GetUnusedOutputList(txType uint32, toAddr []byte) []types.PrevOutputParam {
+func (txContainer *TxContainer) GetUnusedOutputList(txType types.TxOutputType, toAddr []byte) []types.PrevOutputParam {
 	return txContainer.gSql.SelectUnusedOutputs(txType, toAddr)
 }
 

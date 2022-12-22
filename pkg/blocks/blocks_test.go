@@ -86,7 +86,7 @@ func MakeNewPair() *types.PairedBlock {
 	copy(msg, []byte("test"))
 	copy(msg2, []byte("test is important"))
 	return &types.PairedBlock{
-		*blocks.CreateGhostNetBlock(1, msg, msg2, Miner, Broker.Get160PubKey(), txs),
-		*blocks.CreateGhostNetDataBlock(1, msg, nil),
+		Block:     *blocks.CreateGhostNetBlock(1, msg, msg2, Miner, Broker.Get160PubKey(), txs),
+		DataBlock: *blocks.CreateGhostNetDataBlock(1, msg, nil),
 	}
 }

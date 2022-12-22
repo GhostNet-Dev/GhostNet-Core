@@ -19,7 +19,7 @@ func NewUdpServer(ip string, port string) *UdpServer {
 	}
 }
 
-func (udp *UdpServer) Start() {
+func (udp *UdpServer) Start(netChannel <-chan []byte) {
 	service := udp.Ip + ":" + udp.Port
 
 	udpAddr, err := net.ResolveUDPAddr("udp4", service)
@@ -45,6 +45,7 @@ func (udp *UdpServer) Start() {
 				//doneChan <-err
 				continue
 			}
+			netChannel <- buffer
 			/*
 				err = pc.SetWriteDeadline(deadline)
 				if err != nil {

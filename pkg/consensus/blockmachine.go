@@ -1,30 +1,33 @@
 package consensus
 
-import "github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus/states"
+import "github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 
 type BlockMachine struct {
-	idle               states.BlockState
-	miningState        states.BlockState
-	getHeightestState  states.BlockState
-	verificationState  states.BlockState
-	downloadCheckState states.BlockState
-	getBlockState      states.BlockState
-	blockMergeState    states.BlockState
-	recheckState       states.BlockState
+	idle               BlockState
+	miningState        BlockState
+	getHeightestState  BlockState
+	verificationState  BlockState
+	downloadCheckState BlockState
+	getBlockState      BlockState
+	blockMergeState    BlockState
+	recheckState       BlockState
 
-	currentState BlockState
+	currentState   BlockState
+	blockContainer *store.BlockContainer
 }
 
-func NewBlockMachine() *BlockMachine {
+func NewBlockMachine(b *store.BlockContainer) *BlockMachine {
 	fsm := &BlockMachine{}
-	idleState := &states.IdleState{blockMachine: fsm}
-	miningState := &states.MiningState{blockMachine: fsm}
-	getHeightestState := &states.GetHeigtestState{blockMachine: fsm}
-	verificationState := &states.VerificationState{blockMachine: fsm}
-	downloadCheckState := &states.DownloadCheckState{blockMachine: fsm}
-	getBlockState := &states.GetBlockState{blockMachine: fsm}
-	blockMergeState := &states.BlockMergeState{blockMachine: fsm}
-	recheckState := &states.RecheckState{blockMachine: fsm}
+	fsm.blockContainer = b
+
+	idleState := &IdleState{blockMachine: fsm}
+	miningState := &MiningState{blockMachine: fsm}
+	getHeightestState := &GetHeigtestState{blockMachine: fsm}
+	verificationState := &VerificationState{blockMachine: fsm}
+	downloadCheckState := &DownloadCheckState{blockMachine: fsm}
+	getBlockState := &GetBlockState{blockMachine: fsm}
+	blockMergeState := &BlockMergeState{blockMachine: fsm}
+	recheckState := &RecheckState{blockMachine: fsm}
 
 	fsm.setState(idleState)
 	fsm.idle = idleState
@@ -39,6 +42,10 @@ func NewBlockMachine() *BlockMachine {
 	return fsm
 }
 
-func (m *BlockMachine) setState(s BlockState) {
-	m.currentState = s
+func (fsm *BlockMachine) CheckAcceptNewBlock() bool {
+	return fsm.currentState == fsm.idle || fsm.currentState == fsm.miningState
+}
+
+func (fsm *BlockMachine) setState(s BlockState) {
+	fsm.currentState = s
 }

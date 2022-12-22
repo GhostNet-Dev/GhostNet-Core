@@ -16,7 +16,7 @@ type GSql interface {
 	InsertDataTx(blockId uint32, dataTx *types.GhostDataTransaction, txIndexInBlock uint32)
 	SelectTx(TxId []byte) *types.GhostTransaction
 	SelectData(TxId []byte) *types.GhostDataTransaction
-	SelectUnusedOutputs(TxType uint32, ToAddr []byte) []types.PrevOutputParam
+	SelectUnusedOutputs(TxType types.TxOutputType, ToAddr []byte) []types.PrevOutputParam
 	InsertBlock(pair *types.PairedBlock)
 	SelectBlock(blockId uint32) *types.PairedBlock
 	CheckExistTxId(txId []byte) bool
@@ -24,6 +24,7 @@ type GSql interface {
 	GetBlockHeight() uint32
 	SelectTxsPool(poolId uint32) []types.GhostTransaction
 	SelectDataTxsPool(poolId uint32) []types.GhostDataTransaction
+	SelectCandidateTxCount() uint32
 	GetMinPoolId() uint32
 	GetMaxPoolId() uint32
 	UpdatePoolId(oldPoolId uint32, newPoolId uint32)

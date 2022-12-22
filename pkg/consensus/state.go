@@ -1,4 +1,4 @@
-package states
+package consensus
 
 import "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 
@@ -8,5 +8,6 @@ type BlockState interface {
 	RecvBlockHeight(height uint32, pubKey string)
 	RecvBlockHash(from string, masterHash string, blockIdx uint32)
 	RecvBlock(pairedBlock *types.PairedBlock, pubKey string)
+	TimerExpired(context interface{}) bool
 	Exit()
 }

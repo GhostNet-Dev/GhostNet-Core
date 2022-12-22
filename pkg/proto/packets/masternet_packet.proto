@@ -1,0 +1,45 @@
+syntax = "proto3";
+package ghostnet.packets;
+option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets";
+
+import "common_packet.proto";
+
+message MasterNodeUserInfoSq {
+    MasterPacket Master = 1;
+    GhostUser User = 2;
+}
+
+message MasterNodeUserInfoCq {
+    MasterPacket Master = 1;
+    GhostUser User = 2;
+}
+
+message ReqeustMasterNodeListSq {
+    MasterPacket Master = 1;
+    uint32 StartIndex = 2;
+}
+
+message RequestMasterNodeListCq {
+    MasterPacket Master = 1;
+}
+
+message ResponseMasterNodeListSq {
+    MasterPacket Master = 1;
+    repeated GhostUser User = 2;
+    uint32 Index = 3;
+    uint32 Total = 4;
+}
+
+message ResponseMasterNodeListCq {
+    MasterPacket Master = 1;
+}
+
+message SearchGhostPubKeySq {
+    MasterPacket Master = 1;
+    string  Nickname = 2;
+}
+
+message SearchGhostPubKeyCq {
+    MasterPacket Master = 1;
+    repeated GhostUser User = 2;
+}

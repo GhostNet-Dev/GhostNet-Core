@@ -1,12 +1,11 @@
-package states
+package consensus
 
 import (
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type VerificationState struct {
-	blockMachine *consensus.BlockMachine
+	blockMachine *BlockMachine
 }
 
 func (s *VerificationState) Inititalize() {
@@ -29,6 +28,10 @@ func (s *VerificationState) RecvBlockHash(from string, masterHash string, blockI
 }
 func (s *VerificationState) RecvBlock(pairedBlock *types.PairedBlock, pubKey string) {
 
+}
+
+func (s *VerificationState) TimerExpired(context interface{}) bool {
+	return false
 }
 
 func (s *VerificationState) Exit() {

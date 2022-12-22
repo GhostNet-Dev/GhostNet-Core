@@ -44,3 +44,10 @@ func (con *Consensus) Consensus(pairedBlock *types.PairedBlock) (merge bool, reb
 
 	return merge, rebuild
 }
+
+func (con *Consensus) CheckTriggerNewBlock() (bool, uint32) {
+	height := con.blockContainer.BlockHeight()
+	triggerTxCount := con.GetMaxTransactionCount(height)
+	txCount := con.blockContainer.GetCandidateTxCount()
+	return txCount >= triggerTxCount, triggerTxCount
+}

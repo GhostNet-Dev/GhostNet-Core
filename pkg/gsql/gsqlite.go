@@ -296,7 +296,7 @@ func (gSql *GSqlite3) InsertQuery(query string, args ...interface{}) {
 	}
 }
 
-func (gSql *GSqlite3) SelectUnusedOutputs(txType uint32, toAddr []byte) []types.PrevOutputParam {
+func (gSql *GSqlite3) SelectUnusedOutputs(txType types.TxOutputType, toAddr []byte) []types.PrevOutputParam {
 	outputs := []types.PrevOutputParam{}
 
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
@@ -390,6 +390,18 @@ func (gSql *GSqlite3) GetMaxPoolId() uint32 {
 func (gSql *GSqlite3) UpdatePoolId(oldPoolId uint32, newPoolId uint32) {
 	gSql.InsertQuery(`update c_transactions set TxIndex = ? where TxIndex == ?;`,
 		oldPoolId, newPoolId)
+}
+
+func (gSql *GSqlite3) SelectCandidateTxCount() uint32 {
+	var count uint32
+	query, err := gSql.db.Prepare("select count(*) from c_transactions")
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	err = query.QueryRow().Scan(&count)
+	return count
 }
 
 func (gSql *GSqlite3) SelectTxsPool(poolId uint32) []types.GhostTransaction {

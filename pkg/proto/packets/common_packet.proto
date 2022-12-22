@@ -1,0 +1,80 @@
+syntax = "proto3";
+package ghostnet.packets;
+option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets";
+
+message GhostIp {
+    string Ip = 1;
+    string Port = 2;
+}
+
+message GhostUser {
+    string MasterPubKey = 1;
+    string PubKey = 2;
+    string Nickname = 3;
+}
+
+enum PacketType {
+    GetGhostNetVersion = 0;
+    // master node packet type
+    NotificationMasterNode = 1;
+    NotificationMasterFriendNode = 2;
+    ConnectToMasterNode = 3;
+    SearchGhostPubKey = 4;
+    RequestMasterNodeList = 5;
+    ResponseMasterNodeList = 6;
+    RequestMasterFriendNodeList = 7;
+    ResponseMasterFriendNodeList = 8;
+    SearchMasterPubKey = 9;
+    SearchResultMasterPubKey = 10;
+    RegistBadBlock = 11;
+
+    // blockchain packet type
+    GetHeightestBlock = 12;
+    NewBlock = 13;
+    GetBlock = 14;
+    SendBlock = 15;
+    ScanAddrBlock = 16; // not used...
+    SendTransaction = 17;
+    SearchTransaction = 18;
+    SendDataTransaction = 19;
+    SearchDataTransaction = 20;
+    ScanBlockChain = 21;
+    CheckGhostNickname = 22;
+    SendDataTxIdList = 23;
+    GetDataTxIdList = 24;
+    ReportBlockError = 25;
+    GetBlockHash = 26;
+    SendBockHash = 27;
+    GetBlockPrevHash = 28;
+    SendBlockPrevHash = 29;
+    GetTxStatus = 30;
+    SendTxStatus = 31;
+}
+
+message Any {
+    PacketType Type = 1;
+    bytes PacketData = 2;
+}
+
+message GhostPacket {
+    string FromPubKeyAddress = 1;
+    uint32 RequestId = 2;
+    uint32 ClientId = 3;
+    GhostIp Source = 4;
+    uint64 TimeId = 5;
+    bool SqFlag = 6;
+}
+
+enum RoutingType {
+    None = 0;
+    BroadCastingLevelZero = 1;
+    BroadCasting = 2;
+    Flooding = 3;
+    SelectiveFlooding = 4;
+}
+
+message MasterPacket {
+    GhostPacket Common = 1;
+    RoutingType RoutingT = 2;
+    uint32 Level = 3;
+}

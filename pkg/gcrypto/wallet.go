@@ -1,10 +1,11 @@
 package gcrypto
 
 type Wallet struct {
-	myAddr GhostAddress
+	myAddr   GhostAddress
+	nickname string
 }
 
-func NewWallet(path string) *Wallet {
+func NewWallet() *Wallet {
 	return new(Wallet)
 }
 

@@ -56,7 +56,7 @@ func TestMakeCoinTx(t *testing.T) {
 
 	assert.Equal(t, true, ok, "output이 없습니다. test를 다시 검토하세요")
 
-	prevMap := map[uint32][]types.PrevOutputParam{}
+	prevMap := map[types.TxOutputType][]types.PrevOutputParam{}
 	prevMap[types.TxTypeCoinTransfer] = outputParams
 
 	txInfo := TransferCoinInfo{

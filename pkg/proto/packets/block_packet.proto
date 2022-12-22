@@ -1,0 +1,155 @@
+syntax = "proto3";
+package ghostnet.packets;
+option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets";
+
+import "common_packet.proto";
+
+message GetHeightestBlockSq {
+    MasterPacket Master = 1;
+}
+
+message GetHeightestBlockCq {
+    MasterPacket Master = 1;
+    uint32 Height = 2;
+}
+
+message NewBlockSq {
+    MasterPacket Master = 1;
+    string BlockFilename = 2;
+}
+
+message NewBlockCq {
+    MasterPacket Master = 1;
+}
+
+message GetBlockSq {
+    MasterPacket Master = 1;
+    uint32 BlockId = 2;
+}
+
+message GetBlockCq {
+    MasterPacket Master = 1;
+}
+
+message SendBlockSq {
+    MasterPacket Master = 1;
+    string BlockFilename = 2;
+}
+
+message SendBlockCq {
+    MasterPacket Master = 1;
+}
+
+message SendTransactionSq {
+    MasterPacket Master = 1;
+    bytes TxId = 2;
+}
+
+message SendTransactonCq {
+    MasterPacket Master = 1;
+}
+
+message SendDataTransactionSq {
+    MasterPacket Master = 1;
+    bytes TxId = 2;
+    bytes DataTxId = 3;
+}
+
+message SendDataTransactionCq {
+    MasterPacket Master = 1;
+}
+
+message SearchTransactionSq {
+    MasterPacket Master = 1;
+    bytes Address = 2;
+    uint32 Type = 3;
+}
+
+message SearchTransactionCq {
+    MasterPacket Master = 1;
+}
+
+message GetDataTxIdListSq {
+    MasterPacket Master = 1;
+    uint32 BlockId = 2;
+    uint32 skip = 3;
+    uint32 take = 4;
+    bytes PubKey = 5;
+}
+
+message GetDataTxIdListCq {
+    MasterPacket Master = 1;
+}
+
+message SendDataTxIdListSq {
+    MasterPacket Master = 1;
+    bytes DataTxId = 2;
+    uint32 BlockId = 3;
+    bytes PubKey = 4;
+}
+
+message SendDataTxIdListCq {
+    MasterPacket Master = 1;
+}
+
+message GetBlockHashSq {
+    MasterPacket Master = 1;
+    uint32 BlockId = 2;
+}
+
+message GetBlockHashCq {
+    MasterPacket Master = 1;
+}
+
+message SendBlockHashSq {
+    MasterPacket Master = 1;
+    bytes Hash = 2;
+}
+
+message SendBlockHashCq {
+    MasterPacket Master = 1;
+}
+
+message GetBlockPrevHashSq {
+    MasterPacket Master = 1;
+    uint32 BlockId = 2;
+}
+
+message GetBlockPrevHashCq {
+    MasterPacket Master = 1;
+}
+
+message SendBlockPrevHashSq {
+    MasterPacket Master = 1;
+    bytes Hash = 2;
+}
+
+message SendBlockPrevHashCq {
+    MasterPacket Master = 1;
+}
+
+enum TxLocation {
+    InBlock = 0;
+    InCandidatePool = 1;
+    Missing = 2;
+}
+
+message GetTxStatusSq {
+    MasterPacket Master = 1;
+    bytes TxId = 2;
+}
+
+message GetTxStatusCq {
+    MasterPacket Master = 1;
+}
+
+message SendTxStatusSq {
+    MasterPacket Master = 1;
+    bytes TxId = 2;
+    uint32 BlockId = 3;
+    TxLocation TxLoc = 4;
+}
+
+message SendTxStatusCq {
+    MasterPacket Master = 1;
+}

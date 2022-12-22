@@ -5,12 +5,13 @@ import (
 	"encoding/binary"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/libs/container"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type GFuncParam struct {
 	InputSig      []byte
 	ScriptPubbKey []byte
-	TxType        uint32
+	TxType        types.TxOutputType
 }
 
 type GVMRegister struct {

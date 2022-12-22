@@ -8,7 +8,7 @@ const (
 )
 
 var (
-	maxTxCountDic map[uint32]uint32
+	maxTxCountDic = make(map[uint32]uint32)
 )
 
 func InitInterval() {

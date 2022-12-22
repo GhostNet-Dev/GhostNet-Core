@@ -76,8 +76,8 @@ func (txs *TXs) MakeContractTx(prev types.PrevOutputParam,
 	}
 }
 
-func (txs *TXs) MakeTransaction(info TransferCoinInfo, prev map[uint32][]types.PrevOutputParam,
-	next map[uint32][]types.NextOutputParam) *types.GhostTransaction {
+func (txs *TXs) MakeTransaction(info TransferCoinInfo, prev map[types.TxOutputType][]types.PrevOutputParam,
+	next map[types.TxOutputType][]types.NextOutputParam) *types.GhostTransaction {
 	dummy := make([]byte, gbytes.HashSize)
 	inputs := []types.TxInput{}
 	outputs := []types.TxOutput{}
@@ -103,7 +103,7 @@ func (txs *TXs) MakeTransaction(info TransferCoinInfo, prev map[uint32][]types.P
 	return tx
 }
 
-func (txs *TXs) MakeInputOutput(txType uint32, info TransferCoinInfo, prev []types.PrevOutputParam,
+func (txs *TXs) MakeInputOutput(txType types.TxOutputType, info TransferCoinInfo, prev []types.PrevOutputParam,
 	next []types.NextOutputParam) (inputs []types.TxInput, outputs []types.TxOutput) {
 	var totalCoin uint64 = 0
 	var transferCoin uint64 = 0

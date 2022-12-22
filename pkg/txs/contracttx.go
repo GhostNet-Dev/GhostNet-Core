@@ -5,7 +5,7 @@ import (
 )
 
 func (txs *TXs) CreateContractTx(info TransferCoinInfo, nickname string) *types.GhostTransaction {
-	nextOutputParam := map[uint32][]types.NextOutputParam{
+	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
 		types.TxTypeContract: {
 			{
 				TxType:       types.TxTypeContract,
