@@ -1,6 +1,7 @@
 package txs
 
 import (
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -11,7 +12,7 @@ func (txs *TXs) CreateContractTx(info TransferCoinInfo, nickname string) *types.
 				TxType:       types.TxTypeContract,
 				RecvAddr:     info.ToAddr,
 				Broker:       info.Broker,
-				OutputScript: txs.gScript.MakeRootAccount(info.ToAddr, nickname),
+				OutputScript: gvm.MakeRootAccount(info.ToAddr, nickname),
 				TransferCoin: 0,
 			},
 		},

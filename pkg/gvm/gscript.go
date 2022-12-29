@@ -19,7 +19,7 @@ func (gScript *GScript) MakeBlockSignature(block *types.GhostNetBlock, ghostAddr
 	block.Header.BlockSignature = types.SigHash{}
 	block.Header.SignatureSize = uint32(block.Header.BlockSignature.Size())
 
-	sig := gScript.makeSignature(block.Header.SerializeToByte(), ghostAddr)
+	sig := makeSignature(block.Header.SerializeToByte(), ghostAddr)
 	block.Header.SignatureSize = uint32(sig.Size())
 	block.Header.BlockSignature = *sig
 }
@@ -33,7 +33,7 @@ func (gScript *GScript) MakeScriptSigExecuteUnlock(tx *types.GhostTransaction, g
 }
 
 func (gScript *GScript) MakeInputParam(buf []byte, myAddress *gcrypto.GhostAddress) []byte {
-	sig := gScript.makeSignature(buf, myAddress)
+	sig := makeSignature(buf, myAddress)
 	sigBuf := sig.SerializeToByte()
 	scriptBuf := new(bytes.Buffer)
 	binary.Write(scriptBuf, binary.LittleEndian, OP_PUSHSIG)
@@ -42,7 +42,7 @@ func (gScript *GScript) MakeInputParam(buf []byte, myAddress *gcrypto.GhostAddre
 	return resultBuf
 }
 
-func (gScript *GScript) makeSignature(buf []byte, myAddress *gcrypto.GhostAddress) *types.SigHash {
+func makeSignature(buf []byte, myAddress *gcrypto.GhostAddress) *types.SigHash {
 	signPack := gcrypto.Signer(buf, myAddress)
 	r, s := signPack.R.Bytes(), signPack.S.Bytes()
 	sig := &types.SigHash{
@@ -58,7 +58,7 @@ func (gScript *GScript) makeSignature(buf []byte, myAddress *gcrypto.GhostAddres
 	return sig
 }
 
-func (gScript *GScript) MakeLockScriptOut(ToAddr []byte) []byte {
+func MakeLockScriptOut(ToAddr []byte) []byte {
 	scriptBuf := new(bytes.Buffer)
 	lockOutputScript(scriptBuf, ToAddr)
 	binary.Write(scriptBuf, binary.LittleEndian, OP_PAY)
@@ -78,7 +78,7 @@ func lockOutputScript(scriptBuf *bytes.Buffer, ToAddr []byte) {
 	binary.Write(scriptBuf, binary.LittleEndian, OP_CHECKSIG)
 }
 
-func (gScript *GScript) MakeRootAccount(ToAddr []byte, Nickname string) []byte {
+func MakeRootAccount(ToAddr []byte, Nickname string) []byte {
 	nickname := []byte(Nickname)
 	nickBuf := make([]uint8, len(nickname))
 	copy(nickBuf[:], nickname[:])

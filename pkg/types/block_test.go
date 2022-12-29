@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
-	pb "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/types"
+	pb "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"

@@ -35,15 +35,19 @@ func NewMainServer(con *consensus.Consensus,
 }
 
 func (main *MainServer) StartServer() {
-	netChannel := make(chan []byte)
+	netChannel := make(chan p2p.RequestPacketInfo)
 
 	main.udp.Start(netChannel)
 
 	for {
 		select {
-		case packetByte := <-netChannel:
+		case packetInfo := <-netChannel:
+			packetByte := packetInfo.PacketByte
 			recvPacket := packets.Any{}
-			_ := proto.Unmarshal(packetByte, &recvPacket)
+			if err := proto.Unmarshal(packetByte, &recvPacket); err != nil {
+				// masternode layer로 전송한다.
+
+			}
 		case <-time.After(1000 * time.Nanosecond):
 
 		}

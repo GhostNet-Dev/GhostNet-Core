@@ -2,46 +2,46 @@ package mainserver
 
 import "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 
-func (server *BlockServer) BroadcastBlockChainNotification() {
+func (blockMgr *BlockManager) BroadcastBlockChainNotification() {
 
 }
 
-func (server *BlockServer) MiningStart() {
+func (blockMgr *BlockManager) MiningStart() {
 
 }
 
-func (server *BlockServer) MiningStop() {
+func (blockMgr *BlockManager) MiningStop() {
 
 }
 
-func (server *BlockServer) CheckBlockHeight() {
+func (blockMgr *BlockManager) CheckBlockHeight() {
 
 }
 
-func (server *BlockServer) SetHeighestCandidatePool() {
+func (blockMgr *BlockManager) SetHeighestCandidatePool() {
 
 }
 
-func (server *BlockServer) LoadHashFromTempDb(blockIdx uint32) string {
+func (blockMgr *BlockManager) LoadHashFromTempDb(blockIdx uint32) string {
 	return ""
 }
 
-func (server *BlockServer) RequestGetBlock(blockIdx uint32) {
+func (blockMgr *BlockManager) RequestGetBlock(blockIdx uint32) {
 
 }
 
-func (server *BlockServer) RequestGetBlockHash(currBlockHeight uint32) {
+func (blockMgr *BlockManager) RequestGetBlockHash(currBlockHeight uint32) {
 
 }
 
-func (server *BlockServer) CheckAndSave(pairedBlock *types.PairedBlock) bool {
+func (blockMgr *BlockManager) CheckAndSave(pairedBlock *types.PairedBlock) bool {
 	return false
 }
 
-func (server *BlockServer) MergeErrorNotification() {
+func (blockMgr *BlockManager) MergeErrorNotification() {
 
 }
 
-func (server *BlockServer) LocalBlockDbValidation() bool {
+func (blockMgr *BlockManager) LocalBlockDbValidation() bool {
 	return false
 }

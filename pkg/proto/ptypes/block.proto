@@ -1,6 +1,6 @@
 syntax = "proto3";
-package ghostnet.types;
-option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/types";
+package ghostnet.ptypes;
+option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes";
 
 import "transaction.proto";
 

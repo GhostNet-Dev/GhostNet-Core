@@ -45,7 +45,7 @@ message SendTransactionSq {
     bytes TxId = 2;
 }
 
-message SendTransactonCq {
+message SendTransactionCq {
     MasterPacket Master = 1;
 }
 

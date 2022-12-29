@@ -148,7 +148,7 @@ func (txs *TXs) MakeInputOutput(txType types.TxOutputType, info TransferCoinInfo
 	}
 
 	if txType == types.TxTypeCoinTransfer && totalCoin > transferCoin {
-		script := txs.gScript.MakeLockScriptOut(info.MyWallet.MyPubKey())
+		script := gvm.MakeLockScriptOut(info.MyWallet.MyPubKey())
 		output := types.TxOutput{
 			Addr:         info.MyWallet.MyPubKey(),
 			BrokerAddr:   info.Broker,

@@ -10,10 +10,9 @@ require (
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
 	github.com/traherom/memstream v0.0.0-20210211152058-869756e84126
+	golang.org/x/exp v0.0.0-20221227203929-1b447090c38c
 	google.golang.org/protobuf v1.28.1
 )
-
-require github.com/sirupsen/logrus v1.9.0 // indirect
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

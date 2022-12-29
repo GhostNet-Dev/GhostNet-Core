@@ -6,6 +6,7 @@ import (
 
 	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -130,7 +131,7 @@ func (blocks *Blocks) MakeAliceCoin(blockId uint32, adamsAddr []byte,
 	for key, coin := range brokerGather {
 		// TODO: string -> byte -> string이 같은지 확인이 필요하다.
 		pubKey := []byte(key)
-		baseScript := blocks.gScript.MakeLockScriptOut(pubKey)
+		baseScript := gvm.MakeLockScriptOut(pubKey)
 		outputs = append(outputs, types.TxOutput{
 			Addr:         pubKey,
 			BrokerAddr:   pubKey,

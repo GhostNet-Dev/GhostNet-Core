@@ -21,7 +21,7 @@ var (
 	block          = blocks.NewBlocks(blockContainer, Txs, 1)
 	con            = consensus.NewConsensus(blockContainer)
 	fsm            = consensus.NewBlockMachine(blockContainer)
-	blockServer    = NewBlockServer(con, fsm, block, Miner)
+	blockServer    = NewBlockManager(con, fsm, block, Miner)
 )
 
 func init() {

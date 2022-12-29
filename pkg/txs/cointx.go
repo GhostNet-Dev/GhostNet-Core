@@ -2,6 +2,7 @@ package txs
 
 import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -26,14 +27,14 @@ func (txs *TXs) TransferCoin(info TransferCoinInfo) *types.GhostTransaction {
 				TxType:       types.TxTypeCoinTransfer,
 				RecvAddr:     info.ToAddr,
 				Broker:       info.Broker,
-				OutputScript: txs.gScript.MakeLockScriptOut(info.ToAddr),
+				OutputScript: gvm.MakeLockScriptOut(info.ToAddr),
 				TransferCoin: info.TransferCoin,
 			},
 			{
 				TxType:       types.TxTypeCoinTransfer,
 				RecvAddr:     info.FeeAddr,
 				Broker:       info.FeeBroker,
-				OutputScript: txs.gScript.MakeLockScriptOut(info.FeeAddr),
+				OutputScript: gvm.MakeLockScriptOut(info.FeeAddr),
 				TransferCoin: uint64(float64(info.TransferCoin) * FeeRatio),
 			},
 		},
