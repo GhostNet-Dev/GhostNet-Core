@@ -27,7 +27,7 @@ func TestUdpDefault(t *testing.T) {
 		select {
 		case packetInfo := <-netChannel:
 			packetByte := packetInfo.PacketByte
-			recvPacket := packets.Any{}
+			recvPacket := packets.Header{}
 			if err := proto.Unmarshal(packetByte, &recvPacket); err != nil {
 				// packet type별로 callback handler를 만들어야한다.
 				t.Error(err)
@@ -47,7 +47,8 @@ func TestUdpDefault(t *testing.T) {
 
 	addr, err := net.ResolveUDPAddr("udp", "127.0.0.1:8888")
 	srv.SendPacket(&ResponsePacketInfo{
-		ToAddr: addr, PacketType: packets.PacketType_NotificationMasterNode,
+		ToAddr: addr, PacketType: packets.PacketType_MasterNetwork,
+		SecondType: packets.PacketSecondType_NotificationMasterNode,
 		PacketData: data, SqFlag: true})
 
 	wg.Wait()
@@ -58,7 +59,8 @@ var (
 	TestResult bool
 )
 
-func PacketSqHandler(packetByte []byte, from *net.UDPAddr) []ResponsePacketInfo {
+func PacketSqHandler(header *packets.Header, from *net.UDPAddr) []ResponsePacketInfo {
+	packetByte := header.PacketData
 	infoSq := &packets.MasterNodeUserInfoSq{}
 	proto.Unmarshal(packetByte, infoSq)
 	TestResult = infoSq.User.Nickname == "test"
@@ -72,7 +74,8 @@ func TestPacketHandler(t *testing.T) {
 	TestResult = false
 
 	srv.Start(nil)
-	srv.Pf.SingleRegisterPacketHandler(packets.PacketType_NotificationMasterNode,
+	srv.Pf.SingleRegisterPacketHandler(packets.PacketType_MasterNetwork,
+		packets.PacketSecondType_NotificationMasterNode,
 		PacketSqHandler, nil)
 
 	testPacket := packets.MasterNodeUserInfoSq{User: &ptypes.GhostUser{Nickname: "test"}}
@@ -83,7 +86,8 @@ func TestPacketHandler(t *testing.T) {
 
 	addr, err := net.ResolveUDPAddr("udp", "127.0.0.1:8888")
 	srv.SendPacket(&ResponsePacketInfo{
-		ToAddr: addr, PacketType: packets.PacketType_NotificationMasterNode,
+		ToAddr: addr, PacketType: packets.PacketType_MasterNetwork,
+		SecondType: packets.PacketSecondType_NotificationMasterNode,
 		PacketData: data, SqFlag: true})
 	GlobalWg.Wait()
 	assert.Equal(t, true, TestResult, "packet내용이 맞지 않습니다.")

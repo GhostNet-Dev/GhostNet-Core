@@ -25,6 +25,8 @@ type RequestPacketInfo struct {
 type ResponsePacketInfo struct {
 	ToAddr     *net.UDPAddr
 	PacketType packets.PacketType
+	SecondType packets.PacketSecondType
+	ThirdType  packets.PacketThirdType
 	PacketData []byte
 	SqFlag     bool
 }
@@ -47,7 +49,7 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 	}
 
 	// setup listener for incoming UDP connection
-	if udp.UdpConn, err = net.ListenUDP("udp", udpAddr); err != nil {
+	if udp.UdpConn, err = net.ListenUDP("udp4", udpAddr); err != nil {
 		defer udp.UdpConn.Close()
 		log.Fatal(err)
 	}
@@ -61,20 +63,20 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 				select {
 				case packetInfo := <-netChannel:
 					packetByte := packetInfo.PacketByte
-					recvPacket := packets.Any{}
+					recvPacket := packets.Header{}
 					if err := proto.Unmarshal(packetByte, &recvPacket); err != nil {
 						// packet type별로 callback handler를 만들어야한다.
 						log.Fatal(err)
 					}
 
 					if recvPacket.SqFlag == true {
-						if response := udp.Pf.packetSqHandler[recvPacket.Type](recvPacket.PacketData, packetInfo.Addr); response != nil {
+						if response := udp.Pf.firstLevel[recvPacket.Type].packetSqHandler[recvPacket.SecondType](&recvPacket, packetInfo.Addr); response != nil {
 							for _, packet := range response {
 								udp.SendPacket(&packet)
 							}
 						}
 					} else {
-						udp.Pf.packetCqHandler[recvPacket.Type](recvPacket.PacketData, packetInfo.Addr)
+						udp.Pf.firstLevel[recvPacket.Type].packetCqHandler[recvPacket.SecondType](&recvPacket, packetInfo.Addr)
 					}
 				}
 			}
@@ -115,7 +117,7 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 }
 
 func (udp *UdpServer) SendPacket(sendInfo *ResponsePacketInfo) {
-	anyData := packets.Any{
+	anyData := packets.Header{
 		Type:       sendInfo.PacketType,
 		SqFlag:     sendInfo.SqFlag,
 		PacketData: sendInfo.PacketData,

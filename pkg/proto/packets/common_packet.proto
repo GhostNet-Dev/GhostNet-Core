@@ -5,43 +5,61 @@ option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets";
 import "user.proto";
 
 enum PacketType {
-    GetGhostNetVersion = 0;
+    Reserved0 = 0;
     // master node packet type
-    NotificationMasterNode = 1;
-    ConnectToMasterNode = 3;
-    SearchGhostPubKey = 4;
-    RequestMasterNodeList = 5;
-    ResponseMasterNodeList = 6;
-    SearchMasterPubKey = 7;
-    RegistBadBlock = 9;
-
-    // blockchain packet type
-    GetHeightestBlock = 10;
-    NewBlock = 11;
-    GetBlock = 12;
-    SendBlock = 13;
-    ScanAddrBlock = 14; // not used...
-    SendTransaction = 15;
-    SearchTransaction = 16;
-    SendDataTransaction = 17;
-    SearchDataTransaction = 18;
-    ScanBlockChain = 19;
-    CheckGhostNickname = 20;
-    SendDataTxIdList = 21;
-    GetDataTxIdList = 22;
-    ReportBlockError = 23;
-    GetBlockHash = 24;
-    SendBlockHash = 25;
-    GetBlockPrevHash = 26;
-    SendBlockPrevHash = 27;
-    GetTxStatus = 28;
-    SendTxStatus = 29;
+    MasterNetwork = 1;
 }
 
-message Any {
+enum PacketSecondType {
+    GetGhostNetVersion = 0;
+    NotificationMasterNode = 1;
+    ConnectToMasterNode = 2;
+    SearchGhostPubKey = 3;
+    RequestMasterNodeList = 4;
+    ResponseMasterNodeList = 5;
+    SearchMasterPubKey = 6;
+    RegistBadBlock = 7;
+    BlockChain = 8;
+}
+
+enum PacketThirdType {
+    Reserved1 = 0;
+    GetHeightestBlock = 1;
+    NewBlock = 2;
+    GetBlock = 3;
+    SendBlock = 4;
+    ScanAddrBlock = 5; // not used...
+    SendTransaction = 6;
+    SearchTransaction = 7;
+    SendDataTransaction = 8;
+    SearchDataTransaction = 9;
+    ScanBlockChain = 10;
+    CheckGhostNickname = 11;
+    SendDataTxIdList = 12;
+    GetDataTxIdList = 13;
+    ReportBlockError = 14;
+    GetBlockHash = 15;
+    SendBlockHash = 16;
+    GetBlockPrevHash = 17;
+    SendBlockPrevHash = 18;
+    GetTxStatus = 19;
+    SendTxStatus = 20;
+}
+
+enum RoutingType {
+    None = 0;
+    BroadCastingLevelZero = 1;
+    BroadCasting = 2;
+    Flooding = 3;
+    SelectiveFlooding = 4;
+}
+
+message Header {
     PacketType Type = 1;
-    bool SqFlag = 2;
-    bytes PacketData = 3;
+    PacketSecondType SecondType = 2;
+    PacketThirdType ThirdType = 3;
+    bool SqFlag = 4;
+    bytes PacketData = 5;
 }
 
 message GhostPacket {
@@ -52,13 +70,6 @@ message GhostPacket {
     uint64 TimeId = 5;
 }
 
-enum RoutingType {
-    None = 0;
-    BroadCastingLevelZero = 1;
-    BroadCasting = 2;
-    Flooding = 3;
-    SelectiveFlooding = 4;
-}
 
 message MasterPacket {
     GhostPacket Common = 1;

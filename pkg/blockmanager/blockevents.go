@@ -1,4 +1,4 @@
-package mainserver
+package blockmanager
 
 import "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 

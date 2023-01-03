@@ -2,10 +2,10 @@ package gconfig
 
 const (
 	DefaultBinaryVersion = 1
-	DefaultIp = "127.0.0.1"
-	DefaultPort = "50129"
-	DefaultRootPath = "./"
-	DefaultSqlPath = "./"
+	DefaultIp            = "127.0.0.1"
+	DefaultPort          = "50129"
+	DefaultRootPath      = "./"
+	DefaultSqlPath       = "./"
 )
 
 var (
@@ -13,7 +13,7 @@ var (
 )
 
 type GConfig struct {
-	GhostVersion int
+	GhostVersion uint32
 	Ip           string
 	Port         string
 	RootPath     string

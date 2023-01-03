@@ -10,15 +10,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (master *MasterNetwork) GetGhostNetVersionSq(packet []byte, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) GetGhostNetVersionSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
 	sq := &packets.VersionInfoSq{}
-	if err := proto.Unmarshal(packet, sq); err != nil {
+	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
 	}
 
 	cq := packets.VersionInfoCq{
 		Master:  p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr),
-		Version: uint32(master.config.GhostVersion),
+		Version: master.config.GhostVersion,
 	}
 
 	sendData, err := proto.Marshal(&cq)
@@ -28,16 +28,17 @@ func (master *MasterNetwork) GetGhostNetVersionSq(packet []byte, from *net.UDPAd
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_GetGhostNetVersion,
+			PacketType: packets.PacketType_MasterNetwork,
+			SecondType: packets.PacketSecondType_GetGhostNetVersion,
 			PacketData: sendData,
 			SqFlag:     false,
 		},
 	}
 }
 
-func (master *MasterNetwork) GetGhostNetVersionCq(packet []byte, from *net.UDPAddr) {
+func (master *MasterNetwork) GetGhostNetVersionCq(header *packets.Header, from *net.UDPAddr) {
 	cq := &packets.VersionInfoCq{}
-	if err := proto.Unmarshal(packet, cq); err != nil {
+	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
 	if cq.Version > uint32(master.config.GhostVersion) {
@@ -45,9 +46,9 @@ func (master *MasterNetwork) GetGhostNetVersionCq(packet []byte, from *net.UDPAd
 	}
 }
 
-func (master *MasterNetwork) NotificationMasterNodeSq(packet []byte, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) NotificationMasterNodeSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
 	sq := &packets.MasterNodeUserInfoSq{}
-	if err := proto.Unmarshal(packet, sq); err != nil {
+	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
 	}
 	cq := packets.MasterNodeUserInfoCq{
@@ -65,18 +66,19 @@ func (master *MasterNetwork) NotificationMasterNodeSq(packet []byte, from *net.U
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_GetGhostNetVersion,
+			PacketType: packets.PacketType_MasterNetwork,
+			SecondType: packets.PacketSecondType_NotificationMasterNode,
 			PacketData: sendData,
 			SqFlag:     false,
 		},
 	}
 }
 
-func (master *MasterNetwork) NotificationMasterNodeCq(packet []byte, from *net.UDPAddr) {}
+func (master *MasterNetwork) NotificationMasterNodeCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (master *MasterNetwork) ConnectToMasterNodeSq(packet []byte, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) ConnectToMasterNodeSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
 	sq := &packets.MasterNodeUserInfoSq{}
-	if err := proto.Unmarshal(packet, sq); err != nil {
+	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
 	}
 
@@ -97,24 +99,25 @@ func (master *MasterNetwork) ConnectToMasterNodeSq(packet []byte, from *net.UDPA
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_GetGhostNetVersion,
+			PacketType: packets.PacketType_MasterNetwork,
+			SecondType: packets.PacketSecondType_ConnectToMasterNode,
 			PacketData: sendData,
 			SqFlag:     false,
 		},
 	}
-} //ConnectToMasterNode = 3;
+}
 
-func (master *MasterNetwork) ConnectToMasterNodeCq(packet []byte, from *net.UDPAddr) {
+func (master *MasterNetwork) ConnectToMasterNodeCq(header *packets.Header, from *net.UDPAddr) {
 	cq := &packets.MasterNodeUserInfoCq{}
-	if err := proto.Unmarshal(packet, cq); err != nil {
+	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
 	master.masterInfo = &MasterNode{User: cq.User, NetAddr: from}
-} //ConnectToMasterNode = 3;
+}
 
-func (master *MasterNetwork) RequestMasterNodeListSq(packet []byte, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) RequestMasterNodeListSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
 	sq := &packets.RequestMasterNodeListSq{}
-	if err := proto.Unmarshal(packet, sq); err != nil {
+	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
 	}
 
@@ -141,48 +144,68 @@ func (master *MasterNetwork) RequestMasterNodeListSq(packet []byte, from *net.UD
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_GetGhostNetVersion,
+			PacketType: packets.PacketType_MasterNetwork,
+			SecondType: packets.PacketSecondType_RequestMasterNodeList,
 			PacketData: sendData,
 			SqFlag:     false,
 		},
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_ResponseMasterNodeList,
+			PacketType: packets.PacketType_MasterNetwork,
+			SecondType: packets.PacketSecondType_ResponseMasterNodeList,
 			PacketData: responseData,
 			SqFlag:     true,
 		},
 	}
-} //RequestMasterNodeList = 5;
+}
 
-func (master *MasterNetwork) RequestMasterNodeListCq(packet []byte, from *net.UDPAddr) {} //RequestMasterNodeList = 5;
+func (master *MasterNetwork) RequestMasterNodeListCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (master *MasterNetwork) ResponseMasterNodeListSq(packet []byte, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) ResponseMasterNodeListSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
 	sq := &packets.ResponseMasterNodeListSq{}
-	if err := proto.Unmarshal(packet, sq); err != nil {
+	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
 	}
 
-	return nil
-} //ResponseMasterNodeList = 6;
+	master.AddMasterUserList(sq.User)
 
-func (master *MasterNetwork) ResponseMasterNodeListCq(packet []byte, from *net.UDPAddr) {
-} //ResponseMasterNodeList = 6;
+	cq := packets.ResponseMasterNodeListCq{
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr),
+	}
 
-func (master *MasterNetwork) SearchGhostPubKeySq(packet []byte, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+	sendData, err := proto.Marshal(&cq)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return []p2p.ResponsePacketInfo{
+		{
+			ToAddr:     from,
+			PacketType: packets.PacketType_MasterNetwork,
+			SecondType: packets.PacketSecondType_ResponseMasterNodeList,
+			PacketData: sendData,
+			SqFlag:     false,
+		},
+	}
+}
+
+func (master *MasterNetwork) ResponseMasterNodeListCq(header *packets.Header, from *net.UDPAddr) {}
+
+func (master *MasterNetwork) SearchGhostPubKeySq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
 	sq := &packets.SearchGhostPubKeySq{}
-	if err := proto.Unmarshal(packet, sq); err != nil {
+	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
 	}
 	// TODO: Db에서 찾아야하므로 별도의 nick table이 필요
 	return nil
-} //SearchGhostPubKey = 4;
+}
 
-func (master *MasterNetwork) SearchGhostPubKeyCq(packet []byte, from *net.UDPAddr) {
-} //SearchGhostPubKey = 4;
+func (master *MasterNetwork) SearchGhostPubKeyCq(header *packets.Header, from *net.UDPAddr) {
+}
 
-func (master *MasterNetwork) SearchMasterPubKeySq(packet []byte, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) SearchMasterPubKeySq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
 	sq := &packets.SearchGhostPubKeySq{}
-	if err := proto.Unmarshal(packet, sq); err != nil {
+	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
 	}
 	node := master.GetMasterNodeByNickname(sq.Nickname)
@@ -199,12 +222,50 @@ func (master *MasterNetwork) SearchMasterPubKeySq(packet []byte, from *net.UDPAd
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_SearchMasterPubKey,
+			PacketType: packets.PacketType_MasterNetwork,
+			SecondType: packets.PacketSecondType_SearchMasterPubKey,
 			PacketData: sendData,
 			SqFlag:     false,
 		},
 	}
-} //SearchMasterPubKey = 9;
+}
 
-func (master *MasterNetwork) SearchMasterPubKeyCq(packet []byte, from *net.UDPAddr) {
-} //SearchMasterPubKey = 9;
+func (master *MasterNetwork) SearchMasterPubKeyCq(header *packets.Header, from *net.UDPAddr) {
+	cq := &packets.SearchGhostPubKeyCq{}
+	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
+		log.Fatal(err)
+	}
+	// TODO:
+}
+
+func (master *MasterNetwork) RegisterBlockHandler(handlerSq func(*packets.Header, *net.UDPAddr) []p2p.ResponsePacketInfo,
+	handlerCq func(*packets.Header, *net.UDPAddr)) {
+	master.blockHandlerSq = handlerSq
+	master.blockHandlerCq = handlerCq
+}
+
+func (master *MasterNetwork) BlockChainSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+	if master.blockHandlerSq != nil {
+		infos := master.blockHandlerSq(header, from)
+		for _, info := range infos {
+			info.PacketType = packets.PacketType_MasterNetwork
+			info.SecondType = packets.PacketSecondType_BlockChain
+		}
+		return infos
+	}
+
+	return []p2p.ResponsePacketInfo{
+		{
+			ToAddr:     from,
+			PacketType: packets.PacketType_MasterNetwork,
+			SecondType: packets.PacketSecondType_BlockChain,
+			SqFlag:     false,
+		},
+	}
+}
+
+func (master *MasterNetwork) BlockChainCq(header *packets.Header, from *net.UDPAddr) {
+	if master.blockHandlerCq != nil {
+		master.blockHandlerCq(header, from)
+	}
+}

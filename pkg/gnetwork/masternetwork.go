@@ -1,9 +1,12 @@
 package gnetwork
 
 import (
+	"net"
+
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 )
@@ -21,6 +24,11 @@ type MasterNetwork struct {
 	ipAddr           *ptypes.GhostIp
 	config           *gconfig.GConfig
 	blockContainer   *store.BlockContainer
+	blockHandlerSq   func(*packets.Header, *net.UDPAddr) []p2p.ResponsePacketInfo
+	blockHandlerCq   func(*packets.Header, *net.UDPAddr)
+
+	packetSqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []p2p.ResponsePacketInfo
+	packetCqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr)
 }
 
 func NewMasterNode(nickname string, myAddr *gcrypto.GhostAddress, myIpAddr *ptypes.GhostIp,
@@ -33,10 +41,35 @@ func NewMasterNode(nickname string, myAddr *gcrypto.GhostAddress, myIpAddr *ptyp
 		udp:              udp,
 		owner:            myAddr,
 		ipAddr:           myIpAddr,
+		config:           config,
 		blockContainer:   blockContainer,
 	}
-	packetFactory.RegisterPacketHandler(masterNode)
 	return masterNode
+}
+
+func (node *MasterNetwork) RegisterHandler(packetFactory p2p.PacketFactory) {
+	node.packetSqHandler = make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []p2p.ResponsePacketInfo)
+	node.packetCqHandler = make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr))
+
+	node.packetSqHandler[packets.PacketSecondType_GetGhostNetVersion] = node.GetGhostNetVersionSq
+	node.packetSqHandler[packets.PacketSecondType_NotificationMasterNode] = node.NotificationMasterNodeSq
+	node.packetSqHandler[packets.PacketSecondType_ConnectToMasterNode] = node.ConnectToMasterNodeSq
+	node.packetSqHandler[packets.PacketSecondType_SearchGhostPubKey] = node.SearchGhostPubKeySq
+	node.packetSqHandler[packets.PacketSecondType_RequestMasterNodeList] = node.RequestMasterNodeListSq
+	node.packetSqHandler[packets.PacketSecondType_ResponseMasterNodeList] = node.ResponseMasterNodeListSq
+	node.packetSqHandler[packets.PacketSecondType_SearchMasterPubKey] = node.SearchMasterPubKeySq
+	node.packetSqHandler[packets.PacketSecondType_BlockChain] = node.SearchMasterPubKeySq
+
+	node.packetCqHandler[packets.PacketSecondType_GetGhostNetVersion] = node.GetGhostNetVersionCq
+	node.packetCqHandler[packets.PacketSecondType_NotificationMasterNode] = node.NotificationMasterNodeCq
+	node.packetCqHandler[packets.PacketSecondType_ConnectToMasterNode] = node.ConnectToMasterNodeCq
+	node.packetCqHandler[packets.PacketSecondType_SearchGhostPubKey] = node.SearchGhostPubKeyCq
+	node.packetCqHandler[packets.PacketSecondType_RequestMasterNodeList] = node.RequestMasterNodeListCq
+	node.packetCqHandler[packets.PacketSecondType_ResponseMasterNodeList] = node.ResponseMasterNodeListCq
+	node.packetCqHandler[packets.PacketSecondType_SearchMasterPubKey] = node.SearchMasterPubKeyCq
+	node.packetCqHandler[packets.PacketSecondType_BlockChain] = node.SearchMasterPubKeyCq
+
+	packetFactory.RegisterPacketHandler(packets.PacketType_MasterNetwork, node.packetSqHandler, node.packetCqHandler)
 }
 
 func (node *MasterNetwork) BroadcastMasterNodeNotification() {

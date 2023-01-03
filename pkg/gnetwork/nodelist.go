@@ -42,7 +42,7 @@ func (master *MasterNetwork) GetMasterNode(pubKey string) *MasterNode {
 }
 
 func (master *MasterNetwork) GetMasterNodeByNickname(nickname string) *MasterNode {
-	find, err := master.nodeList[nickname]
+	find, err := master.nicknameToPubKey[nickname]
 	if err == false {
 		log.Fatal("nickname not found")
 	}

@@ -1,4 +1,4 @@
-package mainserver
+package blockmanager
 
 import (
 	"testing"
@@ -7,12 +7,17 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/txs"
 )
 
 var (
-	Miner = gcrypto.GenerateKeyPair()
+	Miner  = gcrypto.GenerateKeyPair()
+	ipAddr = &ptypes.GhostIp{
+		Ip:   "127.0.0.1",
+		Port: "8888",
+	}
 
 	gScript        = gvm.NewGScript()
 	gVm            = gvm.NewGVM()
@@ -21,7 +26,7 @@ var (
 	block          = blocks.NewBlocks(blockContainer, Txs, 1)
 	con            = consensus.NewConsensus(blockContainer)
 	fsm            = consensus.NewBlockMachine(blockContainer)
-	blockServer    = NewBlockManager(con, fsm, block, Miner)
+	blockServer    = NewBlockManager(con, fsm, block, blockContainer, Miner, ipAddr)
 )
 
 func init() {

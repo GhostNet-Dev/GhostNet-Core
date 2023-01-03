@@ -43,7 +43,7 @@ func (main *MainServer) StartServer() {
 		select {
 		case packetInfo := <-netChannel:
 			packetByte := packetInfo.PacketByte
-			recvPacket := packets.Any{}
+			recvPacket := packets.Header{}
 			if err := proto.Unmarshal(packetByte, &recvPacket); err != nil {
 				// masternode layer로 전송한다.
 
