@@ -44,10 +44,11 @@ func NewMasterNode(nickname string, myAddr *gcrypto.GhostAddress, myIpAddr *ptyp
 		config:           config,
 		blockContainer:   blockContainer,
 	}
+	masterNode.RegisterHandler(packetFactory)
 	return masterNode
 }
 
-func (node *MasterNetwork) RegisterHandler(packetFactory p2p.PacketFactory) {
+func (node *MasterNetwork) RegisterHandler(packetFactory *p2p.PacketFactory) {
 	node.packetSqHandler = make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []p2p.ResponsePacketInfo)
 	node.packetCqHandler = make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr))
 

@@ -8,9 +8,11 @@ enum PacketType {
     Reserved0 = 0;
     // master node packet type
     MasterNetwork = 1;
+    FileTransfer = 2;
 }
 
 enum PacketSecondType {
+    option allow_alias = true;
     GetGhostNetVersion = 0;
     NotificationMasterNode = 1;
     ConnectToMasterNode = 2;
@@ -20,6 +22,9 @@ enum PacketSecondType {
     SearchMasterPubKey = 6;
     RegistBadBlock = 7;
     BlockChain = 8;
+
+    RequestFile = 1;
+    ResponseFile = 2;
 }
 
 enum PacketThirdType {

@@ -28,7 +28,6 @@ func (master *MasterNetwork) GetGhostNetVersionSq(header *packets.Header, from *
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_MasterNetwork,
 			SecondType: packets.PacketSecondType_GetGhostNetVersion,
 			PacketData: sendData,
 			SqFlag:     false,
@@ -66,7 +65,6 @@ func (master *MasterNetwork) NotificationMasterNodeSq(header *packets.Header, fr
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_MasterNetwork,
 			SecondType: packets.PacketSecondType_NotificationMasterNode,
 			PacketData: sendData,
 			SqFlag:     false,
@@ -99,7 +97,6 @@ func (master *MasterNetwork) ConnectToMasterNodeSq(header *packets.Header, from 
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_MasterNetwork,
 			SecondType: packets.PacketSecondType_ConnectToMasterNode,
 			PacketData: sendData,
 			SqFlag:     false,
@@ -144,14 +141,12 @@ func (master *MasterNetwork) RequestMasterNodeListSq(header *packets.Header, fro
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_MasterNetwork,
 			SecondType: packets.PacketSecondType_RequestMasterNodeList,
 			PacketData: sendData,
 			SqFlag:     false,
 		},
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_MasterNetwork,
 			SecondType: packets.PacketSecondType_ResponseMasterNodeList,
 			PacketData: responseData,
 			SqFlag:     true,
@@ -181,7 +176,6 @@ func (master *MasterNetwork) ResponseMasterNodeListSq(header *packets.Header, fr
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_MasterNetwork,
 			SecondType: packets.PacketSecondType_ResponseMasterNodeList,
 			PacketData: sendData,
 			SqFlag:     false,
@@ -222,7 +216,6 @@ func (master *MasterNetwork) SearchMasterPubKeySq(header *packets.Header, from *
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_MasterNetwork,
 			SecondType: packets.PacketSecondType_SearchMasterPubKey,
 			PacketData: sendData,
 			SqFlag:     false,
@@ -257,7 +250,6 @@ func (master *MasterNetwork) BlockChainSq(header *packets.Header, from *net.UDPA
 	return []p2p.ResponsePacketInfo{
 		{
 			ToAddr:     from,
-			PacketType: packets.PacketType_MasterNetwork,
 			SecondType: packets.PacketSecondType_BlockChain,
 			SqFlag:     false,
 		},

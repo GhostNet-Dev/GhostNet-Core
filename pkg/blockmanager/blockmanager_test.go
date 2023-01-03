@@ -3,10 +3,13 @@ package blockmanager
 import (
 	"testing"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gnetwork"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/txs"
@@ -24,9 +27,13 @@ var (
 	blockContainer = store.NewBlockContainer()
 	Txs            = txs.NewTXs(gScript, blockContainer, gVm)
 	block          = blocks.NewBlocks(blockContainer, Txs, 1)
+	config         = gconfig.DefaultConfig()
+	packetFactory  = p2p.NewPacketFactory()
+	udp            = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port)
 	con            = consensus.NewConsensus(blockContainer)
 	fsm            = consensus.NewBlockMachine(blockContainer)
-	blockServer    = NewBlockManager(con, fsm, block, blockContainer, Miner, ipAddr)
+	master         = gnetwork.NewMasterNode("test", Miner, ipAddr, config, packetFactory, udp, blockContainer)
+	blockServer    = NewBlockManager(con, fsm, block, blockContainer, master, Miner, ipAddr)
 )
 
 func init() {

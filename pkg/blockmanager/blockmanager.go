@@ -6,6 +6,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gnetwork"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -28,9 +29,11 @@ func NewBlockManager(con *consensus.Consensus,
 	fsm *consensus.BlockMachine,
 	block *blocks.Blocks,
 	blockContainer *store.BlockContainer,
+	master *gnetwork.MasterNetwork,
 	user *gcrypto.GhostAddress,
 	myIpAddr *ptypes.GhostIp) *BlockManager {
-	return &BlockManager{
+
+	blockMgr := &BlockManager{
 		con:            con,
 		fsm:            fsm,
 		block:          block,
@@ -38,6 +41,8 @@ func NewBlockManager(con *consensus.Consensus,
 		owner:          user,
 		localIpAddr:    myIpAddr,
 	}
+	blockMgr.InitHandler(master)
+	return blockMgr
 }
 
 func (blockMgr *BlockManager) BlockSync() bool {

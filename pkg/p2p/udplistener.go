@@ -72,6 +72,7 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 					if recvPacket.SqFlag == true {
 						if response := udp.Pf.firstLevel[recvPacket.Type].packetSqHandler[recvPacket.SecondType](&recvPacket, packetInfo.Addr); response != nil {
 							for _, packet := range response {
+								packet.PacketType = recvPacket.Type
 								udp.SendPacket(&packet)
 							}
 						}
@@ -119,6 +120,8 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 func (udp *UdpServer) SendPacket(sendInfo *ResponsePacketInfo) {
 	anyData := packets.Header{
 		Type:       sendInfo.PacketType,
+		SecondType: sendInfo.SecondType,
+		ThirdType:  sendInfo.ThirdType,
 		SqFlag:     sendInfo.SqFlag,
 		PacketData: sendInfo.PacketData,
 	}

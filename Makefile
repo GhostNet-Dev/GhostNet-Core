@@ -77,3 +77,4 @@ protoc:
 	protoc --go_out=./pkg/proto/packets --go_opt=paths=source_relative -I ./pkg/proto/ptypes -I ./pkg/proto/packets masternet_packet.proto
 	protoc --go_out=./pkg/proto/packets --go_opt=paths=source_relative -I ./pkg/proto/ptypes -I ./pkg/proto/packets block_packet.proto
 	protoc --go_out=./pkg/proto/packets --go_opt=paths=source_relative -I ./pkg/proto/ptypes -I ./pkg/proto/packets common_packet.proto
+	protoc --go_out=./pkg/proto/packets --go_opt=paths=source_relative -I ./pkg/proto/ptypes -I ./pkg/proto/packets file_packet.proto

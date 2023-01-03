@@ -1,0 +1,44 @@
+syntax = "proto3";
+package ghostnet.packets;
+option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets";
+
+import "common_packet.proto";
+
+enum FileRequestType {
+    GetFileInfo = 0;
+    GetFileData = 1;
+}
+
+
+message RequestFilePacketSq {
+    MasterPacket Master = 1;
+    FileRequestType RequestType = 2;
+    string Filename = 3;
+    int32 StartOffset = 4;
+}
+
+message RequestFilePacketCq {
+    MasterPacket Master = 1;
+    FileRequestType RequestType = 2;
+    string Filename = 3;
+    int64 FileLength = 4;
+    int32 StartOffset = 5;
+    bool Result = 6;
+}
+
+message ResponseFilePacketSq {
+    MasterPacket Master = 1;
+    uint32 SequenceNum = 2;
+    int64 StartPos = 3;
+    string Filename = 4;
+    bytes FileData = 5;
+    uint32 BufferSize = 6;
+    uint64 FileLength = 7;
+    uint64 TimeId = 8;
+}
+
+message ResponseFilePacketCq {
+    MasterPacket Master = 1;
+    uint32 SequenceNum = 2;
+    bool Result = 3;
+}
