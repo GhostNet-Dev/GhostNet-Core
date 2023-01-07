@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (master *MasterNetwork) GetGhostNetVersionSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) GetGhostNetVersionSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.VersionInfoSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -25,7 +25,7 @@ func (master *MasterNetwork) GetGhostNetVersionSq(header *packets.Header, from *
 	if err != nil {
 		log.Fatal(err)
 	}
-	return []p2p.ResponsePacketInfo{
+	return []p2p.PacketHeaderInfo{
 		{
 			ToAddr:     from,
 			SecondType: packets.PacketSecondType_GetGhostNetVersion,
@@ -45,7 +45,7 @@ func (master *MasterNetwork) GetGhostNetVersionCq(header *packets.Header, from *
 	}
 }
 
-func (master *MasterNetwork) NotificationMasterNodeSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) NotificationMasterNodeSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.MasterNodeUserInfoSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -62,7 +62,7 @@ func (master *MasterNetwork) NotificationMasterNodeSq(header *packets.Header, fr
 	if err != nil {
 		log.Fatal(err)
 	}
-	return []p2p.ResponsePacketInfo{
+	return []p2p.PacketHeaderInfo{
 		{
 			ToAddr:     from,
 			SecondType: packets.PacketSecondType_NotificationMasterNode,
@@ -74,7 +74,7 @@ func (master *MasterNetwork) NotificationMasterNodeSq(header *packets.Header, fr
 
 func (master *MasterNetwork) NotificationMasterNodeCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (master *MasterNetwork) ConnectToMasterNodeSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) ConnectToMasterNodeSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.MasterNodeUserInfoSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -94,7 +94,7 @@ func (master *MasterNetwork) ConnectToMasterNodeSq(header *packets.Header, from 
 	if err != nil {
 		log.Fatal(err)
 	}
-	return []p2p.ResponsePacketInfo{
+	return []p2p.PacketHeaderInfo{
 		{
 			ToAddr:     from,
 			SecondType: packets.PacketSecondType_ConnectToMasterNode,
@@ -112,7 +112,7 @@ func (master *MasterNetwork) ConnectToMasterNodeCq(header *packets.Header, from 
 	master.masterInfo = &MasterNode{User: cq.User, NetAddr: from}
 }
 
-func (master *MasterNetwork) RequestMasterNodeListSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) RequestMasterNodeListSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.RequestMasterNodeListSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -138,7 +138,7 @@ func (master *MasterNetwork) RequestMasterNodeListSq(header *packets.Header, fro
 		log.Fatal(err)
 	}
 
-	return []p2p.ResponsePacketInfo{
+	return []p2p.PacketHeaderInfo{
 		{
 			ToAddr:     from,
 			SecondType: packets.PacketSecondType_RequestMasterNodeList,
@@ -156,7 +156,7 @@ func (master *MasterNetwork) RequestMasterNodeListSq(header *packets.Header, fro
 
 func (master *MasterNetwork) RequestMasterNodeListCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (master *MasterNetwork) ResponseMasterNodeListSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) ResponseMasterNodeListSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.ResponseMasterNodeListSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -173,7 +173,7 @@ func (master *MasterNetwork) ResponseMasterNodeListSq(header *packets.Header, fr
 		log.Fatal(err)
 	}
 
-	return []p2p.ResponsePacketInfo{
+	return []p2p.PacketHeaderInfo{
 		{
 			ToAddr:     from,
 			SecondType: packets.PacketSecondType_ResponseMasterNodeList,
@@ -185,7 +185,7 @@ func (master *MasterNetwork) ResponseMasterNodeListSq(header *packets.Header, fr
 
 func (master *MasterNetwork) ResponseMasterNodeListCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (master *MasterNetwork) SearchGhostPubKeySq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) SearchGhostPubKeySq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.SearchGhostPubKeySq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -197,7 +197,7 @@ func (master *MasterNetwork) SearchGhostPubKeySq(header *packets.Header, from *n
 func (master *MasterNetwork) SearchGhostPubKeyCq(header *packets.Header, from *net.UDPAddr) {
 }
 
-func (master *MasterNetwork) SearchMasterPubKeySq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) SearchMasterPubKeySq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.SearchGhostPubKeySq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -213,7 +213,7 @@ func (master *MasterNetwork) SearchMasterPubKeySq(header *packets.Header, from *
 	if err != nil {
 		log.Fatal(err)
 	}
-	return []p2p.ResponsePacketInfo{
+	return []p2p.PacketHeaderInfo{
 		{
 			ToAddr:     from,
 			SecondType: packets.PacketSecondType_SearchMasterPubKey,
@@ -231,13 +231,13 @@ func (master *MasterNetwork) SearchMasterPubKeyCq(header *packets.Header, from *
 	// TODO:
 }
 
-func (master *MasterNetwork) RegisterBlockHandler(handlerSq func(*packets.Header, *net.UDPAddr) []p2p.ResponsePacketInfo,
+func (master *MasterNetwork) RegisterBlockHandler(handlerSq func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo,
 	handlerCq func(*packets.Header, *net.UDPAddr)) {
 	master.blockHandlerSq = handlerSq
 	master.blockHandlerCq = handlerCq
 }
 
-func (master *MasterNetwork) BlockChainSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (master *MasterNetwork) BlockChainSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	if master.blockHandlerSq != nil {
 		infos := master.blockHandlerSq(header, from)
 		for _, info := range infos {
@@ -247,7 +247,7 @@ func (master *MasterNetwork) BlockChainSq(header *packets.Header, from *net.UDPA
 		return infos
 	}
 
-	return []p2p.ResponsePacketInfo{
+	return []p2p.PacketHeaderInfo{
 		{
 			ToAddr:     from,
 			SecondType: packets.PacketSecondType_BlockChain,

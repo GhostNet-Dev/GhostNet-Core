@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -22,7 +23,7 @@ type RequestPacketInfo struct {
 	PacketByte []byte
 }
 
-type ResponsePacketInfo struct {
+type PacketHeaderInfo struct {
 	ToAddr     *net.UDPAddr
 	PacketType packets.PacketType
 	SecondType packets.PacketSecondType
@@ -73,7 +74,7 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 						if response := udp.Pf.firstLevel[recvPacket.Type].packetSqHandler[recvPacket.SecondType](&recvPacket, packetInfo.Addr); response != nil {
 							for _, packet := range response {
 								packet.PacketType = recvPacket.Type
-								udp.SendPacket(&packet)
+								udp.SendResponse(&packet)
 							}
 						}
 					} else {
@@ -117,7 +118,24 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 	}()
 }
 
-func (udp *UdpServer) SendPacket(sendInfo *ResponsePacketInfo) {
+func (udp *UdpServer) SendPacket(sendInfo *PacketHeaderInfo, ipAddr *ptypes.GhostIp) {
+
+	anyData := packets.Header{
+		Type:       sendInfo.PacketType,
+		SecondType: sendInfo.SecondType,
+		ThirdType:  sendInfo.ThirdType,
+		SqFlag:     sendInfo.SqFlag,
+		PacketData: sendInfo.PacketData,
+	}
+	sendData, err := proto.Marshal(&anyData)
+	if err != nil {
+		log.Fatal(err)
+	}
+	to, _ := net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
+	udp.RawSendPacket(to, sendData)
+}
+
+func (udp *UdpServer) SendResponse(sendInfo *PacketHeaderInfo) {
 	anyData := packets.Header{
 		Type:       sendInfo.PacketType,
 		SecondType: sendInfo.SecondType,

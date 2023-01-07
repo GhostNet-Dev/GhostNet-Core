@@ -21,7 +21,7 @@ type BlockManager struct {
 	owner          *gcrypto.GhostAddress
 	localIpAddr    *ptypes.GhostIp
 
-	packetSqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponsePacketInfo
+	packetSqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo
 	packetCqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)
 }
 
@@ -34,12 +34,14 @@ func NewBlockManager(con *consensus.Consensus,
 	myIpAddr *ptypes.GhostIp) *BlockManager {
 
 	blockMgr := &BlockManager{
-		con:            con,
-		fsm:            fsm,
-		block:          block,
-		blockContainer: blockContainer,
-		owner:          user,
-		localIpAddr:    myIpAddr,
+		con:             con,
+		fsm:             fsm,
+		block:           block,
+		blockContainer:  blockContainer,
+		owner:           user,
+		localIpAddr:     myIpAddr,
+		packetSqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo),
+		packetCqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)),
 	}
 	blockMgr.InitHandler(master)
 	return blockMgr

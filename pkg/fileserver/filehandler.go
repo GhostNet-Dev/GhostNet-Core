@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (fileServer *FileServer) RequestFileSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (fileServer *FileServer) RequestFileSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.RequestFilePacketSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -24,7 +24,7 @@ func (fileServer *FileServer) RequestFileSq(header *packets.Header, from *net.UD
 		log.Fatal(err)
 	}
 
-	return []p2p.ResponsePacketInfo{
+	return []p2p.PacketHeaderInfo{
 		{
 			ToAddr:     from,
 			SecondType: packets.PacketSecondType_RequestFile,
@@ -45,9 +45,9 @@ func (fileServer *FileServer) RequestFileCq(header *packets.Header, from *net.UD
 	}
 }
 
-func (fileServer *FileServer) ResponseFileSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponsePacketInfo {
+func (fileServer *FileServer) ResponseFileSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 
-	return []p2p.ResponsePacketInfo{
+	return []p2p.PacketHeaderInfo{
 		{
 			ToAddr:     from,
 			SecondType: packets.PacketSecondType_ResponseFile,

@@ -24,10 +24,10 @@ type MasterNetwork struct {
 	ipAddr           *ptypes.GhostIp
 	config           *gconfig.GConfig
 	blockContainer   *store.BlockContainer
-	blockHandlerSq   func(*packets.Header, *net.UDPAddr) []p2p.ResponsePacketInfo
+	blockHandlerSq   func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo
 	blockHandlerCq   func(*packets.Header, *net.UDPAddr)
 
-	packetSqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []p2p.ResponsePacketInfo
+	packetSqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo
 	packetCqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr)
 }
 
@@ -49,7 +49,7 @@ func NewMasterNode(nickname string, myAddr *gcrypto.GhostAddress, myIpAddr *ptyp
 }
 
 func (node *MasterNetwork) RegisterHandler(packetFactory *p2p.PacketFactory) {
-	node.packetSqHandler = make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []p2p.ResponsePacketInfo)
+	node.packetSqHandler = make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo)
 	node.packetCqHandler = make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr))
 
 	node.packetSqHandler[packets.PacketSecondType_GetGhostNetVersion] = node.GetGhostNetVersionSq

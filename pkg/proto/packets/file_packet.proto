@@ -14,22 +14,22 @@ message RequestFilePacketSq {
     MasterPacket Master = 1;
     FileRequestType RequestType = 2;
     string Filename = 3;
-    int32 StartOffset = 4;
+    uint64 StartOffset = 4;
 }
 
 message RequestFilePacketCq {
     MasterPacket Master = 1;
     FileRequestType RequestType = 2;
     string Filename = 3;
-    int64 FileLength = 4;
-    int32 StartOffset = 5;
+    uint64 FileLength = 4;
+    uint64 StartOffset = 5;
     bool Result = 6;
 }
 
 message ResponseFilePacketSq {
     MasterPacket Master = 1;
     uint32 SequenceNum = 2;
-    int64 StartPos = 3;
+    uint64 StartPos = 3;
     string Filename = 4;
     bytes FileData = 5;
     uint32 BufferSize = 6;

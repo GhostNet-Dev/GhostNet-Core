@@ -9,7 +9,7 @@ import (
 )
 
 type PacketSecondHandler struct {
-	packetSqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []ResponsePacketInfo
+	packetSqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []PacketHeaderInfo
 	packetCqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr)
 }
 
@@ -37,10 +37,10 @@ func MakeMasterPacket(from string, reqId uint32, clientId uint32, fromIp *ptypes
 }
 
 func (pf *PacketFactory) SingleRegisterPacketHandler(firstType packets.PacketType, packetType packets.PacketSecondType,
-	sqHandler func(*packets.Header, *net.UDPAddr) []ResponsePacketInfo,
+	sqHandler func(*packets.Header, *net.UDPAddr) []PacketHeaderInfo,
 	cqHandler func(*packets.Header, *net.UDPAddr)) {
 	pf.firstLevel[firstType] = &PacketSecondHandler{
-		packetSqHandler: make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []ResponsePacketInfo),
+		packetSqHandler: make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []PacketHeaderInfo),
 		packetCqHandler: make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr)),
 	}
 	pf.firstLevel[firstType].packetSqHandler[packetType] = sqHandler
@@ -48,7 +48,7 @@ func (pf *PacketFactory) SingleRegisterPacketHandler(firstType packets.PacketTyp
 }
 
 func (pf *PacketFactory) RegisterPacketHandler(firstType packets.PacketType,
-	sqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []ResponsePacketInfo,
+	sqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []PacketHeaderInfo,
 	cqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr)) {
 	pf.firstLevel[firstType] = &PacketSecondHandler{
 		packetSqHandler: sqHandler,

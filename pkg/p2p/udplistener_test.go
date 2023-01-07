@@ -46,7 +46,7 @@ func TestUdpDefault(t *testing.T) {
 	}
 
 	addr, err := net.ResolveUDPAddr("udp", "127.0.0.1:8888")
-	srv.SendPacket(&ResponsePacketInfo{
+	srv.SendResponse(&PacketHeaderInfo{
 		ToAddr: addr, PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_NotificationMasterNode,
 		PacketData: data, SqFlag: true})
@@ -59,7 +59,7 @@ var (
 	TestResult bool
 )
 
-func PacketSqHandler(header *packets.Header, from *net.UDPAddr) []ResponsePacketInfo {
+func PacketSqHandler(header *packets.Header, from *net.UDPAddr) []PacketHeaderInfo {
 	packetByte := header.PacketData
 	infoSq := &packets.MasterNodeUserInfoSq{}
 	proto.Unmarshal(packetByte, infoSq)
@@ -85,7 +85,7 @@ func TestPacketHandler(t *testing.T) {
 	}
 
 	addr, err := net.ResolveUDPAddr("udp", "127.0.0.1:8888")
-	srv.SendPacket(&ResponsePacketInfo{
+	srv.SendResponse(&PacketHeaderInfo{
 		ToAddr: addr, PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_NotificationMasterNode,
 		PacketData: data, SqFlag: true})

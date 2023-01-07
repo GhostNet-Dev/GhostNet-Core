@@ -21,6 +21,7 @@ var (
 		Ip:   "127.0.0.1",
 		Port: "8888",
 	}
+	nickname = "test"
 
 	gScript        = gvm.NewGScript()
 	gVm            = gvm.NewGVM()
@@ -32,7 +33,7 @@ var (
 	udp            = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port)
 	con            = consensus.NewConsensus(blockContainer)
 	fsm            = consensus.NewBlockMachine(blockContainer)
-	master         = gnetwork.NewMasterNode("test", Miner, ipAddr, config, packetFactory, udp, blockContainer)
+	master         = gnetwork.NewMasterNode(nickname, Miner, ipAddr, config, packetFactory, udp, blockContainer)
 	blockServer    = NewBlockManager(con, fsm, block, blockContainer, master, Miner, ipAddr)
 )
 
