@@ -8,9 +8,11 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 )
 
+type FuncPacketHandler func(*packets.Header, *net.UDPAddr) []PacketHeaderInfo
+
 type PacketSecondHandler struct {
-	packetSqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []PacketHeaderInfo
-	packetCqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr)
+	packetSqHandler map[packets.PacketSecondType]FuncPacketHandler
+	packetCqHandler map[packets.PacketSecondType]FuncPacketHandler
 }
 
 type PacketFactory struct {
@@ -37,19 +39,18 @@ func MakeMasterPacket(from string, reqId uint32, clientId uint32, fromIp *ptypes
 }
 
 func (pf *PacketFactory) SingleRegisterPacketHandler(firstType packets.PacketType, packetType packets.PacketSecondType,
-	sqHandler func(*packets.Header, *net.UDPAddr) []PacketHeaderInfo,
-	cqHandler func(*packets.Header, *net.UDPAddr)) {
+	sqHandler FuncPacketHandler, cqHandler FuncPacketHandler) {
 	pf.firstLevel[firstType] = &PacketSecondHandler{
-		packetSqHandler: make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []PacketHeaderInfo),
-		packetCqHandler: make(map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr)),
+		packetSqHandler: make(map[packets.PacketSecondType]FuncPacketHandler),
+		packetCqHandler: make(map[packets.PacketSecondType]FuncPacketHandler),
 	}
 	pf.firstLevel[firstType].packetSqHandler[packetType] = sqHandler
 	pf.firstLevel[firstType].packetCqHandler[packetType] = cqHandler
 }
 
 func (pf *PacketFactory) RegisterPacketHandler(firstType packets.PacketType,
-	sqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr) []PacketHeaderInfo,
-	cqHandler map[packets.PacketSecondType]func(*packets.Header, *net.UDPAddr)) {
+	sqHandler map[packets.PacketSecondType]FuncPacketHandler,
+	cqHandler map[packets.PacketSecondType]FuncPacketHandler) {
 	pf.firstLevel[firstType] = &PacketSecondHandler{
 		packetSqHandler: sqHandler,
 		packetCqHandler: cqHandler,

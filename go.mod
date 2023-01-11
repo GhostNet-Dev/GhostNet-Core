@@ -10,8 +10,13 @@ require (
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
 	github.com/traherom/memstream v0.0.0-20210211152058-869756e84126
-	golang.org/x/exp v0.0.0-20221227203929-1b447090c38c
 	google.golang.org/protobuf v1.28.1
+)
+
+require (
+	github.com/kelindar/bitmap v1.4.1 // indirect
+	github.com/kelindar/simd v1.1.2 // indirect
+	github.com/klauspost/cpuid/v2 v2.0.12 // indirect
 )
 
 require (

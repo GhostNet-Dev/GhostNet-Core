@@ -35,7 +35,7 @@ func (master *MasterNetwork) GetGhostNetVersionSq(header *packets.Header, from *
 	}
 }
 
-func (master *MasterNetwork) GetGhostNetVersionCq(header *packets.Header, from *net.UDPAddr) {
+func (master *MasterNetwork) GetGhostNetVersionCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	cq := &packets.VersionInfoCq{}
 	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -43,6 +43,7 @@ func (master *MasterNetwork) GetGhostNetVersionCq(header *packets.Header, from *
 	if cq.Version > uint32(master.config.GhostVersion) {
 		// TODO: 새로운 Version을 받아야한다.
 	}
+	return nil
 }
 
 func (master *MasterNetwork) NotificationMasterNodeSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
@@ -72,7 +73,9 @@ func (master *MasterNetwork) NotificationMasterNodeSq(header *packets.Header, fr
 	}
 }
 
-func (master *MasterNetwork) NotificationMasterNodeCq(header *packets.Header, from *net.UDPAddr) {}
+func (master *MasterNetwork) NotificationMasterNodeCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+	return nil
+}
 
 func (master *MasterNetwork) ConnectToMasterNodeSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.MasterNodeUserInfoSq{}
@@ -104,12 +107,13 @@ func (master *MasterNetwork) ConnectToMasterNodeSq(header *packets.Header, from 
 	}
 }
 
-func (master *MasterNetwork) ConnectToMasterNodeCq(header *packets.Header, from *net.UDPAddr) {
+func (master *MasterNetwork) ConnectToMasterNodeCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	cq := &packets.MasterNodeUserInfoCq{}
 	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
 	master.masterInfo = &MasterNode{User: cq.User, NetAddr: from}
+	return nil
 }
 
 func (master *MasterNetwork) RequestMasterNodeListSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
@@ -154,7 +158,9 @@ func (master *MasterNetwork) RequestMasterNodeListSq(header *packets.Header, fro
 	}
 }
 
-func (master *MasterNetwork) RequestMasterNodeListCq(header *packets.Header, from *net.UDPAddr) {}
+func (master *MasterNetwork) RequestMasterNodeListCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+	return nil
+}
 
 func (master *MasterNetwork) ResponseMasterNodeListSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.ResponseMasterNodeListSq{}
@@ -183,7 +189,9 @@ func (master *MasterNetwork) ResponseMasterNodeListSq(header *packets.Header, fr
 	}
 }
 
-func (master *MasterNetwork) ResponseMasterNodeListCq(header *packets.Header, from *net.UDPAddr) {}
+func (master *MasterNetwork) ResponseMasterNodeListCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+	return nil
+}
 
 func (master *MasterNetwork) SearchGhostPubKeySq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.SearchGhostPubKeySq{}
@@ -194,7 +202,8 @@ func (master *MasterNetwork) SearchGhostPubKeySq(header *packets.Header, from *n
 	return nil
 }
 
-func (master *MasterNetwork) SearchGhostPubKeyCq(header *packets.Header, from *net.UDPAddr) {
+func (master *MasterNetwork) SearchGhostPubKeyCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+	return nil
 }
 
 func (master *MasterNetwork) SearchMasterPubKeySq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
@@ -223,12 +232,13 @@ func (master *MasterNetwork) SearchMasterPubKeySq(header *packets.Header, from *
 	}
 }
 
-func (master *MasterNetwork) SearchMasterPubKeyCq(header *packets.Header, from *net.UDPAddr) {
+func (master *MasterNetwork) SearchMasterPubKeyCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	cq := &packets.SearchGhostPubKeyCq{}
 	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
 	// TODO:
+	return nil
 }
 
 func (master *MasterNetwork) RegisterBlockHandler(handlerSq func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo,
@@ -256,8 +266,9 @@ func (master *MasterNetwork) BlockChainSq(header *packets.Header, from *net.UDPA
 	}
 }
 
-func (master *MasterNetwork) BlockChainCq(header *packets.Header, from *net.UDPAddr) {
+func (master *MasterNetwork) BlockChainCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	if master.blockHandlerCq != nil {
 		master.blockHandlerCq(header, from)
 	}
+	return nil
 }

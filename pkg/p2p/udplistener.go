@@ -70,15 +70,21 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 						log.Fatal(err)
 					}
 
-					if recvPacket.SqFlag == true {
-						if response := udp.Pf.firstLevel[recvPacket.Type].packetSqHandler[recvPacket.SecondType](&recvPacket, packetInfo.Addr); response != nil {
-							for _, packet := range response {
-								packet.PacketType = recvPacket.Type
-								udp.SendResponse(&packet)
-							}
+					// TODO: it need to refac
+					// sq
+					if response := udp.Pf.firstLevel[recvPacket.Type].packetSqHandler[recvPacket.SecondType](&recvPacket, packetInfo.Addr); response != nil {
+						for _, packet := range response {
+							packet.PacketType = recvPacket.Type
+							udp.SendResponse(&packet)
 						}
-					} else {
-						udp.Pf.firstLevel[recvPacket.Type].packetCqHandler[recvPacket.SecondType](&recvPacket, packetInfo.Addr)
+					}
+
+					// cq
+					if response := udp.Pf.firstLevel[recvPacket.Type].packetCqHandler[recvPacket.SecondType](&recvPacket, packetInfo.Addr); response != nil {
+						for _, packet := range response {
+							packet.PacketType = recvPacket.Type
+							udp.SendResponse(&packet)
+						}
 					}
 				}
 			}
