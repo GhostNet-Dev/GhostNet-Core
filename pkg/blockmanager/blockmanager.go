@@ -1,23 +1,27 @@
 package blockmanager
 
 import (
+	"bytes"
 	"net"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileserver"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gnetwork"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type BlockManager struct {
-	con            *consensus.Consensus
+	consensus      *consensus.Consensus
 	fsm            *consensus.BlockMachine
 	block          *blocks.Blocks
 	blockContainer *store.BlockContainer
+	fileServer     *fileserver.FileServer
 	owner          *gcrypto.GhostAddress
 	localIpAddr    *ptypes.GhostIp
 
@@ -30,14 +34,16 @@ func NewBlockManager(con *consensus.Consensus,
 	block *blocks.Blocks,
 	blockContainer *store.BlockContainer,
 	master *gnetwork.MasterNetwork,
+	fileServer *fileserver.FileServer,
 	user *gcrypto.GhostAddress,
 	myIpAddr *ptypes.GhostIp) *BlockManager {
 
 	blockMgr := &BlockManager{
-		con:             con,
+		consensus:       con,
 		fsm:             fsm,
 		block:           block,
 		blockContainer:  blockContainer,
+		fileServer:      fileServer,
 		owner:           user,
 		localIpAddr:     myIpAddr,
 		packetSqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo),
@@ -52,7 +58,7 @@ func (blockMgr *BlockManager) BlockSync() bool {
 		return true
 	}
 
-	if result, _ := blockMgr.con.CheckTriggerNewBlock(); result == true {
+	if result, _ := blockMgr.consensus.CheckTriggerNewBlock(); result == true {
 		blockMgr.TriggerNewBlock()
 	} else {
 		blockMgr.BroadcastBlockChainNotification()
@@ -61,7 +67,7 @@ func (blockMgr *BlockManager) BlockSync() bool {
 }
 
 func (blockMgr *BlockManager) TriggerNewBlock() {
-	result, triggerTxCount := blockMgr.con.CheckTriggerNewBlock()
+	result, triggerTxCount := blockMgr.consensus.CheckTriggerNewBlock()
 	if blockMgr.fsm.CheckAcceptNewBlock() == false || result == false {
 		return
 	}
@@ -74,4 +80,37 @@ func (blockMgr *BlockManager) TriggerNewBlock() {
 
 func (blockMgr *BlockManager) GetHeightestBlock() uint32 {
 	return blockMgr.blockContainer.BlockHeight()
+}
+
+func (blockMgr *BlockManager) NewBlockEvent(filename string, addr *ptypes.GhostIp) {
+	if blockMgr.fileServer.CheckFileExist(filename) == false {
+		blockMgr.fileServer.SendGetFileInfo(addr, filename, blockMgr.DownloadNewBlock, nil)
+	}
+}
+
+func (blockMgr *BlockManager) DownloadNewBlock(obj *fileserver.FileObject, context interface{}) {
+	byteBuf := bytes.NewBuffer(obj.Buffer)
+	newPair := types.PairedBlock{}
+	if newPair.Deserialize(byteBuf) == false {
+		return
+	}
+
+	if blockMgr.TryAddMyBlockChain(&newPair) == true {
+
+	}
+}
+
+func (blockMgr *BlockManager) TryAddMyBlockChain(pairedBlock *types.PairedBlock) bool {
+	localHeight := blockMgr.GetHeightestBlock()
+	if localHeight+1 == pairedBlock.BlockId() {
+		if blockMgr.block.BlockValidation(pairedBlock, nil) == true &&
+			blockMgr.consensus.CheckMinimumTxCount(pairedBlock) == true {
+			blockMgr.blockContainer.InsertBlock(pairedBlock)
+			return true
+		}
+	} else if localHeight+1 < pairedBlock.BlockId() {
+		// trigger get neighbor block
+	}
+
+	return false
 }

@@ -60,6 +60,7 @@ func (blockMgr *BlockManager) GetHeightestBlockSq(header *packets.Header, from *
 
 	cq := packets.GetHeightestBlockCq{
 		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Height: blockMgr.blockContainer.BlockHeight(),
 	}
 
 	sendData, err := proto.Marshal(&cq)

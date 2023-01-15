@@ -7,6 +7,7 @@ import (
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -25,9 +26,10 @@ var (
 	blockContainer = store.NewBlockContainer()
 	config         = gconfig.DefaultConfig()
 	from, _        = net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
+	owner          = gcrypto.GenerateKeyPair()
 
-	owner  = gcrypto.GenerateKeyPair()
-	master = NewMasterNode("test", owner, ipAddr, config, packetFactory, udp, blockContainer)
+	tTreeMap = NewTrieTreeMap(owner.GetPubAddress(), gsql.NewAccountSql("sqlite3"))
+	master   = NewMasterNode("test", owner, ipAddr, config, packetFactory, udp, blockContainer, tTreeMap)
 )
 
 func TestGetVersionSq(t *testing.T) {

@@ -34,6 +34,10 @@ type GhostNetBlockHeader struct {
 	BlockSignature          SigHash          `json:"BlockSignature"`
 }
 
+func (pairedBlock *PairedBlock) BlockId() uint32 {
+	return pairedBlock.Block.Header.Id
+}
+
 func (pairedBlock *PairedBlock) TxCount() uint32 {
 	return pairedBlock.Block.Header.TransactionCount
 }

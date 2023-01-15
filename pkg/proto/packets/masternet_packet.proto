@@ -54,3 +54,13 @@ message SearchGhostPubKeyCq {
     MasterPacket Master = 1;
     repeated ptypes.GhostUser User = 2;
 }
+
+message ForwardingSq {
+    MasterPacket Master = 1;
+    Header ForwardingHeader = 2;
+}
+
+message ForwardingCq {
+    MasterPacket Master = 1;
+    Header ForwardingHeader = 2;
+}

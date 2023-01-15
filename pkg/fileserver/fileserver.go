@@ -83,17 +83,20 @@ func (fileServer *FileServer) LoadFileToMemory(filename string) *FileObject {
 }
 
 // SendGetFileInfo -> RequestFilePacketSq
-func (fileServer *FileServer) SendGetFileInfo(ipAddr *ptypes.GhostIp, filename string, offset uint64) {
+func (fileServer *FileServer) SendGetFileInfo(ipAddr *ptypes.GhostIp, filename string,
+	callback DoneHandler, context interface{}) {
 	sq := &packets.RequestFilePacketSq{
 		Master:      p2p.MakeMasterPacket(fileServer.owner.GetPubAddress(), 0, 0, fileServer.localAddr),
+		RequestType: packets.FileRequestType_GetFileInfo,
 		Filename:    filename,
-		StartOffset: offset,
 	}
 
 	sendData, err := proto.Marshal(sq)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fileServer.fileObjManager.CreateFileObj(filename, nil, 0, callback, context)
 
 	fileServer.udp.SendPacket(&p2p.PacketHeaderInfo{
 		PacketType: packets.PacketType_FileTransfer,
@@ -193,7 +196,7 @@ func (fileServer *FileServer) SendFileData(filename string, startPos uint64, seq
 		Filename:    filename,
 		StartPos:    startPos,
 		FileData:    buf,
-		BufferSize:  BufferSize,
+		BufferSize:  uint32(len(buf)),
 		FileLength:  fileSize,
 		SequenceNum: sequenceNum,
 	}
@@ -205,7 +208,7 @@ func (fileServer *FileServer) SendFileData(filename string, startPos uint64, seq
 
 	return &p2p.PacketHeaderInfo{
 		PacketType: packets.PacketType_FileTransfer,
-		SecondType: packets.PacketSecondType_RequestFile,
+		SecondType: packets.PacketSecondType_ResponseFile,
 		ThirdType:  packets.PacketThirdType_Reserved1,
 		SqFlag:     true,
 		PacketData: sendData,

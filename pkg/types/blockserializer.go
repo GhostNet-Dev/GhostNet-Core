@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
 	mems "github.com/traherom/memstream"
@@ -11,11 +12,20 @@ import (
 func (header *GhostNetBlockHeader) SerializeToByte() []byte {
 	size := header.Size()
 	stream := mems.NewCapacity(int(size))
-	header.Serialize(stream)
+	if header.Serialize(stream) == false {
+		return nil
+	}
 	return stream.Bytes()
 }
 
-func (header *GhostNetBlockHeader) Serialize(stream *mems.MemoryStream) {
+func (header *GhostNetBlockHeader) Serialize(stream *mems.MemoryStream) (result bool) {
+	defer func() {
+		// error catch
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+		result = false
+	}()
 	bs4 := make([]byte, 4)
 	bs8 := make([]byte, 8)
 	binary.LittleEndian.PutUint32(bs4, uint32(header.Id))
@@ -38,9 +48,18 @@ func (header *GhostNetBlockHeader) Serialize(stream *mems.MemoryStream) {
 	binary.LittleEndian.PutUint32(bs4, uint32(header.SignatureSize))
 	stream.Write(bs4)
 	stream.Write(header.BlockSignature.SerializeToByte())
+	return true
 }
 
-func (header *GhostNetBlockHeader) Deserialize(byteBuf *bytes.Buffer) {
+func (header *GhostNetBlockHeader) Deserialize(byteBuf *bytes.Buffer) (result bool) {
+	defer func() {
+		// error catch
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+		result = false
+	}()
+
 	header.PreviousBlockHeaderHash = make([]byte, gbytes.HashSize)
 	header.MerkleRoot = make([]byte, gbytes.HashSize)
 	header.DataBlockHeaderHash = make([]byte, gbytes.HashSize)
@@ -56,50 +75,73 @@ func (header *GhostNetBlockHeader) Deserialize(byteBuf *bytes.Buffer) {
 	binary.Read(byteBuf, binary.LittleEndian, &header.TransactionCount)
 	binary.Read(byteBuf, binary.LittleEndian, &header.SignatureSize)
 	header.BlockSignature.DeserializeSigHash(byteBuf)
+	return true
 }
 
-func (block *GhostNetBlock) Serialize(stream *mems.MemoryStream) {
-	block.Header.Serialize(stream)
+func (block *GhostNetBlock) Serialize(stream *mems.MemoryStream) (result bool) {
+	if result = block.Header.Serialize(stream); result == false {
+		return false
+	}
 	for _, tx := range block.Alice {
-		tx.Serialize(stream)
+		if tx.Serialize(stream).Result() == false {
+			return false
+		}
 	}
 	for _, tx := range block.Transaction {
-		tx.Serialize(stream)
+		if tx.Serialize(stream).Result() == false {
+			return false
+		}
 	}
+	return true
 }
 
 func (block *GhostNetBlock) SerializeToByte() []byte {
 	size := block.Size()
 	stream := mems.NewCapacity(int(size))
-	block.Serialize(stream)
+	if block.Serialize(stream) == false {
+		return nil
+	}
 	return stream.Bytes()
 }
 
-func (block *GhostNetBlock) Deserialize(byteBuf *bytes.Buffer) {
-	block.Header.Deserialize(byteBuf)
+func (block *GhostNetBlock) Deserialize(byteBuf *bytes.Buffer) (result bool) {
+	if result = block.Header.Deserialize(byteBuf); result == false {
+		return false
+	}
 	block.Alice = make([]GhostTransaction, block.Header.AliceCount)
 	for i := 0; i < int(block.Header.AliceCount); i++ {
-		block.Alice[i].Deserialize(byteBuf)
+		if block.Alice[i].Deserialize(byteBuf).Result() == false {
+			return false
+		}
 	}
 	block.Transaction = make([]GhostTransaction, block.Header.TransactionCount)
 	for i := 0; i < int(block.Header.TransactionCount); i++ {
-		block.Transaction[i].Deserialize(byteBuf)
+		if block.Transaction[i].Deserialize(byteBuf).Result() == false {
+			return false
+		}
 	}
+	return true
 }
 
 func (pair *PairedBlock) SerializeToByte() []byte {
 	size := pair.Size()
 	stream := mems.NewCapacity(int(size))
-	pair.Serialize(stream)
+	if pair.Serialize(stream) == false {
+		return nil
+	}
 	return stream.Bytes()
 }
 
-func (pair *PairedBlock) Serialize(stream *mems.MemoryStream) {
-	pair.Block.Serialize(stream)
-	pair.DataBlock.Serialize(stream)
+func (pair *PairedBlock) Serialize(stream *mems.MemoryStream) bool {
+	if pair.Block.Serialize(stream) == false || pair.DataBlock.Serialize(stream) == false {
+		return false
+	}
+	return true
 }
 
-func (pair *PairedBlock) Deserialize(byteBuf *bytes.Buffer) {
-	pair.Block.Deserialize(byteBuf)
-	pair.DataBlock.Deserialize(byteBuf)
+func (pair *PairedBlock) Deserialize(byteBuf *bytes.Buffer) bool {
+	if pair.Block.Deserialize(byteBuf) == false || pair.DataBlock.Deserialize(byteBuf) == false {
+		return false
+	}
+	return true
 }

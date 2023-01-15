@@ -19,11 +19,18 @@ func (fileServer *FileServer) RequestFileSq(header *packets.Header, from *net.UD
 	case packets.FileRequestType_GetFileInfo:
 		return []p2p.PacketHeaderInfo{*fileServer.MakeFileInfo(sq.Filename)}
 	case packets.FileRequestType_GetFileData:
+		fileObj, exist := fileServer.fileObjManager.GetFileObject(sq.Filename)
+		if exist == false {
+			return nil
+		}
+
 		cq := &packets.RequestFilePacketCq{
 			Master:      p2p.MakeMasterPacket(fileServer.owner.GetPubAddress(), 0, 0, fileServer.localAddr),
 			RequestType: sq.RequestType,
 			Filename:    sq.Filename,
-			StartOffset: 0,
+			StartOffset: sq.StartOffset,
+			FileLength:  fileObj.FileLength,
+			Result:      exist,
 		}
 
 		sendData, err := proto.Marshal(cq)
@@ -77,6 +84,7 @@ func (fileServer *FileServer) RequestFileCq(header *packets.Header, from *net.UD
 	return nil
 }
 
+// ResponseFileSq 
 func (fileServer *FileServer) ResponseFileSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.ResponseFilePacketSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {

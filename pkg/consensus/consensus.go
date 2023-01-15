@@ -45,6 +45,32 @@ func (con *Consensus) Consensus(pairedBlock *types.PairedBlock) (merge bool, reb
 	return merge, rebuild
 }
 
+func (con *Consensus) CheckMinimumTxCount(pairedBlock *types.PairedBlock) bool {
+	block := pairedBlock.Block
+	height := con.blockContainer.BlockHeight()
+	maxTxCount := con.GetMaxTransactionCount(height)
+
+	if maxTxCount < 0 || pairedBlock.TxCount() < maxTxCount {
+		return false
+	}
+
+	if pairedBlock.BlockId() == height+1 {
+		currentLocalPairedBlock := con.blockContainer.GetBlock(height)
+		currentBlockHashKey := currentLocalPairedBlock.Block.GetHashKey()
+		preBlockhashKeyFromNewBlock := block.Header.PreviousBlockHeaderHash
+		if bytes.Compare(currentBlockHashKey, preBlockhashKeyFromNewBlock) == 0 {
+			return true
+		} else {
+			// TODO: trigger rebuild
+			return false
+		}
+
+	} else if pairedBlock.BlockId() > height+1 {
+		// TODO: trigger rebuild
+	}
+	return false
+}
+
 func (con *Consensus) CheckTriggerNewBlock() (bool, uint32) {
 	height := con.blockContainer.BlockHeight()
 	triggerTxCount := con.GetMaxTransactionCount(height)

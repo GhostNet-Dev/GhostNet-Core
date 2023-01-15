@@ -3,6 +3,7 @@ package gsql
 import (
 	"log"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	types "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -30,6 +31,12 @@ type GSql interface {
 	UpdatePoolId(oldPoolId uint32, newPoolId uint32)
 }
 
+type MasterNodeStore interface {
+	GetMasterNodeList() []*ptypes.GhostUser
+	GetMasterNodeSearch(pubKey string) []*ptypes.GhostUser
+	GetMasterNodeSearchPick(pubKey string) *ptypes.GhostUser
+}
+
 // NewGSql sql instance를 생성한다.
 func NewGSql(sqlType string) GSql {
 	var gSql GSql
@@ -44,4 +51,8 @@ func NewGSql(sqlType string) GSql {
 	}
 
 	return gSql
+}
+
+func NewAccountSql(sqlType string) MasterNodeStore {
+	return &GhostAccount{}
 }

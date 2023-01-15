@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/btcsuite/btcutil v1.0.2
+	github.com/kelindar/bitmap v1.4.1
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
@@ -14,7 +15,6 @@ require (
 )
 
 require (
-	github.com/kelindar/bitmap v1.4.1 // indirect
 	github.com/kelindar/simd v1.1.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.12 // indirect
 )

@@ -272,3 +272,25 @@ func (master *MasterNetwork) BlockChainCq(header *packets.Header, from *net.UDPA
 	}
 	return nil
 }
+
+func (master *MasterNetwork) ForwardingSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+	sq := &packets.ForwardingSq{}
+	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
+		log.Fatal(err)
+	}
+
+	forwardingFrom, _ := net.ResolveUDPAddr("udp", sq.ForwardingHeader.Source.Ip+":"+sq.ForwardingHeader.Source.Port)
+	headerInfo := master.packetSqHandler[sq.ForwardingHeader.SecondType](sq.ForwardingHeader, forwardingFrom)
+
+	return append([]p2p.PacketHeaderInfo{
+		{
+			ToAddr:     from,
+			SecondType: packets.PacketSecondType_Forwarding,
+			SqFlag:     false,
+		},
+	}, headerInfo...)
+}
+
+func (master *MasterNetwork) ForwardingCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+	return nil
+}

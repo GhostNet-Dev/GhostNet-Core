@@ -6,8 +6,10 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileserver"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gnetwork"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -33,8 +35,10 @@ var (
 	udp            = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port)
 	con            = consensus.NewConsensus(blockContainer)
 	fsm            = consensus.NewBlockMachine(blockContainer)
-	master         = gnetwork.NewMasterNode(nickname, Miner, ipAddr, config, packetFactory, udp, blockContainer)
-	blockServer    = NewBlockManager(con, fsm, block, blockContainer, master, Miner, ipAddr)
+	tTreeMap       = gnetwork.NewTrieTreeMap(Miner.GetPubAddress(), gsql.NewAccountSql("sqlite3"))
+	master         = gnetwork.NewMasterNode(nickname, Miner, ipAddr, config, packetFactory, udp, blockContainer, tTreeMap)
+	fileServer     = fileserver.NewFileServer(udp, packetFactory, Miner, ipAddr, "./")
+	blockServer    = NewBlockManager(con, fsm, block, blockContainer, master, fileServer, Miner, ipAddr)
 )
 
 func init() {

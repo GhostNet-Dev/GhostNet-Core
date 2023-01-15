@@ -22,6 +22,7 @@ enum PacketSecondType {
     SearchMasterPubKey = 6;
     RegistBadBlock = 7;
     BlockChain = 8;
+    Forwarding = 9;
 
     RequestFile = 1;
     ResponseFile = 2;
@@ -65,14 +66,14 @@ message Header {
     PacketThirdType ThirdType = 3;
     bool SqFlag = 4;
     bytes PacketData = 5;
+    ptypes.GhostIp Source = 6;
 }
 
 message GhostPacket {
     string FromPubKeyAddress = 1;
     uint32 RequestId = 2;
     uint32 ClientId = 3;
-    ptypes.GhostIp Source = 4;
-    uint64 TimeId = 5;
+    uint64 TimeId = 4;
 }
 
 

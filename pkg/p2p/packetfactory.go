@@ -34,7 +34,7 @@ func MakeMasterPacket(from string, reqId uint32, clientId uint32, fromIp *ptypes
 			TimeId:            uint64(time.Now().Unix()),
 		},
 		RoutingT: packets.RoutingType_None,
-		Level:    0,
+		Level:    1,
 	}
 }
 

@@ -24,6 +24,7 @@ type MasterNetwork struct {
 	ipAddr           *ptypes.GhostIp
 	config           *gconfig.GConfig
 	blockContainer   *store.BlockContainer
+	tTreeMap         *TrieTreeMap
 	blockHandlerSq   func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo
 	blockHandlerCq   func(*packets.Header, *net.UDPAddr)
 
@@ -33,7 +34,7 @@ type MasterNetwork struct {
 
 func NewMasterNode(nickname string, myAddr *gcrypto.GhostAddress, myIpAddr *ptypes.GhostIp,
 	config *gconfig.GConfig, packetFactory *p2p.PacketFactory, udp *p2p.UdpServer,
-	blockContainer *store.BlockContainer) *MasterNetwork {
+	blockContainer *store.BlockContainer, tTreeMap *TrieTreeMap) *MasterNetwork {
 	masterNode := &MasterNetwork{
 		nickname:         nickname,
 		nodeList:         make(map[string]*MasterNode),
@@ -43,6 +44,7 @@ func NewMasterNode(nickname string, myAddr *gcrypto.GhostAddress, myIpAddr *ptyp
 		ipAddr:           myIpAddr,
 		config:           config,
 		blockContainer:   blockContainer,
+		tTreeMap:         tTreeMap,
 	}
 	masterNode.RegisterHandler(packetFactory)
 	return masterNode
@@ -60,6 +62,7 @@ func (node *MasterNetwork) RegisterHandler(packetFactory *p2p.PacketFactory) {
 	node.packetSqHandler[packets.PacketSecondType_ResponseMasterNodeList] = node.ResponseMasterNodeListSq
 	node.packetSqHandler[packets.PacketSecondType_SearchMasterPubKey] = node.SearchMasterPubKeySq
 	node.packetSqHandler[packets.PacketSecondType_BlockChain] = node.SearchMasterPubKeySq
+	node.packetSqHandler[packets.PacketSecondType_Forwarding] = node.ForwardingSq
 
 	node.packetCqHandler[packets.PacketSecondType_GetGhostNetVersion] = node.GetGhostNetVersionCq
 	node.packetCqHandler[packets.PacketSecondType_NotificationMasterNode] = node.NotificationMasterNodeCq
@@ -69,6 +72,7 @@ func (node *MasterNetwork) RegisterHandler(packetFactory *p2p.PacketFactory) {
 	node.packetCqHandler[packets.PacketSecondType_ResponseMasterNodeList] = node.ResponseMasterNodeListCq
 	node.packetCqHandler[packets.PacketSecondType_SearchMasterPubKey] = node.SearchMasterPubKeyCq
 	node.packetCqHandler[packets.PacketSecondType_BlockChain] = node.SearchMasterPubKeyCq
+	node.packetCqHandler[packets.PacketSecondType_Forwarding] = node.ForwardingCq
 
 	packetFactory.RegisterPacketHandler(packets.PacketType_MasterNetwork, node.packetSqHandler, node.packetCqHandler)
 }
