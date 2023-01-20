@@ -1,4 +1,4 @@
-package gsql
+package sqlite
 
 import (
 	"database/sql"
@@ -14,6 +14,8 @@ type GSqlite3 struct {
 	db       *sql.DB
 	filepath string
 }
+
+var GSqlite = new(GSqlite3)
 
 // OpenSQL sql Open
 func (gSql *GSqlite3) OpenSQL(path string) error {
@@ -361,69 +363,6 @@ func (gSql *GSqlite3) GetBlockHeight() uint32 {
 
 	err = query.QueryRow().Scan(&id)
 	return id
-}
-
-func (gSql *GSqlite3) GetMinPoolId() uint32 {
-	var min uint32
-	query, err := gSql.db.Prepare(`select min(TxIndex) from c_transactions`)
-	if err != nil {
-		log.Printf("%s", err)
-	}
-	defer query.Close()
-
-	err = query.QueryRow().Scan(&min)
-	return min
-}
-
-func (gSql *GSqlite3) GetMaxPoolId() uint32 {
-	var min uint32
-	query, err := gSql.db.Prepare(`select max(TxIndex) from c_transactions`)
-	if err != nil {
-		log.Printf("%s", err)
-	}
-	defer query.Close()
-
-	err = query.QueryRow().Scan(&min)
-	return min
-}
-
-func (gSql *GSqlite3) UpdatePoolId(oldPoolId uint32, newPoolId uint32) {
-	gSql.InsertQuery(`update c_transactions set TxIndex = ? where TxIndex == ?;`,
-		oldPoolId, newPoolId)
-}
-
-func (gSql *GSqlite3) SelectCandidateTxCount() uint32 {
-	var count uint32
-	query, err := gSql.db.Prepare("select count(*) from c_transactions")
-	if err != nil {
-		log.Printf("%s", err)
-	}
-	defer query.Close()
-
-	err = query.QueryRow().Scan(&count)
-	return count
-}
-
-func (gSql *GSqlite3) SelectTxsPool(poolId uint32) []types.GhostTransaction {
-	rows, err := gSql.db.Query(`select TxId, InputCounter, OutputCounter, Nonce, LockTime 
-	from c_transactions tx where TxIndex = ?`, poolId)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	return gSql.GetTxRows(rows)
-}
-
-func (gSql *GSqlite3) SelectDataTxsPool(poolId uint32) []types.GhostDataTransaction {
-	rows, err := gSql.db.Query(`select TxId, LogicalAddress, DataSize, Data from data_transactions 
-		where TxIndex = ?`, poolId)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	return gSql.GetDataTxRows(rows)
 }
 
 func (gSql *GSqlite3) GetTxRows(rows *sql.Rows) []types.GhostTransaction {

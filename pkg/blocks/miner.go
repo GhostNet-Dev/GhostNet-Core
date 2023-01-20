@@ -29,7 +29,7 @@ func (blocks *Blocks) MakeNewBlock(miner *gcrypto.GhostAddress, creator []byte,
 	newId := pairedBlock.Block.Header.Id + 1
 	prevHash := pairedBlock.Block.GetHashKey()
 	prevDataHash := pairedBlock.DataBlock.GetHashKey()
-	newUsedTxPool := blocks.blockContainer.MakeCandidateTrPool(newId, minimumRequiredTxCount)
+	newUsedTxPool := blocks.blockContainer.TxContainer.MakeCandidateTrPool(newId, minimumRequiredTxCount)
 	if newUsedTxPool == nil {
 		return nil
 	}

@@ -1,15 +1,14 @@
-package fileserver
+package fileservice
 
 import (
 	"log"
-	"net"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"google.golang.org/protobuf/proto"
 )
 
-func (fileServer *FileServer) RequestFileSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (fileService *FileService) RequestFileSq(header *packets.Header, routingInfo *p2p.RoutingInfo) []p2p.PacketHeaderInfo {
 	sq := &packets.RequestFilePacketSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -17,15 +16,15 @@ func (fileServer *FileServer) RequestFileSq(header *packets.Header, from *net.UD
 
 	switch sq.RequestType {
 	case packets.FileRequestType_GetFileInfo:
-		return []p2p.PacketHeaderInfo{*fileServer.MakeFileInfo(sq.Filename)}
+		return []p2p.PacketHeaderInfo{*fileService.makeFileInfo(sq.Filename)}
 	case packets.FileRequestType_GetFileData:
-		fileObj, exist := fileServer.fileObjManager.GetFileObject(sq.Filename)
+		fileObj, exist := fileService.fileObjManager.GetFileObject(sq.Filename)
 		if exist == false {
 			return nil
 		}
 
 		cq := &packets.RequestFilePacketCq{
-			Master:      p2p.MakeMasterPacket(fileServer.owner.GetPubAddress(), 0, 0, fileServer.localAddr),
+			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
 			RequestType: sq.RequestType,
 			Filename:    sq.Filename,
 			StartOffset: sq.StartOffset,
@@ -39,28 +38,28 @@ func (fileServer *FileServer) RequestFileSq(header *packets.Header, from *net.UD
 		}
 		return []p2p.PacketHeaderInfo{
 			{
-				ToAddr:     from,
+				ToAddr:     routingInfo.SourceIp,
 				PacketType: packets.PacketType_FileTransfer,
 				SecondType: packets.PacketSecondType_RequestFile,
 				PacketData: sendData,
 				SqFlag:     false,
 			},
-			*fileServer.SendFileData(sq.Filename, sq.StartOffset, 0, sq.Master.Common.TimeId),
+			*fileService.sendFileData(sq.Filename, sq.StartOffset, 0, sq.Master.Common.TimeId),
 		}
 	}
 	return nil
 }
 
-func (fileServer *FileServer) RequestFileCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (fileService *FileService) RequestFileCq(header *packets.Header, routingInfo *p2p.RoutingInfo) []p2p.PacketHeaderInfo {
 	cq := &packets.RequestFilePacketCq{}
 	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
 
 	if cq.Result == true && cq.RequestType == packets.FileRequestType_GetFileInfo {
-		fileServer.fileObjManager.CreateFileObj(cq.Filename, nil, cq.FileLength, nil, nil)
+		fileService.fileObjManager.CreateFileObj(cq.Filename, nil, cq.FileLength, nil, nil)
 		sq := &packets.RequestFilePacketSq{
-			Master:      p2p.MakeMasterPacket(fileServer.owner.GetPubAddress(), 0, 0, fileServer.localAddr),
+			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
 			RequestType: packets.FileRequestType_GetFileData,
 			Filename:    cq.Filename,
 			StartOffset: 0,
@@ -73,7 +72,7 @@ func (fileServer *FileServer) RequestFileCq(header *packets.Header, from *net.UD
 
 		return []p2p.PacketHeaderInfo{
 			{
-				ToAddr:     from,
+				ToAddr:     routingInfo.SourceIp,
 				PacketType: packets.PacketType_FileTransfer,
 				SecondType: packets.PacketSecondType_RequestFile,
 				PacketData: sendData,
@@ -84,15 +83,15 @@ func (fileServer *FileServer) RequestFileCq(header *packets.Header, from *net.UD
 	return nil
 }
 
-// ResponseFileSq 
-func (fileServer *FileServer) ResponseFileSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+// ResponseFileSq
+func (fileService *FileService) ResponseFileSq(header *packets.Header, routingInfo *p2p.RoutingInfo) []p2p.PacketHeaderInfo {
 	sq := &packets.ResponseFilePacketSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
 	}
 
 	cq := &packets.ResponseFilePacketCq{
-		Master: p2p.MakeMasterPacket(fileServer.owner.GetPubAddress(), 0, 0, fileServer.localAddr),
+		Master: p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
 		Result: true,
 	}
 
@@ -102,7 +101,7 @@ func (fileServer *FileServer) ResponseFileSq(header *packets.Header, from *net.U
 	}
 	headerInfo := []p2p.PacketHeaderInfo{
 		{
-			ToAddr:     from,
+			ToAddr:     routingInfo.SourceIp,
 			PacketType: packets.PacketType_FileTransfer,
 			SecondType: packets.PacketSecondType_ResponseFile,
 			PacketData: sendData,
@@ -110,9 +109,9 @@ func (fileServer *FileServer) ResponseFileSq(header *packets.Header, from *net.U
 		},
 	}
 
-	if fileServer.SaveToFileObject(sq.Filename, sq.StartPos, sq.BufferSize, sq.FileData, sq.FileLength) == false {
+	if fileService.saveToFileObject(sq.Filename, sq.StartPos, sq.BufferSize, sq.FileData, sq.FileLength) == false {
 		newSq := &packets.RequestFilePacketSq{
-			Master:      p2p.MakeMasterPacket(fileServer.owner.GetPubAddress(), 0, 0, fileServer.localAddr),
+			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
 			RequestType: packets.FileRequestType_GetFileData,
 			Filename:    sq.Filename,
 			StartOffset: sq.StartPos + BufferSize,
@@ -122,7 +121,7 @@ func (fileServer *FileServer) ResponseFileSq(header *packets.Header, from *net.U
 			log.Fatal(err)
 		}
 		headerInfo = append(headerInfo, p2p.PacketHeaderInfo{
-			ToAddr:     from,
+			ToAddr:     routingInfo.SourceIp,
 			PacketType: packets.PacketType_FileTransfer,
 			SecondType: packets.PacketSecondType_RequestFile,
 			PacketData: newSqData,
@@ -133,6 +132,6 @@ func (fileServer *FileServer) ResponseFileSq(header *packets.Header, from *net.U
 	return headerInfo
 }
 
-func (fileServer *FileServer) ResponseFileCq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (fileService *FileService) ResponseFileCq(header *packets.Header, routingInfo *p2p.RoutingInfo) []p2p.PacketHeaderInfo {
 	return nil
 }

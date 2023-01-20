@@ -29,6 +29,7 @@ message GetBlockSq {
 
 message GetBlockCq {
     MasterPacket Master = 1;
+    bool Result = 2;
 }
 
 message SendBlockSq {

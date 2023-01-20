@@ -72,19 +72,27 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 
 					// TODO: it need to refac
 					// sq
-					if response := udp.Pf.firstLevel[recvPacket.Type].packetSqHandler[recvPacket.SecondType](&recvPacket, packetInfo.Addr); response != nil {
-						for _, packet := range response {
-							packet.PacketType = recvPacket.Type
-							udp.SendResponse(&packet)
-						}
-					}
-
-					// cq
-					if response := udp.Pf.firstLevel[recvPacket.Type].packetCqHandler[recvPacket.SecondType](&recvPacket, packetInfo.Addr); response != nil {
-						for _, packet := range response {
-							packet.PacketType = recvPacket.Type
-							udp.SendResponse(&packet)
-						}
+					if recvPacket.SqFlag == true {
+						go func() {
+							if response := udp.Pf.firstLevel[recvPacket.Type].packetSqHandler[recvPacket.SecondType](&recvPacket,
+								&RoutingInfo{Level: 1, SourceIp: packetInfo.Addr}); response != nil {
+								for _, packet := range response {
+									packet.PacketType = recvPacket.Type
+									udp.SendResponse(&packet)
+								}
+							}
+						}()
+					} else {
+						go func() {
+							// cq
+							if response := udp.Pf.firstLevel[recvPacket.Type].packetCqHandler[recvPacket.SecondType](&recvPacket,
+								&RoutingInfo{Level: 1, SourceIp: packetInfo.Addr}); response != nil {
+								for _, packet := range response {
+									packet.PacketType = recvPacket.Type
+									udp.SendResponse(&packet)
+								}
+							}
+						}()
 					}
 				}
 			}
@@ -124,21 +132,28 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 	}()
 }
 
-func (udp *UdpServer) SendPacket(sendInfo *PacketHeaderInfo, ipAddr *ptypes.GhostIp) {
-
-	anyData := packets.Header{
+func (sendInfo *PacketHeaderInfo) TranslationToHeader() *packets.Header {
+	return &packets.Header{
 		Type:       sendInfo.PacketType,
 		SecondType: sendInfo.SecondType,
 		ThirdType:  sendInfo.ThirdType,
 		SqFlag:     sendInfo.SqFlag,
 		PacketData: sendInfo.PacketData,
 	}
-	sendData, err := proto.Marshal(&anyData)
+}
+
+func (udp *UdpServer) SendUdpPacket(sendInfo *PacketHeaderInfo, to *net.UDPAddr) {
+	anyData := sendInfo.TranslationToHeader()
+	sendData, err := proto.Marshal(anyData)
 	if err != nil {
 		log.Fatal(err)
 	}
-	to, _ := net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
 	udp.RawSendPacket(to, sendData)
+}
+
+func (udp *UdpServer) SendPacket(sendInfo *PacketHeaderInfo, ipAddr *ptypes.GhostIp) {
+	to, _ := net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
+	udp.SendUdpPacket(sendInfo, to)
 }
 
 func (udp *UdpServer) SendResponse(sendInfo *PacketHeaderInfo) {

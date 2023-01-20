@@ -8,7 +8,14 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 )
 
-type FuncPacketHandler func(*packets.Header, *net.UDPAddr) []PacketHeaderInfo
+type RoutingInfo struct {
+	RoutingType packets.RoutingType
+	SourceIp    *net.UDPAddr
+	Level       int
+	Context     interface{}
+}
+
+type FuncPacketHandler func(*packets.Header, *RoutingInfo) []PacketHeaderInfo
 
 type PacketSecondHandler struct {
 	packetSqHandler map[packets.PacketSecondType]FuncPacketHandler

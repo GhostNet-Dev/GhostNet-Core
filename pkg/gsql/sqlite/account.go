@@ -1,4 +1,4 @@
-package gsql
+package sqlite
 
 import "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 

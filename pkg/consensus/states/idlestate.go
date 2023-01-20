@@ -1,4 +1,4 @@
-package consensus
+package states
 
 import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"

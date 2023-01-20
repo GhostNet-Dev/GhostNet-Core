@@ -59,7 +59,7 @@ var (
 	TestResult bool
 )
 
-func PacketSqHandler(header *packets.Header, from *net.UDPAddr) []PacketHeaderInfo {
+func PacketSqHandler(header *packets.Header, routingInfo *RoutingInfo) []PacketHeaderInfo {
 	packetByte := header.PacketData
 	infoSq := &packets.MasterNodeUserInfoSq{}
 	proto.Unmarshal(packetByte, infoSq)

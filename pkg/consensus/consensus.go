@@ -74,6 +74,6 @@ func (con *Consensus) CheckMinimumTxCount(pairedBlock *types.PairedBlock) bool {
 func (con *Consensus) CheckTriggerNewBlock() (bool, uint32) {
 	height := con.blockContainer.BlockHeight()
 	triggerTxCount := con.GetMaxTransactionCount(height)
-	txCount := con.blockContainer.GetCandidateTxCount()
+	txCount := con.blockContainer.TxContainer.GetCandidateTxCount()
 	return txCount >= triggerTxCount, triggerTxCount
 }

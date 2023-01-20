@@ -82,12 +82,19 @@ func (blockMgr *BlockManager) GetHeightestBlockCq(header *packets.Header, from *
 	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
+	blockMgr.fsm.State().RecvBlockHeight(cq.Height, cq.Master.Common.FromPubKeyAddress)
 }
 
 func (blockMgr *BlockManager) NewBlockSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.NewBlockSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
+	}
+
+	if blockMgr.fsm.CheckAcceptNewBlock() == true {
+		fileObj := <-blockMgr.cloud.DownloadASync(sq.BlockFilename, from)
+		//blockMgr.RequestBlockChainFile(sq.BlockFilename, from, blockMgr.DownloadNewBlock, nil)
+		blockMgr.DownloadNewBlock(fileObj, nil)
 	}
 
 	cq := packets.NewBlockCq{
@@ -116,10 +123,11 @@ func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAd
 		log.Fatal(err)
 	}
 
-	//blockname := master.blockHandler.GetBlock(sq.BlockId)
+	blockFilename, exist := blockMgr.PrepareSendBlock(sq.BlockId)
 
 	cq := packets.GetBlockCq{
 		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Result: exist,
 	}
 
 	cqData, err := proto.Marshal(&cq)
@@ -127,30 +135,32 @@ func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAd
 		log.Fatal(err)
 	}
 
-	newSq := &packets.SendBlockSq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
-		//BlockFilename: blockname,
-	}
+	responseInfo := []p2p.PacketHeaderInfo{{
+		ToAddr:     from,
+		ThirdType:  packets.PacketThirdType_GetBlock,
+		PacketData: cqData,
+		SqFlag:     false,
+	}}
 
-	sendData, err := proto.Marshal(newSq)
-	if err != nil {
-		log.Fatal(err)
-	}
+	if exist == true {
+		newSq := &packets.SendBlockSq{
+			Master:        p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+			BlockFilename: blockFilename,
+		}
 
-	return []p2p.PacketHeaderInfo{
-		{
-			ToAddr:     from,
-			ThirdType:  packets.PacketThirdType_GetBlock,
-			PacketData: cqData,
-			SqFlag:     false,
-		},
-		{
+		sendData, err := proto.Marshal(newSq)
+		if err != nil {
+			log.Fatal(err)
+		}
+		responseInfo = append(responseInfo, p2p.PacketHeaderInfo{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendBlock,
 			PacketData: sendData,
 			SqFlag:     true,
-		},
+		})
 	}
+
+	return responseInfo
 }
 
 func (blockMgr *BlockManager) GetBlockCq(header *packets.Header, from *net.UDPAddr) {}
@@ -161,6 +171,11 @@ func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPA
 		log.Fatal(err)
 	}
 
+	if blockMgr.fsm.CheckAcceptNewBlock() == true {
+		fileObj := <-blockMgr.cloud.DownloadASync(sq.BlockFilename, from)
+		blockMgr.DownloadBlock(fileObj, nil)
+	}
+	//blockMgr.RequestBlockChainFile(sq.BlockFilename, from, blockMgr.DownloadBlock, nil)
 	//master.blockHandler.SendBlock(sq.BlockFilename)
 	cq := packets.SendBlockCq{
 		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
@@ -182,114 +197,6 @@ func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPA
 }
 
 func (blockMgr *BlockManager) SendBlockCq(header *packets.Header, from *net.UDPAddr) {}
-
-func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
-	sq := &packets.SendTransactionSq{}
-	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
-		log.Fatal(err)
-	}
-
-	//master.blockHandler.SendTransaction(sq.TxId)
-	cq := packets.SendTransactionCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
-	}
-
-	cqData, err := proto.Marshal(&cq)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return []p2p.PacketHeaderInfo{
-		{
-			ToAddr:     from,
-			ThirdType:  packets.PacketThirdType_SendTransaction,
-			PacketData: cqData,
-			SqFlag:     false,
-		},
-	}
-}
-func (blockMgr *BlockManager) SendTransactionCq(header *packets.Header, from *net.UDPAddr) {}
-
-func (blockMgr *BlockManager) SearchTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
-	sq := &packets.SearchTransactionSq{}
-	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
-		log.Fatal(err)
-	}
-
-	//master.blockHandler.SendTransaction(sq.TxId)
-	cq := packets.SearchTransactionCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
-	}
-
-	cqData, err := proto.Marshal(&cq)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return []p2p.PacketHeaderInfo{
-		{
-			ToAddr:     from,
-			ThirdType:  packets.PacketThirdType_SearchTransaction,
-			PacketData: cqData,
-			SqFlag:     false,
-		},
-	}
-}
-
-func (blockMgr *BlockManager) SearchTransactionCq(header *packets.Header, from *net.UDPAddr) {}
-
-func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
-	sq := &packets.SendDataTransactionSq{}
-	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
-		log.Fatal(err)
-	}
-
-	cq := packets.SendDataTransactionCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
-	}
-
-	cqData, err := proto.Marshal(&cq)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return []p2p.PacketHeaderInfo{
-		{
-			ToAddr:     from,
-			ThirdType:  packets.PacketThirdType_SendDataTransaction,
-			PacketData: cqData,
-			SqFlag:     false,
-		},
-	}
-}
-func (blockMgr *BlockManager) SendDataTransactionCq(header *packets.Header, from *net.UDPAddr) {}
-
-func (blockMgr *BlockManager) SearchDataTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
-	sq := &packets.SearchTransactionSq{}
-	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
-		log.Fatal(err)
-	}
-
-	cq := packets.SearchTransactionCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
-	}
-
-	cqData, err := proto.Marshal(&cq)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return []p2p.PacketHeaderInfo{
-		{
-			ToAddr:     from,
-			ThirdType:  packets.PacketThirdType_SearchDataTransaction,
-			PacketData: cqData,
-			SqFlag:     false,
-		},
-	}
-}
-
-func (blockMgr *BlockManager) SearchDataTransactionCq(header *packets.Header, from *net.UDPAddr) {}
 
 func (blockMgr *BlockManager) GetBlockHashSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
 	sq := &packets.GetBlockHashSq{}
@@ -428,72 +335,3 @@ func (blockMgr *BlockManager) SendBlockPrevHashSq(header *packets.Header, from *
 }
 
 func (blockMgr *BlockManager) SendBlockPrevHashCq(header *packets.Header, from *net.UDPAddr) {}
-
-func (blockMgr *BlockManager) GetTxStatusSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
-	sq := &packets.GetTxStatusSq{}
-	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
-		log.Fatal(err)
-	}
-
-	cq := packets.GetTxStatusCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
-	}
-
-	cqData, err := proto.Marshal(&cq)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	newSq := packets.SendTxStatusSq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
-	}
-
-	sendData, err := proto.Marshal(&newSq)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return []p2p.PacketHeaderInfo{
-		{
-			ToAddr:     from,
-			ThirdType:  packets.PacketThirdType_GetTxStatus,
-			PacketData: cqData,
-			SqFlag:     false,
-		},
-		{
-			ToAddr:     from,
-			ThirdType:  packets.PacketThirdType_SendTxStatus,
-			PacketData: sendData,
-			SqFlag:     true,
-		},
-	}
-}
-
-func (blockMgr *BlockManager) GetTxStatusCq(header *packets.Header, from *net.UDPAddr) {}
-
-func (blockMgr *BlockManager) SendTxStatusSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
-	sq := &packets.SendTxStatusSq{}
-	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
-		log.Fatal(err)
-	}
-
-	cq := packets.SendTxStatusCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
-	}
-
-	cqData, err := proto.Marshal(&cq)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return []p2p.PacketHeaderInfo{
-		{
-			ToAddr:     from,
-			ThirdType:  packets.PacketThirdType_SendTxStatus,
-			PacketData: cqData,
-			SqFlag:     false,
-		},
-	}
-}
-
-func (blockMgr *BlockManager) SendTxStatusCq(header *packets.Header, from *net.UDPAddr) {}

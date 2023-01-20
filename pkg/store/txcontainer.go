@@ -1,20 +1,28 @@
 package store
 
 import (
+	"github.com/GhostNet-Dev/GhostNet-Core/libs/container"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type TxContainer struct {
-	TableName string
-	gSql      gsql.GSql
+	gSql             gsql.GSql
+	gCandidateSql    gsql.GCandidateSql
+	CandidateTxPools *container.Queue
+	CurrentPoolId    uint32
 }
 
-func NewTxContainer(g gsql.GSql, tableName string) *TxContainer {
+func NewTxContainer(g gsql.GSql, gCandidateSql gsql.GCandidateSql) *TxContainer {
 	return &TxContainer{
-		TableName: tableName,
-		gSql:      g,
+		gSql:             g,
+		gCandidateSql:    gCandidateSql,
+		CandidateTxPools: container.NewQueue(),
 	}
+}
+
+func (txContainer *TxContainer) Initialize() {
+	txContainer.CurrentPoolId = txContainer.gCandidateSql.GetMaxPoolId()
 }
 
 func (txContainer *TxContainer) SaveTransaction(blockId uint32, tx *types.GhostTransaction, txIndexInBlock uint32) {

@@ -1,4 +1,4 @@
-package consensus
+package states
 
 import "github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 
@@ -48,4 +48,8 @@ func (fsm *BlockMachine) CheckAcceptNewBlock() bool {
 
 func (fsm *BlockMachine) setState(s BlockState) {
 	fsm.currentState = s
+}
+
+func (fsm *BlockMachine) State() BlockState {
+	return fsm.currentState
 }

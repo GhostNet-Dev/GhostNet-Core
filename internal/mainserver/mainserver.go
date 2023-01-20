@@ -5,6 +5,7 @@ import (
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus/states"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
@@ -13,14 +14,14 @@ import (
 
 type MainServer struct {
 	con   *consensus.Consensus
-	fsm   *consensus.BlockMachine
+	fsm   *states.BlockMachine
 	block *blocks.Blocks
 	user  *gcrypto.GhostAddress
 	udp   *p2p.UdpServer
 }
 
 func NewMainServer(con *consensus.Consensus,
-	fsm *consensus.BlockMachine,
+	fsm *states.BlockMachine,
 	block *blocks.Blocks,
 	user *gcrypto.GhostAddress,
 	udp *p2p.UdpServer) *MainServer {

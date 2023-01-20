@@ -2,26 +2,33 @@ package blockmanager
 
 import (
 	"bytes"
+	"fmt"
 	"net"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/cloudservice"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileserver"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus/states"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileservice"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gnetwork"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/txs"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
+	"github.com/btcsuite/btcutil/base58"
 )
 
 type BlockManager struct {
 	consensus      *consensus.Consensus
-	fsm            *consensus.BlockMachine
+	fsm            *states.BlockMachine
 	block          *blocks.Blocks
+	tXs            *txs.TXs
 	blockContainer *store.BlockContainer
-	fileServer     *fileserver.FileServer
+	fileService    *fileservice.FileService
+	cloud          *cloudservice.CloudService
 	owner          *gcrypto.GhostAddress
 	localIpAddr    *ptypes.GhostIp
 
@@ -30,11 +37,13 @@ type BlockManager struct {
 }
 
 func NewBlockManager(con *consensus.Consensus,
-	fsm *consensus.BlockMachine,
+	fsm *states.BlockMachine,
 	block *blocks.Blocks,
+	tXs *txs.TXs,
 	blockContainer *store.BlockContainer,
 	master *gnetwork.MasterNetwork,
-	fileServer *fileserver.FileServer,
+	fileService *fileservice.FileService,
+	cloud *cloudservice.CloudService,
 	user *gcrypto.GhostAddress,
 	myIpAddr *ptypes.GhostIp) *BlockManager {
 
@@ -42,8 +51,10 @@ func NewBlockManager(con *consensus.Consensus,
 		consensus:       con,
 		fsm:             fsm,
 		block:           block,
+		tXs:             tXs,
 		blockContainer:  blockContainer,
-		fileServer:      fileServer,
+		fileService:     fileService,
+		cloud:           cloud,
 		owner:           user,
 		localIpAddr:     myIpAddr,
 		packetSqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo),
@@ -82,13 +93,37 @@ func (blockMgr *BlockManager) GetHeightestBlock() uint32 {
 	return blockMgr.blockContainer.BlockHeight()
 }
 
-func (blockMgr *BlockManager) NewBlockEvent(filename string, addr *ptypes.GhostIp) {
-	if blockMgr.fileServer.CheckFileExist(filename) == false {
-		blockMgr.fileServer.SendGetFileInfo(addr, filename, blockMgr.DownloadNewBlock, nil)
+func (blockMgr *BlockManager) PrepareSendBlock(blockId uint32) (string, bool) {
+	pairedBlock := blockMgr.blockContainer.GetBlock(blockId)
+	if pairedBlock == nil {
+		return "", false
 	}
+
+	blockFilename := fmt.Sprint(blockId, "@", base58.Encode(pairedBlock.Block.GetHashKey()), ".ghost")
+	blockMgr.fileService.CreateFile(blockFilename, pairedBlock.SerializeToByte(), nil, nil)
+
+	return blockFilename, true
 }
 
-func (blockMgr *BlockManager) DownloadNewBlock(obj *fileserver.FileObject, context interface{}) {
+func (blockMgr *BlockManager) DownloadDataTransaction(obj *fileservice.FileObject, context interface{}) {
+}
+
+func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, context interface{}) bool {
+	tx := &types.GhostTransaction{}
+	if tx.Deserialize(bytes.NewBuffer(obj.Buffer)).Result() == false {
+		return false
+	}
+	if blockMgr.tXs.TransactionValidation(tx, nil, blockMgr.blockContainer.TxContainer).Result() == false {
+		return false
+	}
+	blockMgr.blockContainer.TxContainer.SaveCandidateTx(tx)
+	return true
+}
+
+func (blockMgr *BlockManager) DownloadBlock(obj *fileservice.FileObject, context interface{}) {
+}
+
+func (blockMgr *BlockManager) DownloadNewBlock(obj *fileservice.FileObject, context interface{}) {
 	byteBuf := bytes.NewBuffer(obj.Buffer)
 	newPair := types.PairedBlock{}
 	if newPair.Deserialize(byteBuf) == false {

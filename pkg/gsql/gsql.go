@@ -3,8 +3,9 @@ package gsql
 import (
 	"log"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql/sqlite"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
-	types "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 // GSql sql Instance
@@ -25,6 +26,11 @@ type GSql interface {
 	GetBlockHeight() uint32
 	SelectTxsPool(poolId uint32) []types.GhostTransaction
 	SelectDataTxsPool(poolId uint32) []types.GhostDataTransaction
+}
+
+type GCandidateSql interface {
+	InsertCandidateTx(tx *types.GhostTransaction, poolId uint32)
+	InsertCandidateDataTx(dataTx *types.GhostDataTransaction, poolId uint32)
 	SelectCandidateTxCount() uint32
 	GetMinPoolId() uint32
 	GetMaxPoolId() uint32
@@ -43,7 +49,7 @@ func NewGSql(sqlType string) GSql {
 	switch sqlType {
 	case "postgres":
 	case "sqlite3":
-		gSql = new(GSqlite3)
+		gSql = sqlite.GSqlite
 	}
 
 	if gSql == nil {
@@ -53,6 +59,21 @@ func NewGSql(sqlType string) GSql {
 	return gSql
 }
 
+func NewGCandidateSql(sqlType string) GCandidateSql {
+	var gCandidate GCandidateSql
+	switch sqlType {
+	case "postgres":
+	case "sqlite3":
+		gCandidate = sqlite.GSqlite
+	}
+
+	if gCandidate == nil {
+		log.Fatal("Failed to create db.")
+	}
+
+	return gCandidate
+}
+
 func NewAccountSql(sqlType string) MasterNodeStore {
-	return &GhostAccount{}
+	return &sqlite.GhostAccount{}
 }

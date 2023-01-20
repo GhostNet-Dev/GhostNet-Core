@@ -7,7 +7,6 @@ import (
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -28,8 +27,7 @@ var (
 	from, _        = net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
 	owner          = gcrypto.GenerateKeyPair()
 
-	tTreeMap = NewTrieTreeMap(owner.GetPubAddress(), gsql.NewAccountSql("sqlite3"))
-	master   = NewMasterNode("test", owner, ipAddr, config, packetFactory, udp, blockContainer, tTreeMap)
+	master = NewMasterNode("test", owner, ipAddr, config, packetFactory, udp, blockContainer, account, tTreeMap)
 )
 
 func TestGetVersionSq(t *testing.T) {
@@ -42,7 +40,7 @@ func TestGetVersionSq(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.GetGhostNetVersionSq(&packets.Header{PacketData: sendData}, from)
+	responseInfos := master.GetGhostNetVersionSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
 	cq := &packets.VersionInfoCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -60,7 +58,7 @@ func TestNotifyMasterNodeSq(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.NotificationMasterNodeSq(&packets.Header{PacketData: sendData}, from)
+	responseInfos := master.NotificationMasterNodeSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
 	cq := &packets.MasterNodeUserInfoCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -84,7 +82,7 @@ func TestConnectToMasterNodeSq(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.ConnectToMasterNodeSq(&packets.Header{PacketData: sendData}, from)
+	responseInfos := master.ConnectToMasterNodeSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
 	cq := &packets.MasterNodeUserInfoCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -108,7 +106,7 @@ func TestRequestMasterNodeListSq(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.RequestMasterNodeListSq(&packets.Header{PacketData: sendData}, from)
+	responseInfos := master.RequestMasterNodeListSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
 	resInfo := responseInfos[1]
 	resSq := &packets.ResponseMasterNodeListSq{}
 	if err := proto.Unmarshal(resInfo.PacketData, resSq); err != nil {
@@ -129,7 +127,7 @@ func TestResponseMasterNodeListSq(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.ResponseMasterNodeListSq(&packets.Header{PacketData: sendData}, from)
+	responseInfos := master.ResponseMasterNodeListSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
 	cq := &packets.ResponseMasterNodeListCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -149,11 +147,11 @@ func TestSearchMasterPubKey(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.SearchMasterPubKeySq(&packets.Header{PacketData: sendData}, from)
+	responseInfos := master.SearchMasterPubKeySq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
 	cq := &packets.SearchGhostPubKeyCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
-	assert.Equal(t, packets.PacketSecondType_SearchMasterPubKey, responseInfos[0].SecondType, "packet type is wrong")
+	assert.Equal(t, packets.PacketSecondType_SearchUserInfoByPubKey, responseInfos[0].SecondType, "packet type is wrong")
 	assert.Equal(t, owner.GetPubAddress(), cq.User[0].PubKey, "pubkey is wrong")
 }

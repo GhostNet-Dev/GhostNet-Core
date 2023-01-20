@@ -1,4 +1,4 @@
-package fileserver
+package fileservice
 
 import (
 	"log"
@@ -24,12 +24,12 @@ var (
 	udp           = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port)
 	packetFactory = p2p.NewPacketFactory()
 	owner         = gcrypto.GenerateKeyPair()
-	fileServer    = NewFileServer(udp, packetFactory, owner, ipAddr, "./")
+	fileService    = NewFileServer(udp, packetFactory, owner, ipAddr, "./")
 )
 
 func testFileInit() {
-	if _, err := os.Stat(fileServer.localFilePath + testfile); os.IsNotExist(err) {
-		if fp, err := os.Create(fileServer.localFilePath + testfile); err == nil {
+	if _, err := os.Stat(fileService.localFilePath + testfile); os.IsNotExist(err) {
+		if fp, err := os.Create(fileService.localFilePath + testfile); err == nil {
 			defer fp.Close()
 			fp.Write(make([]byte, BufferSize*16-128))
 		} else {
@@ -41,19 +41,19 @@ func testFileInit() {
 func TestLoadFile(t *testing.T) {
 	// create file -> send/recv -> defer delete file
 	testFileInit()
-	exist := fileServer.CheckFileExist(testfile)
+	exist := fileService.CheckFileExist(testfile)
 	assert.Equal(t, true, exist, "fail to create test file")
-	fileObj := fileServer.LoadFileToMemory(testfile)
+	fileObj := fileService.LoadFileToMemory(testfile)
 	assert.Equal(t, testfile, fileObj.Filename, "wrong file")
 	assert.Equal(t, true, fileObj.CompleteDone, "load fail")
 }
 
 func TestFileInfoCq(t *testing.T) {
 	testFileInit()
-	info, err := os.Stat(fileServer.localFilePath + testfile)
-	fileServer.LoadFileToMemory(testfile)
+	info, err := os.Stat(fileService.localFilePath + testfile)
+	fileService.LoadFileToMemory(testfile)
 	assert.Equal(t, nil, err, "errrrr")
-	header := fileServer.MakeFileInfo(testfile)
+	header := fileService.makeFileInfo(testfile)
 	assert.Equal(t, packets.PacketSecondType_RequestFile, header.SecondType, "wrong second type")
 	assert.Equal(t, false, header.SqFlag, "wrong SqFlag")
 
@@ -67,10 +67,10 @@ func TestFileInfoCq(t *testing.T) {
 
 func TestSendFileData(t *testing.T) {
 	testFileInit()
-	fileObj := fileServer.LoadFileToMemory(testfile)
+	fileObj := fileService.LoadFileToMemory(testfile)
 
 	for offset := uint64(0); offset < fileObj.FileLength; offset += 1024 {
-		header := fileServer.SendFileData(testfile, offset, 0, 0)
+		header := fileService.sendFileData(testfile, offset, 0, 0)
 		sq := &packets.ResponseFilePacketSq{}
 		if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 			log.Fatal(err)
@@ -83,7 +83,7 @@ func TestSendFileData(t *testing.T) {
 
 func TestSaveToFileSystem(t *testing.T) {
 	testFileInit()
-	fileInfo, _ := os.Stat(fileServer.localFilePath + testfile)
+	fileInfo, _ := os.Stat(fileService.localFilePath + testfile)
 	fileSize := uint64(fileInfo.Size())
 	bufferSize := uint64(BufferSize)
 	buf := make([]byte, bufferSize)
@@ -92,7 +92,7 @@ func TestSaveToFileSystem(t *testing.T) {
 			bufferSize = fileSize - offset
 		}
 
-		done := fileServer.SaveToFileObject(testfile, offset, uint32(bufferSize), buf, fileSize)
+		done := fileService.saveToFileObject(testfile, offset, uint32(bufferSize), buf, fileSize)
 		if offset+BufferSize >= fileSize {
 			assert.Equal(t, true, done, "wrong complete")
 		} else {

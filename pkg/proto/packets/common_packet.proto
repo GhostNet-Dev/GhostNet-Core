@@ -19,7 +19,7 @@ enum PacketSecondType {
     SearchGhostPubKey = 3;
     RequestMasterNodeList = 4;
     ResponseMasterNodeList = 5;
-    SearchMasterPubKey = 6;
+    SearchUserInfoByPubKey = 6;
     RegistBadBlock = 7;
     BlockChain = 8;
     Forwarding = 9;

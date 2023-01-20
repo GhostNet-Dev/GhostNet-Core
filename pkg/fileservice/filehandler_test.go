@@ -1,4 +1,4 @@
-package fileserver
+package fileservice
 
 import (
 	"log"
@@ -24,12 +24,12 @@ func TestRequestFileSq(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := fileServer.RequestFileSq(&packets.Header{PacketData: sendData}, from)
+	responseInfos := fileService.RequestFileSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
 	cq := &packets.RequestFilePacketCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
-	info, err := os.Stat(fileServer.localFilePath + testfile)
+	info, err := os.Stat(fileService.localFilePath + testfile)
 
 	assert.Equal(t, packets.PacketSecondType_RequestFile, responseInfos[0].SecondType, "packet type is wrong")
 	assert.Equal(t, packets.FileRequestType_GetFileInfo, cq.RequestType, "request type is wrong")
@@ -40,8 +40,8 @@ func TestRequestFileSq(t *testing.T) {
 
 func TestRequestFileDataSq(t *testing.T) {
 	testFileInit()
-	fileServer.LoadFileToMemory(testfile)
-	info, _ := os.Stat(fileServer.localFilePath + testfile)
+	fileService.LoadFileToMemory(testfile)
+	info, _ := os.Stat(fileService.localFilePath + testfile)
 	totalDownloadSize := uint32(0)
 	// todo for total file packet
 	for offset := uint64(0); offset < uint64(info.Size()); offset += BufferSize {
@@ -55,7 +55,7 @@ func TestRequestFileDataSq(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		responseInfos := fileServer.RequestFileSq(&packets.Header{PacketData: sendData}, from)
+		responseInfos := fileService.RequestFileSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
 		assert.Equal(t, true, responseInfos != nil, "return is nil")
 
 		cq := &packets.RequestFilePacketCq{}
@@ -104,7 +104,7 @@ func TestResponseSqTest(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		responseInfos := fileServer.ResponseFileSq(&packets.Header{PacketData: sendData}, from)
+		responseInfos := fileService.ResponseFileSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
 		cq := &packets.ResponseFilePacketCq{}
 		if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 			log.Fatal(err)
@@ -121,7 +121,7 @@ func TestResponseSqTest(t *testing.T) {
 		assert.Equal(t, packets.PacketSecondType_ResponseFile, responseInfos[0].SecondType, "packet0 type is wrong")
 		assert.Equal(t, true, cq.Result, "result is wrong")
 	}
-	fileObj, exist := fileServer.fileObjManager.GetFileObject(testfile)
+	fileObj, exist := fileService.fileObjManager.GetFileObject(testfile)
 	assert.Equal(t, true, exist, "file is not exist")
 	assert.Equal(t, true, fileObj.CompleteDone, "file is not completed")
 
