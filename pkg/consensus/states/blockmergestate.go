@@ -6,9 +6,17 @@ import (
 
 type BlockMergeState struct {
 	blockMachine *BlockMachine
+	blockServer  IBlockServer
 }
 
-func (s *BlockMergeState) Inititalize() {
+func (s *BlockMergeState) Initialize() {
+	go s.MergeTask()
+}
+
+func (s *BlockMergeState) MergeTask() {
+	s.blockMachine.MergeExecute()
+	s.blockMachine.blockServer.BlockServerInitStart()
+	s.blockMachine.setState(s.blockMachine.miningState)
 }
 
 func (s *BlockMergeState) Rebuild() {
@@ -23,12 +31,11 @@ func (s *BlockMergeState) RecvBlockHeight(height uint32, pubKey string) {
 
 }
 
-func (s *BlockMergeState) RecvBlockHash(from string, masterHash string, blockIdx uint32) {
+func (s *BlockMergeState) RecvBlockHash(from string, masterHash []byte, blockIdx uint32) {
 
 }
 
 func (s *BlockMergeState) RecvBlock(pairedBlock *types.PairedBlock, pubKey string) {
-
 }
 
 func (s *BlockMergeState) TimerExpired(context interface{}) bool {
@@ -36,5 +43,4 @@ func (s *BlockMergeState) TimerExpired(context interface{}) bool {
 }
 
 func (s *BlockMergeState) Exit() {
-
 }

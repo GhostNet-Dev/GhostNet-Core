@@ -117,7 +117,7 @@ func (tTree *TrieTreeMap) GetCharLevelMasterList(searchPubKey string, targetLeve
 func (tTree *TrieTreeMap) GetTreeClusterPick(searchString string) *net.UDPAddr {
 	user := tTree.account.GetMasterNodeSearchPick("1" + searchString[0:1])
 	if user == nil {
-		for pubKey, _ := range tTree.checkList {
+		for pubKey := range tTree.checkList {
 			node := tTree.account.GetNodeInfo(pubKey)
 			return node.NetAddr
 		}

@@ -2,19 +2,24 @@ package consensus
 
 import (
 	"bytes"
+	"fmt"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type Consensus struct {
 	blockContainer *store.BlockContainer
+	block          *blocks.Blocks
 }
 
-func NewConsensus(bc *store.BlockContainer) *Consensus {
+func NewConsensus(bc *store.BlockContainer, block *blocks.Blocks) *Consensus {
 	InitInterval()
 	return &Consensus{
 		blockContainer: bc,
+		block:          block,
 	}
 }
 
@@ -76,4 +81,81 @@ func (con *Consensus) CheckTriggerNewBlock() (bool, uint32) {
 	triggerTxCount := con.GetMaxTransactionCount(height)
 	txCount := con.blockContainer.TxContainer.GetCandidateTxCount()
 	return txCount >= triggerTxCount, triggerTxCount
+}
+
+func (con *Consensus) Clear() {
+	con.blockContainer.CandidateBlk.Reset()
+}
+
+func (con *Consensus) LoadHashFromTempDb(blockId uint32) []byte {
+	pairedBlock := con.blockContainer.CandidateBlk.GetBlock(blockId)
+	if pairedBlock == nil {
+		return nil
+	}
+
+	return pairedBlock.Block.GetHashKey()
+}
+
+func (con *Consensus) CheckAndSave(candidatePair *types.PairedBlock) bool {
+	blockId := candidatePair.BlockId()
+	if checkSaveRetryBlock := con.blockContainer.CandidateBlk.GetBlock(blockId); checkSaveRetryBlock != nil {
+		if bytes.Compare(checkSaveRetryBlock.Block.GetHashKey(),
+			candidatePair.Block.GetHashKey()) == 0 {
+			return true
+		} else {
+			con.blockContainer.CandidateBlk.DeleteBlock(blockId)
+		}
+	}
+
+	prevPairedBlock := con.blockContainer.CandidateBlk.GetBlock(blockId - 1)
+	if prevPairedBlock == nil {
+		return false
+	}
+	if con.block.BlockMergeCheck(candidatePair, prevPairedBlock) == false {
+		return false
+	}
+	con.blockContainer.CandidateBlk.AddBlock(candidatePair)
+	return true
+}
+
+func (con *Consensus) MergeExecute(startBlockId uint32, endBlockId uint32) {
+	con.blockContainer.DeleteAfterTargetId(startBlockId)
+	for blockId := startBlockId; blockId <= endBlockId; blockId++ {
+		pairedBlock := con.blockContainer.CandidateBlk.GetBlock(blockId)
+		if pairedBlock == nil {
+			break
+		}
+		con.blockContainer.InsertBlock(pairedBlock)
+		glogger.DebugOutput(con, fmt.Sprint("mergeBlockId = ", blockId), glogger.BlockConsensus)
+	}
+}
+
+func (con *Consensus) CheckIntegrityBlockChainList(startBlockId uint32, endBlockId uint32) uint32 {
+	if startBlockId < 2 {
+		return endBlockId
+	}
+
+	for blockId := startBlockId; blockId <= endBlockId; blockId++ {
+		pair := con.blockContainer.GetBlock(blockId)
+		prevPair := con.blockContainer.GetBlock(blockId - 1)
+		if pair == nil || prevPair == nil {
+			return blockId
+		}
+		if con.block.BlockValidation(pair, prevPair) == false {
+			return blockId
+		}
+	}
+	return endBlockId
+}
+
+func (con *Consensus) LocalBlockCheckProcess() bool {
+	height := con.blockContainer.BlockHeight()
+	startBlockId := con.CheckIntegrityBlockChainList(2, height)
+	if startBlockId != height {
+		glogger.DebugOutput(con, fmt.Sprint("Delete After BlockId = ", startBlockId), glogger.BlockConsensus)
+		con.blockContainer.DeleteAfterTargetId(startBlockId)
+		return false
+	}
+
+	return true
 }

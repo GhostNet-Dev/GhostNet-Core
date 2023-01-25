@@ -165,6 +165,22 @@ func (master *MasterNetwork) sendMasterUserInfo(secondType packets.PacketSecondT
 	master.SendToMasterNodeGrpSq(packets.RoutingType_BroadCasting, DefaultTreeLevel, headerInfo)
 }
 
+func (master *MasterNetwork) SendToMasterNodeSq(third packets.PacketThirdType, pubKey string, packet []byte) {
+	node := master.account.GetNodeInfo(pubKey)
+	if node == nil {
+		log.Fatal("node key not found")
+	}
+	headerInfo := &p2p.PacketHeaderInfo{
+		ToAddr:     node.NetAddr,
+		PacketType: packets.PacketType_MasterNetwork,
+		SecondType: packets.PacketSecondType_BlockChain,
+		ThirdType:  third,
+		PacketData: packet,
+		SqFlag:     true,
+	}
+	master.udp.SendUdpPacket(headerInfo, headerInfo.ToAddr)
+}
+
 func (master *MasterNetwork) SendToMasterNodeGrpSq(routingType packets.RoutingType, level uint32, headerInfo *p2p.PacketHeaderInfo) {
 	if headerInfo.PacketType == packets.PacketType_Reserved0 {
 		log.Fatal("PacketType not defined.")
@@ -200,6 +216,7 @@ func (master *MasterNetwork) makeForwadingPacket(routingType packets.RoutingType
 		from, _ := net.ResolveUDPAddr("udp", ghostUser.Ip.Ip+":"+ghostUser.Ip.Port)
 		packetList = append(packetList, p2p.PacketHeaderInfo{
 			ToAddr:     from,
+			PacketType: packets.PacketType_MasterNetwork,
 			SecondType: packets.PacketSecondType_Forwarding,
 			PacketData: forwardingData,
 			SqFlag:     true,

@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -58,6 +59,16 @@ func (gSql *GSqlite3) DropTable() {
 	}
 }
 
+func (gSql *GSqlite3) DeleteAfterTargetId(blockId uint32) {
+	tables := []string{"paired_block", "transactions", "data_transactions", "inputs", "outputs"}
+	for _, table := range tables {
+		_, err := gSql.db.Exec(fmt.Sprint("delete from ", table, " where blockId >=", blockId))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 func (gSql *GSqlite3) InsertBlock(pair *types.PairedBlock) {
 	header := pair.Block.Header
 	dataHeader := pair.DataBlock.Header
@@ -83,7 +94,7 @@ func (gSql *GSqlite3) InsertBlock(pair *types.PairedBlock) {
 	}
 }
 
-func (gSql *GSqlite3) SelectBlock(blockId uint32) *types.PairedBlock {
+func (gSql *GSqlite3) SelectBlockHeader(blockId uint32) (*types.GhostNetBlockHeader, *types.GhostNetDataBlockHeader) {
 	rows, err := gSql.db.Query(`select "Id", "Version","PreviousBlockHeaderHash","MerkleRoot","DataBlockHeaderHash","Timestamp","Bits",
 		"Nonce", "AliceCount", "TransactionCount", "SignatureSize", "SigHash", 
 		"Data_PreviousBlockHeaderHash", "Data_MerkleRoot", "Data_Nonce", "Data_TransactionCount"
@@ -107,14 +118,19 @@ func (gSql *GSqlite3) SelectBlock(blockId uint32) *types.PairedBlock {
 	}
 	dataHeader.Id = header.Id
 	dataHeader.Version = header.Version
+	return &header, &dataHeader
+}
+
+func (gSql *GSqlite3) SelectBlock(blockId uint32) *types.PairedBlock {
+	header, dataHeader := gSql.SelectBlockHeader(blockId)
 	pair := types.PairedBlock{
 		Block: types.GhostNetBlock{
-			Header:      header,
+			Header:      *header,
 			Alice:       gSql.SelectTxs(header.Id, types.AliceTx),
 			Transaction: gSql.SelectTxs(header.Id, types.NormalTx),
 		},
 		DataBlock: types.GhostNetDataBlock{
-			Header:      dataHeader,
+			Header:      *dataHeader,
 			Transaction: gSql.SelectDataTxs(header.Id),
 		},
 	}

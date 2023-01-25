@@ -6,17 +6,21 @@ import (
 )
 
 type BlockContainer struct {
-	gSql        gsql.GSql
-	TxContainer *TxContainer
+	gSql         gsql.GSql
+	TxContainer  *TxContainer
+	CandidateBlk *CandidateBlock
 }
 
 func NewBlockContainer() *BlockContainer {
 	g := gsql.NewGSql("sqlite3")
 	gCandidate := gsql.NewGCandidateSql("sqlite3")
-	return &BlockContainer{
+	bc := &BlockContainer{
 		gSql:        g,
 		TxContainer: NewTxContainer(g, gCandidate),
 	}
+	bc.CandidateBlk = NewCandidateBlock(bc)
+
+	return bc
 }
 
 func (blockContainer *BlockContainer) BlockContainerOpen(schemeSqlFilePath string, dbFilePath string) {
@@ -29,10 +33,18 @@ func (blockContainer *BlockContainer) GetBlock(blockId uint32) *types.PairedBloc
 	return blockContainer.gSql.SelectBlock(blockId)
 }
 
+func (blockContainer *BlockContainer) GetBlockHeader(blockId uint32) (*types.GhostNetBlockHeader, *types.GhostNetDataBlockHeader) {
+	return blockContainer.gSql.SelectBlockHeader(blockId)
+}
+
 func (blockContainer *BlockContainer) BlockHeight() uint32 {
 	return blockContainer.gSql.GetBlockHeight()
 }
 
 func (blockContainer *BlockContainer) InsertBlock(pairedBlock *types.PairedBlock) {
 	blockContainer.gSql.InsertBlock(pairedBlock)
+}
+
+func (blockContainer *BlockContainer) DeleteAfterTargetId(blockId uint32) {
+	blockContainer.gSql.DeleteAfterTargetId(blockId)
 }

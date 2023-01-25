@@ -75,9 +75,11 @@ func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from
 		log.Fatal(err)
 	}
 
-	filename := base58.Encode(sq.TxId)
-	fileObj := <-blockMgr.cloud.DownloadASync(filename, from)
-	blockMgr.DownloadDataTransaction(fileObj, nil)
+	txFilename := base58.Encode(sq.TxId)
+	dataTxFilename := base58.Encode(sq.DataTxId)
+	txFileObj := <-blockMgr.cloud.DownloadASync(txFilename, from)
+	dataTxFileObj := <-blockMgr.cloud.DownloadASync(dataTxFilename, from)
+	blockMgr.DownloadDataTransaction(txFileObj.Buffer, dataTxFileObj.Buffer)
 
 	cq := packets.SendDataTransactionCq{
 		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),

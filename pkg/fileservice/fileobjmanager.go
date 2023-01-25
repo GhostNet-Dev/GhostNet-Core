@@ -60,6 +60,10 @@ func (fileManager *FileObjManager) GetFileObject(filename string) (*FileObject, 
 	return obj, ok
 }
 
+func (fileManager *FileObjManager) DeleteObject(filename string) {
+	delete(fileManager.FileObjs, filename)
+}
+
 func (fileObj *FileObject) UpdateFileImage(offset uint64) bool {
 	bitOffset := uint32(offset / BufferSize)
 	if fileObj.DownloadBitmap.Contains(bitOffset) == true {

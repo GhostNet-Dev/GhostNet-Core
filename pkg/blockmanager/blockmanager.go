@@ -2,7 +2,7 @@ package blockmanager
 
 import (
 	"bytes"
-	"fmt"
+	"log"
 	"net"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
@@ -18,7 +18,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/txs"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
-	"github.com/btcsuite/btcutil/base58"
+	"google.golang.org/protobuf/proto"
 )
 
 type BlockManager struct {
@@ -27,6 +27,7 @@ type BlockManager struct {
 	block          *blocks.Blocks
 	tXs            *txs.TXs
 	blockContainer *store.BlockContainer
+	master         *gnetwork.MasterNetwork
 	fileService    *fileservice.FileService
 	cloud          *cloudservice.CloudService
 	owner          *gcrypto.GhostAddress
@@ -53,6 +54,7 @@ func NewBlockManager(con *consensus.Consensus,
 		block:           block,
 		tXs:             tXs,
 		blockContainer:  blockContainer,
+		master:          master,
 		fileService:     fileService,
 		cloud:           cloud,
 		owner:           user,
@@ -87,6 +89,22 @@ func (blockMgr *BlockManager) TriggerNewBlock() {
 	if newPairBlock == nil {
 		return
 	}
+	sq := packets.NewBlockSq{
+		Master:        p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		BlockFilename: newPairBlock.GetBlockFilename(),
+	}
+	sendData, err := proto.Marshal(&sq)
+	if err != nil {
+		log.Fatal(err)
+	}
+	headerInfo := &p2p.PacketHeaderInfo{
+		PacketType: packets.PacketType_MasterNetwork,
+		SecondType: packets.PacketSecondType_BlockChain,
+		ThirdType:  packets.PacketThirdType_NewBlock,
+		PacketData: sendData,
+		SqFlag:     true,
+	}
+	blockMgr.master.SendToMasterNodeGrpSq(packets.RoutingType_Flooding, gnetwork.DefaultTreeLevel, headerInfo)
 }
 
 func (blockMgr *BlockManager) GetHeightestBlock() uint32 {
@@ -99,13 +117,28 @@ func (blockMgr *BlockManager) PrepareSendBlock(blockId uint32) (string, bool) {
 		return "", false
 	}
 
-	blockFilename := fmt.Sprint(blockId, "@", base58.Encode(pairedBlock.Block.GetHashKey()), ".ghost")
+	blockFilename := pairedBlock.GetBlockFilename()
 	blockMgr.fileService.CreateFile(blockFilename, pairedBlock.SerializeToByte(), nil, nil)
 
 	return blockFilename, true
 }
 
-func (blockMgr *BlockManager) DownloadDataTransaction(obj *fileservice.FileObject, context interface{}) {
+func (blockMgr *BlockManager) DownloadDataTransaction(txByte []byte, dataTxByte []byte) bool {
+	tx := &types.GhostTransaction{}
+	if tx.Deserialize(bytes.NewBuffer(txByte)).Result() == false {
+		return false
+	}
+	dataTx := &types.GhostDataTransaction{}
+	if dataTx.Deserialize(bytes.NewBuffer(dataTxByte)).Result() == false {
+		return false
+	}
+	if blockMgr.tXs.TransactionValidation(tx, dataTx, blockMgr.blockContainer.TxContainer).Result() == false {
+		return false
+	}
+	blockMgr.blockContainer.TxContainer.SaveCandidateTx(tx)
+	blockMgr.blockContainer.TxContainer.SaveCandidateDataTx(dataTx)
+	blockMgr.TriggerNewBlock()
+	return true
 }
 
 func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, context interface{}) bool {
@@ -117,22 +150,30 @@ func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, c
 		return false
 	}
 	blockMgr.blockContainer.TxContainer.SaveCandidateTx(tx)
+	blockMgr.TriggerNewBlock()
 	return true
 }
 
-func (blockMgr *BlockManager) DownloadBlock(obj *fileservice.FileObject, context interface{}) {
+func (blockMgr *BlockManager) DownloadBlock(obj *fileservice.FileObject, pubKey string) bool {
+	pair := &types.PairedBlock{}
+	if pair.Deserialize(bytes.NewBuffer(obj.Buffer)) == false {
+		blockMgr.fileService.DeleteFile(obj.Filename)
+		return false
+	}
+	blockMgr.fsm.State().RecvBlock(pair, pubKey)
+
+	return true
 }
 
 func (blockMgr *BlockManager) DownloadNewBlock(obj *fileservice.FileObject, context interface{}) {
 	byteBuf := bytes.NewBuffer(obj.Buffer)
 	newPair := types.PairedBlock{}
 	if newPair.Deserialize(byteBuf) == false {
+		blockMgr.fileService.DeleteFile(obj.Filename)
 		return
 	}
 
-	if blockMgr.TryAddMyBlockChain(&newPair) == true {
-
-	}
+	blockMgr.TryAddMyBlockChain(&newPair)
 }
 
 func (blockMgr *BlockManager) TryAddMyBlockChain(pairedBlock *types.PairedBlock) bool {
@@ -145,6 +186,8 @@ func (blockMgr *BlockManager) TryAddMyBlockChain(pairedBlock *types.PairedBlock)
 		}
 	} else if localHeight+1 < pairedBlock.BlockId() {
 		// trigger get neighbor block
+		blockMgr.fsm.State().Rebuild()
+		return true
 	}
 
 	return false

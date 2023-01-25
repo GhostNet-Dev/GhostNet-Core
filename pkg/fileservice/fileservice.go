@@ -86,6 +86,13 @@ func (fileService *FileService) SendGetFile(filename string, ipAddr *net.UDPAddr
 	}
 }
 
+func (fileService *FileService) DeleteFile(filename string) {
+	if fileService.CheckFileExist(filename) == true {
+		os.Remove(filename)
+		fileService.fileObjManager.DeleteObject(filename)
+	}
+}
+
 // LoadFileToObj -> load to memory
 func (fileService *FileService) LoadFileToMemory(filename string) *FileObject {
 	fileFullPath := fileService.localFilePath + filename

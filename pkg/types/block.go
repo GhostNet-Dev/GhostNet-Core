@@ -2,9 +2,11 @@ package types
 
 import (
 	"crypto/sha256"
+	"fmt"
 	"unsafe"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/libs/gbytes"
+	"github.com/btcsuite/btcutil/base58"
 	mems "github.com/traherom/memstream"
 )
 
@@ -42,6 +44,10 @@ func (pairedBlock *PairedBlock) TxCount() uint32 {
 	return pairedBlock.Block.Header.TransactionCount
 }
 
+func (pairedBlock *PairedBlock) GetBlockFilename() string {
+	return fmt.Sprint(pairedBlock.BlockId(), "@", base58.Encode(pairedBlock.Block.GetHashKey()), ".ghost")
+}
+
 func (header *GhostNetBlockHeader) Size() uint32 {
 	return uint32(unsafe.Sizeof(header.Id)) +
 		uint32(unsafe.Sizeof(header.Version)) + gbytes.HashSize*3 +
@@ -65,13 +71,17 @@ func (block *GhostNetBlock) Size() uint32 {
 	return block.Header.Size() + txSize
 }
 
-func (block *GhostNetBlock) GetHashKey() []byte {
-	size := block.Header.Size()
+func (header *GhostNetBlockHeader) GetHashKey() []byte {
+	size := header.Size()
 	stream := mems.NewCapacity(int(size))
 	hash := sha256.New()
-	block.Header.Serialize(stream)
+	header.Serialize(stream)
 	hash.Write(stream.Bytes())
 	return hash.Sum(nil)
+}
+
+func (block *GhostNetBlock) GetHashKey() []byte {
+	return block.Header.GetHashKey()
 }
 
 func (pair *PairedBlock) Size() uint32 {

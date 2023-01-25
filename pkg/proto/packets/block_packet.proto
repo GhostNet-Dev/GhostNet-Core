@@ -105,27 +105,10 @@ message GetBlockHashCq {
 message SendBlockHashSq {
     MasterPacket Master = 1;
     bytes Hash = 2;
+    uint32 BlockId = 3;
 }
 
 message SendBlockHashCq {
-    MasterPacket Master = 1;
-}
-
-message GetBlockPrevHashSq {
-    MasterPacket Master = 1;
-    uint32 BlockId = 2;
-}
-
-message GetBlockPrevHashCq {
-    MasterPacket Master = 1;
-}
-
-message SendBlockPrevHashSq {
-    MasterPacket Master = 1;
-    bytes Hash = 2;
-}
-
-message SendBlockPrevHashCq {
     MasterPacket Master = 1;
 }
 

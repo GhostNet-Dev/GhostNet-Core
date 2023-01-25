@@ -1,7 +1,5 @@
 package blockmanager
 
-import "github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
-
 func (blockMgr *BlockManager) BroadcastBlockChainNotification() {
 
 }
@@ -14,34 +12,37 @@ func (blockMgr *BlockManager) MiningStop() {
 
 }
 
-func (blockMgr *BlockManager) CheckBlockHeight() {
+func (blockMgr *BlockManager) SetHeighestCandidatePool(candidateList []string) {
 
 }
 
-func (blockMgr *BlockManager) SetHeighestCandidatePool() {
+func (blockMgr *BlockManager) RequestGetBlock(pubKey string, blockIdx uint32) {
 
 }
 
-func (blockMgr *BlockManager) LoadHashFromTempDb(blockIdx uint32) string {
-	return ""
-}
-
-func (blockMgr *BlockManager) RequestGetBlock(blockIdx uint32) {
+func (blockMgr *BlockManager) RequestGetBlockHash(pubKey string, currBlockHeight uint32) {
 
 }
 
-func (blockMgr *BlockManager) RequestGetBlockHash(currBlockHeight uint32) {
-
-}
-
-func (blockMgr *BlockManager) CheckAndSave(pairedBlock *types.PairedBlock) bool {
-	return false
-}
-
-func (blockMgr *BlockManager) MergeErrorNotification() {
+func (blockMgr *BlockManager) MergeErrorNotification(pubKey string, result bool) {
 
 }
 
 func (blockMgr *BlockManager) LocalBlockDbValidation() bool {
+	return false
+}
+
+func (blockMgr *BlockManager) BlockServerInitStart() {
+	blockMgr.consensus.Clear()
+	//TODO it needs to more clear!
+
+}
+
+func (blockMgr *BlockManager) CheckHeightForRebuild(neighborHeight uint32) bool {
+	currHeight := blockMgr.blockContainer.BlockHeight()
+
+	if currHeight < neighborHeight {
+		return true
+	}
 	return false
 }

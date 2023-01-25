@@ -13,6 +13,10 @@ func (txContainer *TxContainer) SaveCandidateTx(tx *types.GhostTransaction) {
 	txContainer.gCandidateSql.InsertCandidateTx(tx, txContainer.CurrentPoolId)
 }
 
+func (txContainer *TxContainer) SaveCandidateDataTx(tx *types.GhostDataTransaction) {
+	txContainer.gCandidateSql.InsertCandidateDataTx(tx, txContainer.CurrentPoolId)
+}
+
 func (txContainer *TxContainer) GetCandidateTxCount() uint32 {
 	return txContainer.gCandidateSql.SelectCandidateTxCount()
 }
