@@ -6,6 +6,10 @@ const (
 	DefaultPort          = "50129"
 	DefaultRootPath      = "./"
 	DefaultSqlPath       = "./"
+	DefaultFilePath      = "./"
+	DefaultDbName        = "sqlite3"
+	DefaultDbScheme      = "db.sqlite3.sql"
+	DefaultDbSchemePath  = "./"
 )
 
 var (
@@ -13,11 +17,15 @@ var (
 )
 
 type GConfig struct {
-	GhostVersion uint32
-	Ip           string
-	Port         string
-	RootPath     string
-	SqlPath      string
+	GhostVersion   uint32
+	Ip             string
+	Port           string
+	RootPath       string
+	SqlPath        string
+	FilePath       string
+	DbPath         string
+	DbName         string
+	StandaloneMode bool
 }
 
 func DefaultConfig() *GConfig {
@@ -27,6 +35,8 @@ func DefaultConfig() *GConfig {
 		Port:         DefaultPort,
 		RootPath:     DefaultRootPath,
 		SqlPath:      DefaultSqlPath,
+		FilePath:     DefaultFilePath,
+		DbName:       DefaultDbName,
 	}
 	return &GlobalConfig
 }

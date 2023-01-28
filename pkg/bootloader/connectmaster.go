@@ -1,0 +1,211 @@
+package bootloader
+
+import (
+	"log"
+	"math/rand"
+	"net"
+
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"google.golang.org/protobuf/proto"
+)
+
+/*
+connect to master node
+1. check exist node db
+2. net open
+3. request node list
+4. random select
+*/
+
+type ConnectMaster struct {
+	db              *LiteStore
+	udp             *p2p.UdpServer
+	wallet          *gcrypto.Wallet
+	masterNode      *ptypes.GhostUser
+	table           string
+	eventChannel    chan bool
+	packetSqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
+	packetCqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
+}
+
+const RootUrl = "www.ghostnetroot.com"
+
+func NewConnectMaster(table string, db *LiteStore, packetFactory *p2p.PacketFactory,
+	udp *p2p.UdpServer, w *gcrypto.Wallet) *ConnectMaster {
+
+	conn := &ConnectMaster{
+		db:              db,
+		udp:             udp,
+		wallet:          w,
+		table:           table,
+		eventChannel:    make(chan bool),
+		packetSqHandler: make(map[packets.PacketSecondType]p2p.FuncPacketHandler),
+		packetCqHandler: make(map[packets.PacketSecondType]p2p.FuncPacketHandler),
+	}
+	conn.RegisterPacketHandler(packetFactory)
+	return conn
+}
+
+func GetRootIpAddress() *net.UDPAddr {
+	ips, err := net.LookupIP(RootUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	to, _ := net.ResolveUDPAddr("udp", ips[0].String()+":50129")
+	return to
+}
+
+func (conn *ConnectMaster) SaveMasterNodeList(nodes []*ptypes.GhostUser) {
+	for _, node := range nodes {
+		nodeByte, err := proto.Marshal(node)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := conn.db.SaveEntry(conn.table, []byte(node.Nickname), nodeByte); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func (conn *ConnectMaster) LoadMasterNode() *ptypes.GhostUser {
+	nodes, err := conn.db.LoadEntry(conn.table)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if nodes == nil {
+		//need to request from adam
+		return nil
+	}
+	randPick := rand.Uint32() / uint32(len(nodes))
+	node := nodes[randPick]
+	ghostUser := &ptypes.GhostUser{}
+	if err := proto.Unmarshal(node, ghostUser); err != nil {
+		log.Fatal(err)
+	}
+	return ghostUser
+}
+
+func (conn *ConnectMaster) WaitEvent() {
+	<-conn.eventChannel
+}
+
+func (conn *ConnectMaster) GetGhostNetVersion(masterNode *ptypes.GhostUser) {
+	sq := &packets.VersionInfoSq{
+		Master: p2p.MakeMasterPacket(conn.wallet.GetGhostAddress().GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),
+	}
+	sendData, err := proto.Marshal(sq)
+	if err != nil {
+		log.Fatal(err)
+	}
+	headerInfo := &p2p.ResponseHeaderInfo{
+		ToAddr:     masterNode.Ip.GetUdpAddr(),
+		PacketType: packets.PacketType_MasterNetwork,
+		SecondType: packets.PacketSecondType_GetGhostNetVersion,
+		PacketData: sendData,
+		SqFlag:     true,
+	}
+	conn.udp.SendUdpPacket(headerInfo, headerInfo.ToAddr)
+}
+
+func (conn *ConnectMaster) ConnectToMaster(masterNode *ptypes.GhostUser) {
+	sq := &packets.MasterNodeUserInfoSq{
+		Master: p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),
+		User:   conn.wallet.GetGhostUser(),
+	}
+	sendData, err := proto.Marshal(sq)
+	if err != nil {
+		log.Fatal(err)
+	}
+	headerInfo := &p2p.ResponseHeaderInfo{
+		ToAddr:     masterNode.Ip.GetUdpAddr(),
+		PacketType: packets.PacketType_MasterNetwork,
+		SecondType: packets.PacketSecondType_ConnectToMasterNode,
+		PacketData: sendData,
+		SqFlag:     true,
+	}
+	conn.udp.SendUdpPacket(headerInfo, headerInfo.ToAddr)
+}
+
+func (conn *ConnectMaster) RequestMasterNodesToAdam() {
+	sq := &packets.RequestMasterNodeListSq{
+		Master:     p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),
+		StartIndex: 0,
+	}
+	sendData, err := proto.Marshal(sq)
+	if err != nil {
+		log.Fatal(err)
+	}
+	headerInfo := &p2p.ResponseHeaderInfo{
+		ToAddr:     GetRootIpAddress(),
+		PacketType: packets.PacketType_MasterNetwork,
+		SecondType: packets.PacketSecondType_RequestMasterNodeList,
+		PacketData: sendData,
+		SqFlag:     true,
+	}
+	conn.udp.SendUdpPacket(headerInfo, headerInfo.ToAddr)
+}
+
+func (conn *ConnectMaster) RegisterPacketHandler(packetFactory *p2p.PacketFactory) {
+	conn.packetSqHandler = make(map[packets.PacketSecondType]p2p.FuncPacketHandler)
+	conn.packetCqHandler = make(map[packets.PacketSecondType]p2p.FuncPacketHandler)
+
+	conn.packetSqHandler[packets.PacketSecondType_ResponseMasterNodeList] = conn.ResponseMasterNodeListSq
+
+	conn.packetCqHandler[packets.PacketSecondType_GetGhostNetVersion] = conn.GetGhostNetVersionCq
+	conn.packetCqHandler[packets.PacketSecondType_ConnectToMasterNode] = conn.ConnectToMasterNodeCq
+	conn.packetCqHandler[packets.PacketSecondType_RequestMasterNodeList] = conn.RequestMasterNodeListCq
+
+	packetFactory.RegisterPacketHandler(packets.PacketType_MasterNetwork, conn.packetSqHandler, conn.packetCqHandler)
+}
+
+func (conn *ConnectMaster) GetGhostNetVersionCq(requestHeaderInfo *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
+	// TODO: Version Check
+	return nil
+}
+
+func (conn *ConnectMaster) ConnectToMasterNodeCq(requestHeaderInfo *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
+	header := requestHeaderInfo.Header
+	cq := &packets.MasterNodeUserInfoCq{}
+	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
+		log.Fatal(err)
+	}
+	conn.masterNode = cq.User
+	conn.eventChannel <- true
+	return nil
+}
+
+func (conn *ConnectMaster) RequestMasterNodeListCq(requestHeaderInfo *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
+	return nil
+}
+
+func (conn *ConnectMaster) ResponseMasterNodeListSq(requestHeaderInfo *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
+	header := requestHeaderInfo.Header
+	sq := &packets.ResponseMasterNodeListSq{}
+	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
+		log.Fatal(err)
+	}
+
+	conn.SaveMasterNodeList(sq.User)
+	conn.eventChannel <- true
+
+	cq := packets.ResponseMasterNodeListCq{
+		Master: p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),
+	}
+
+	sendData, err := proto.Marshal(&cq)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return []p2p.ResponseHeaderInfo{
+		{
+			ToAddr:     header.Source.GetUdpAddr(),
+			SecondType: packets.PacketSecondType_ResponseMasterNodeList,
+			PacketData: sendData,
+			SqFlag:     false,
+		},
+	}
+}

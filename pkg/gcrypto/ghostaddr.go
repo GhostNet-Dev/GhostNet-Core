@@ -15,7 +15,7 @@ import (
 )
 
 type GhostAddress struct {
-	PriKey    ecdsa.PrivateKey
+	PriKey    *ecdsa.PrivateKey
 	pubKey    []byte
 	pubKey160 []byte
 }
@@ -32,12 +32,21 @@ func GenerateKeyPair() *GhostAddress {
 	//https://stackoverflow.com/questions/73721296/go-language-ecdsa-verify-the-valid-signature-to-invalid
 	publicKey := elliptic.MarshalCompressed(privatekey.Curve, privatekey.PublicKey.X, privatekey.PublicKey.Y)
 	return &GhostAddress{
-		PriKey: *privatekey,
+		PriKey: privatekey,
 		pubKey: publicKey,
 	}
 }
 
+func (ghostAddr *GhostAddress) GeneratePubKey() []byte {
+	privatekey := ghostAddr.PriKey
+	ghostAddr.pubKey = elliptic.MarshalCompressed(privatekey.Curve, privatekey.PublicKey.X, privatekey.PublicKey.Y)
+	return ghostAddr.pubKey
+}
+
 func (ghostAddr *GhostAddress) GetPubAddress() string {
+	if ghostAddr.pubKey == nil {
+		ghostAddr.GeneratePubKey()
+	}
 	pubKey := ghostAddr.pubKey
 	publicSHA256 := sha256.Sum256(pubKey) // Public key를 SHA-256으로 해싱
 
@@ -87,7 +96,7 @@ func (ghostAddr *GhostAddress) Get160PubKey() []byte {
 }
 
 func (ghostAddr *GhostAddress) PrivateKeySerialize() []byte {
-	privateByte, err := x509.MarshalECPrivateKey(&ghostAddr.PriKey)
+	privateByte, err := x509.MarshalECPrivateKey(ghostAddr.PriKey)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -99,5 +108,5 @@ func (ghostAddr *GhostAddress) PrivateKeyDeserialize(der []byte) {
 	if err != nil {
 		log.Panic(err)
 	}
-	ghostAddr.PriKey = *priKey
+	ghostAddr.PriKey = priKey
 }

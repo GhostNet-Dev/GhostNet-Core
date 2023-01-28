@@ -23,7 +23,7 @@ var (
 
 	gScript        = gvm.NewGScript()
 	gVm            = gvm.NewGVM()
-	BlockContainer = store.NewBlockContainer()
+	BlockContainer = store.NewBlockContainer("sqlite3")
 	Txs            = txs.NewTXs(gScript, BlockContainer, gVm)
 	blocks         = NewBlocks(BlockContainer, Txs, 1)
 )

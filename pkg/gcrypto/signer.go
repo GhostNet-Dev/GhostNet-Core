@@ -25,7 +25,7 @@ func Signer(text []byte, ghostAddr *GhostAddress) *SignaturePackage {
 
 	//io.WriteString(h, "This is a message to be signed and verified by ECDSA!")
 	//signhash := h.Sum(nil)
-	privateKey := &ghostAddr.PriKey
+	privateKey := ghostAddr.PriKey
 	r, s, serr := ecdsa.Sign(rand.Reader, privateKey, text)
 	if serr != nil {
 		fmt.Println(serr)

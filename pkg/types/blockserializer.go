@@ -23,8 +23,8 @@ func (header *GhostNetBlockHeader) Serialize(stream *mems.MemoryStream) (result 
 		// error catch
 		if err := recover(); err != nil {
 			fmt.Println(err)
+			result = false
 		}
-		result = false
 	}()
 	bs4 := make([]byte, 4)
 	bs8 := make([]byte, 8)
@@ -56,8 +56,8 @@ func (header *GhostNetBlockHeader) Deserialize(byteBuf *bytes.Buffer) (result bo
 		// error catch
 		if err := recover(); err != nil {
 			fmt.Println(err)
+			result = false
 		}
-		result = false
 	}()
 
 	header.PreviousBlockHeaderHash = make([]byte, gbytes.HashSize)

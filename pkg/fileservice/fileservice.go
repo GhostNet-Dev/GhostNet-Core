@@ -125,7 +125,7 @@ func (fileService *FileService) sendGetFileInfo(filename string, ipAddr *net.UDP
 
 	fileService.fileObjManager.CreateFileObj(filename, nil, 0, callback, context)
 
-	fileService.udp.SendUdpPacket(&p2p.PacketHeaderInfo{
+	fileService.udp.SendUdpPacket(&p2p.ResponseHeaderInfo{
 		PacketType: packets.PacketType_FileTransfer,
 		SecondType: packets.PacketSecondType_RequestFile,
 		ThirdType:  packets.PacketThirdType_Reserved1,
@@ -135,7 +135,7 @@ func (fileService *FileService) sendGetFileInfo(filename string, ipAddr *net.UDP
 }
 
 // makeFileInfo -> RequestFilePacketCq
-func (fileService *FileService) makeFileInfo(filename string) *p2p.PacketHeaderInfo {
+func (fileService *FileService) makeFileInfo(filename string) *p2p.ResponseHeaderInfo {
 	fileObj, exist := fileService.fileObjManager.GetFileObject(filename)
 
 	if exist == false {
@@ -159,7 +159,7 @@ func (fileService *FileService) makeFileInfo(filename string) *p2p.PacketHeaderI
 		log.Fatal(err)
 	}
 
-	return &p2p.PacketHeaderInfo{
+	return &p2p.ResponseHeaderInfo{
 		PacketType: packets.PacketType_FileTransfer,
 		SecondType: packets.PacketSecondType_RequestFile,
 		ThirdType:  packets.PacketThirdType_Reserved1,
@@ -177,7 +177,7 @@ func FileErrorCheck(err error) bool {
 }
 
 // sendFileData -> ResponseFileSq
-func (fileService *FileService) sendFileData(filename string, startPos uint64, sequenceNum uint32, timeId uint64) *p2p.PacketHeaderInfo {
+func (fileService *FileService) sendFileData(filename string, startPos uint64, sequenceNum uint32, timeId uint64) *p2p.ResponseHeaderInfo {
 	var fileSize uint64 = 0
 	var buf []byte
 
@@ -233,7 +233,7 @@ func (fileService *FileService) sendFileData(filename string, startPos uint64, s
 		log.Fatal(err)
 	}
 
-	return &p2p.PacketHeaderInfo{
+	return &p2p.ResponseHeaderInfo{
 		PacketType: packets.PacketType_FileTransfer,
 		SecondType: packets.PacketSecondType_ResponseFile,
 		ThirdType:  packets.PacketThirdType_Reserved1,

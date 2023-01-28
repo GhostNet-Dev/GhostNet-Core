@@ -24,19 +24,17 @@ func TestUdpDefault(t *testing.T) {
 	srv.Start(netChannel)
 
 	go func() {
-		select {
-		case packetInfo := <-netChannel:
-			packetByte := packetInfo.PacketByte
-			recvPacket := packets.Header{}
-			if err := proto.Unmarshal(packetByte, &recvPacket); err != nil {
-				// packet type별로 callback handler를 만들어야한다.
-				t.Error(err)
-			}
-			infoSq := &packets.MasterNodeUserInfoSq{}
-			proto.Unmarshal(recvPacket.PacketData, infoSq)
-			assert.Equal(t, "test", infoSq.User.Nickname, "packet내용이 맞지 않습니다.")
-			wg.Done()
+		packetInfo := <-netChannel
+		packetByte := packetInfo.PacketByte
+		recvPacket := packets.Header{}
+		if err := proto.Unmarshal(packetByte, &recvPacket); err != nil {
+			// packet type별로 callback handler를 만들어야한다.
+			t.Error(err)
 		}
+		infoSq := &packets.MasterNodeUserInfoSq{}
+		proto.Unmarshal(recvPacket.PacketData, infoSq)
+		assert.Equal(t, "test", infoSq.User.Nickname, "packet내용이 맞지 않습니다.")
+		wg.Done()
 	}()
 
 	testPacket := packets.MasterNodeUserInfoSq{User: &ptypes.GhostUser{Nickname: "test"}}
@@ -45,8 +43,8 @@ func TestUdpDefault(t *testing.T) {
 		t.Error(err)
 	}
 
-	addr, err := net.ResolveUDPAddr("udp", "127.0.0.1:8888")
-	srv.SendResponse(&PacketHeaderInfo{
+	addr, _ := net.ResolveUDPAddr("udp", "127.0.0.1:8888")
+	srv.SendResponse(&ResponseHeaderInfo{
 		ToAddr: addr, PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_NotificationMasterNode,
 		PacketData: data, SqFlag: true})
@@ -59,7 +57,8 @@ var (
 	TestResult bool
 )
 
-func PacketSqHandler(header *packets.Header, routingInfo *RoutingInfo) []PacketHeaderInfo {
+func PacketSqHandler(requestHeaderInfo *RequestHeaderInfo) []ResponseHeaderInfo {
+	header := requestHeaderInfo.Header
 	packetByte := header.PacketData
 	infoSq := &packets.MasterNodeUserInfoSq{}
 	proto.Unmarshal(packetByte, infoSq)
@@ -84,8 +83,8 @@ func TestPacketHandler(t *testing.T) {
 		t.Error(err)
 	}
 
-	addr, err := net.ResolveUDPAddr("udp", "127.0.0.1:8888")
-	srv.SendResponse(&PacketHeaderInfo{
+	addr, _ := net.ResolveUDPAddr("udp", "127.0.0.1:8888")
+	srv.SendResponse(&ResponseHeaderInfo{
 		ToAddr: addr, PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_NotificationMasterNode,
 		PacketData: data, SqFlag: true})

@@ -24,7 +24,7 @@ func TestRequestFileSq(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := fileService.RequestFileSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
+	responseInfos := fileService.RequestFileSq(&p2p.RequestHeaderInfo{Header: &packets.Header{Source: ipAddr, PacketData: sendData}})
 	cq := &packets.RequestFilePacketCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -55,7 +55,7 @@ func TestRequestFileDataSq(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		responseInfos := fileService.RequestFileSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
+		responseInfos := fileService.RequestFileSq(&p2p.RequestHeaderInfo{Header: &packets.Header{Source: ipAddr, PacketData: sendData}})
 		assert.Equal(t, true, responseInfos != nil, "return is nil")
 
 		cq := &packets.RequestFilePacketCq{}
@@ -104,7 +104,7 @@ func TestResponseSqTest(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		responseInfos := fileService.ResponseFileSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
+		responseInfos := fileService.ResponseFileSq(&p2p.RequestHeaderInfo{Header: &packets.Header{Source: ipAddr, PacketData: sendData}})
 		cq := &packets.ResponseFilePacketCq{}
 		if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 			log.Fatal(err)

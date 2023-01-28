@@ -11,8 +11,8 @@ type BlockContainer struct {
 	CandidateBlk *CandidateBlock
 }
 
-func NewBlockContainer() *BlockContainer {
-	g := gsql.NewGSql("sqlite3")
+func NewBlockContainer(dbname string) *BlockContainer {
+	g := gsql.NewGSql(dbname)
 	gCandidate := gsql.NewGCandidateSql("sqlite3")
 	bc := &BlockContainer{
 		gSql:        g,

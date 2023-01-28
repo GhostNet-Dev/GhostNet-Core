@@ -14,6 +14,14 @@ const (
 	CoinBase uint64 = 1_000_000
 )
 
+func (blocks *Blocks) MinerStart() {
+	blocks.miningFlag = true
+}
+
+func (blocks *Blocks) MinerStop() {
+	blocks.miningFlag = false
+}
+
 func (blocks *Blocks) MakeNewBlock(miner *gcrypto.GhostAddress, creator []byte,
 	minimumRequiredTxCount uint32) *types.PairedBlock {
 	height := blocks.blockContainer.BlockHeight()

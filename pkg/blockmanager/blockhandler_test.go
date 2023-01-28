@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	from, _        = net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
+	from, _ = net.ResolveUDPAddr("udp", ghostIp.Ip+":"+ghostIp.Port)
 )
+
 func TestGetHeightestBlock(t *testing.T) {
 	sq := &packets.MasterNodeUserInfoSq{
 		Master: p2p.MakeMasterPacket(blockServer.owner.GetPubAddress(), 0, 0, blockServer.localIpAddr),

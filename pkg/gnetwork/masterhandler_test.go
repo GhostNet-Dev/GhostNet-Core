@@ -16,23 +16,24 @@ import (
 )
 
 var (
-	ipAddr = &ptypes.GhostIp{
+	ghostIp = &ptypes.GhostIp{
 		Ip:   "127.0.0.1",
 		Port: "8888",
 	}
-	udp            = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port)
+	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port)
 	packetFactory  = p2p.NewPacketFactory()
-	blockContainer = store.NewBlockContainer()
+	blockContainer = store.NewBlockContainer("sqlite3")
 	config         = gconfig.DefaultConfig()
-	from, _        = net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
+	from, _        = net.ResolveUDPAddr("udp", ghostIp.Ip+":"+ghostIp.Port)
 	owner          = gcrypto.GenerateKeyPair()
+	w              = gcrypto.NewWallet("test", owner, ghostIp, nil)
 
-	master = NewMasterNode("test", owner, ipAddr, config, packetFactory, udp, blockContainer, account, tTreeMap)
+	master = NewMasterNode(w, ghostIp, config, packetFactory, udp, blockContainer, account, tTreeMap)
 )
 
 func TestGetVersionSq(t *testing.T) {
 	sq := packets.VersionInfoSq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
 	}
 
 	sendData, err := proto.Marshal(&sq)
@@ -40,7 +41,7 @@ func TestGetVersionSq(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.GetGhostNetVersionSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
+	responseInfos := master.GetGhostNetVersionSq(&p2p.RequestHeaderInfo{Header: &packets.Header{PacketData: sendData}})
 	cq := &packets.VersionInfoCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -51,14 +52,14 @@ func TestGetVersionSq(t *testing.T) {
 }
 
 func TestNotifyMasterNodeSq(t *testing.T) {
-	sq := &packets.MasterNodeUserInfoSq{Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr)}
+	sq := &packets.MasterNodeUserInfoSq{Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp)}
 
 	sendData, err := proto.Marshal(sq)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.NotificationMasterNodeSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
+	responseInfos := master.NotificationMasterNodeSq(&p2p.RequestHeaderInfo{Header: &packets.Header{PacketData: sendData}})
 	cq := &packets.MasterNodeUserInfoCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -70,7 +71,7 @@ func TestNotifyMasterNodeSq(t *testing.T) {
 
 func TestConnectToMasterNodeSq(t *testing.T) {
 	sq := &packets.MasterNodeUserInfoSq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
 		User: &ptypes.GhostUser{
 			Nickname: master.nickname,
 			PubKey:   owner.GetPubAddress(),
@@ -82,7 +83,7 @@ func TestConnectToMasterNodeSq(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.ConnectToMasterNodeSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
+	responseInfos := master.ConnectToMasterNodeSq(&p2p.RequestHeaderInfo{Header: &packets.Header{PacketData: sendData}})
 	cq := &packets.MasterNodeUserInfoCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -97,7 +98,7 @@ func TestRequestMasterNodeListSq(t *testing.T) {
 	TestConnectToMasterNodeSq(t)
 
 	sq := &packets.RequestMasterNodeListSq{
-		Master:     p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr),
+		Master:     p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
 		StartIndex: 0,
 	}
 
@@ -106,7 +107,7 @@ func TestRequestMasterNodeListSq(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.RequestMasterNodeListSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
+	responseInfos := master.RequestMasterNodeListSq(&p2p.RequestHeaderInfo{Header: &packets.Header{PacketData: sendData}})
 	resInfo := responseInfos[1]
 	resSq := &packets.ResponseMasterNodeListSq{}
 	if err := proto.Unmarshal(resInfo.PacketData, resSq); err != nil {
@@ -120,14 +121,14 @@ func TestRequestMasterNodeListSq(t *testing.T) {
 }
 
 func TestResponseMasterNodeListSq(t *testing.T) {
-	sq := &packets.ResponseMasterNodeListSq{Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr)}
+	sq := &packets.ResponseMasterNodeListSq{Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp)}
 
 	sendData, err := proto.Marshal(sq)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.ResponseMasterNodeListSq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
+	responseInfos := master.ResponseMasterNodeListSq(&p2p.RequestHeaderInfo{Header: &packets.Header{PacketData: sendData}})
 	cq := &packets.ResponseMasterNodeListCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -138,7 +139,7 @@ func TestResponseMasterNodeListSq(t *testing.T) {
 func TestSearchMasterPubKey(t *testing.T) {
 	TestConnectToMasterNodeSq(t)
 	sq := &packets.SearchGhostPubKeySq{
-		Master:   p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr),
+		Master:   p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
 		Nickname: "test",
 	}
 
@@ -147,7 +148,7 @@ func TestSearchMasterPubKey(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	responseInfos := master.SearchMasterPubKeySq(&packets.Header{PacketData: sendData}, &p2p.RoutingInfo{SourceIp: from})
+	responseInfos := master.SearchMasterPubKeySq(&p2p.RequestHeaderInfo{Header: &packets.Header{PacketData: sendData}})
 	cq := &packets.SearchGhostPubKeyCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)

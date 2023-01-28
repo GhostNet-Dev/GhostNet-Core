@@ -21,26 +21,26 @@ type MasterNetwork struct {
 	// connected Master Nodes
 	udp            *p2p.UdpServer
 	owner          *gcrypto.GhostAddress
-	ipAddr         *ptypes.GhostIp
+	localGhostIp   *ptypes.GhostIp
 	config         *gconfig.GConfig
 	blockContainer *store.BlockContainer
 	tTreeMap       *TrieTreeMap
 	account        *GhostAccount
-	blockHandlerSq func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo
+	blockHandlerSq func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo
 	blockHandlerCq func(*packets.Header, *net.UDPAddr)
 
 	packetSqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
 	packetCqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
 }
 
-func NewMasterNode(nickname string, myAddr *gcrypto.GhostAddress, myIpAddr *ptypes.GhostIp,
+func NewMasterNode(w *gcrypto.Wallet, myIpAddr *ptypes.GhostIp,
 	config *gconfig.GConfig, packetFactory *p2p.PacketFactory, udp *p2p.UdpServer,
 	blockContainer *store.BlockContainer, account *GhostAccount, tTreeMap *TrieTreeMap) *MasterNetwork {
 	masterNode := &MasterNetwork{
-		nickname:       nickname,
+		nickname:       w.GetNickname(),
 		udp:            udp,
-		owner:          myAddr,
-		ipAddr:         myIpAddr,
+		owner:          w.GetGhostAddress(),
+		localGhostIp:   myIpAddr,
 		config:         config,
 		blockContainer: blockContainer,
 		account:        account,
@@ -97,13 +97,14 @@ func (master *MasterNetwork) RequestGhostNetVersion() {
 		return
 	}
 	sq := packets.VersionInfoSq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
 	}
 	sendData, err := proto.Marshal(&sq)
 	if err != nil {
 		log.Fatal(err)
 	}
-	headerInfo := &p2p.PacketHeaderInfo{
+	headerInfo := &p2p.ResponseHeaderInfo{
+		ToAddr:     master.masterInfo.NetAddr,
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_NotificationMasterNode,
 		PacketData: sendData,
@@ -117,13 +118,14 @@ func (master *MasterNetwork) RequestMasterNodeList(index uint32, toAddr *net.UDP
 		return
 	}
 	sq := packets.RequestMasterNodeListSq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
 	}
 	sendData, err := proto.Marshal(&sq)
 	if err != nil {
 		log.Fatal(err)
 	}
-	headerInfo := &p2p.PacketHeaderInfo{
+	headerInfo := &p2p.ResponseHeaderInfo{
+		ToAddr:     master.masterInfo.NetAddr,
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_RequestMasterNodeList,
 		PacketData: sendData,
@@ -149,14 +151,14 @@ func (master *MasterNetwork) BroadcastMasterNodeNotification() {
 func (master *MasterNetwork) sendMasterUserInfo(secondType packets.PacketSecondType) {
 
 	sq := packets.MasterNodeUserInfoSq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
 		User:   master.getGhostUser(),
 	}
 	sendData, err := proto.Marshal(&sq)
 	if err != nil {
 		log.Fatal(err)
 	}
-	headerInfo := &p2p.PacketHeaderInfo{
+	headerInfo := &p2p.ResponseHeaderInfo{
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: secondType,
 		PacketData: sendData,
@@ -170,7 +172,7 @@ func (master *MasterNetwork) SendToMasterNodeSq(third packets.PacketThirdType, p
 	if node == nil {
 		log.Fatal("node key not found")
 	}
-	headerInfo := &p2p.PacketHeaderInfo{
+	headerInfo := &p2p.ResponseHeaderInfo{
 		ToAddr:     node.NetAddr,
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_BlockChain,
@@ -181,12 +183,12 @@ func (master *MasterNetwork) SendToMasterNodeSq(third packets.PacketThirdType, p
 	master.udp.SendUdpPacket(headerInfo, headerInfo.ToAddr)
 }
 
-func (master *MasterNetwork) SendToMasterNodeGrpSq(routingType packets.RoutingType, level uint32, headerInfo *p2p.PacketHeaderInfo) {
+func (master *MasterNetwork) SendToMasterNodeGrpSq(routingType packets.RoutingType, level uint32, headerInfo *p2p.ResponseHeaderInfo) {
 	if headerInfo.PacketType == packets.PacketType_Reserved0 {
 		log.Fatal("PacketType not defined.")
 	}
 	// p2p.PacketHeaderInfo -> packets.Header
-	header := headerInfo.TranslationToHeader()
+	header := master.udp.TranslationToHeader(headerInfo)
 	packetList := master.makeForwadingPacket(routingType, level, header)
 	for _, packet := range packetList {
 		master.udp.SendUdpPacket(&packet, packet.ToAddr)
@@ -194,12 +196,12 @@ func (master *MasterNetwork) SendToMasterNodeGrpSq(routingType packets.RoutingTy
 }
 
 // routingtype, level, packet
-func (master *MasterNetwork) makeForwadingPacket(routingType packets.RoutingType, level uint32, header *packets.Header) []p2p.PacketHeaderInfo {
+func (master *MasterNetwork) makeForwadingPacket(routingType packets.RoutingType, level uint32, header *packets.Header) []p2p.ResponseHeaderInfo {
 	if level > MaxNodeDepth || (routingType == packets.RoutingType_BroadCastingLevelZero && level > 1) {
 		return nil
 	}
 	forwardingSq := packets.ForwardingSq{
-		Master:           p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.ipAddr),
+		Master:           p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
 		ForwardingHeader: header,
 	}
 	forwardingSq.Master.RoutingT = routingType
@@ -208,13 +210,13 @@ func (master *MasterNetwork) makeForwadingPacket(routingType packets.RoutingType
 	if err != nil {
 		log.Fatal(err)
 	}
-	packetList := []p2p.PacketHeaderInfo{}
+	packetList := []p2p.ResponseHeaderInfo{}
 
 	userList := master.tTreeMap.GetLevelMasterList(level)
 	for _, user := range userList {
 		ghostUser := user
 		from, _ := net.ResolveUDPAddr("udp", ghostUser.Ip.Ip+":"+ghostUser.Ip.Port)
-		packetList = append(packetList, p2p.PacketHeaderInfo{
+		packetList = append(packetList, p2p.ResponseHeaderInfo{
 			ToAddr:     from,
 			PacketType: packets.PacketType_MasterNetwork,
 			SecondType: packets.PacketSecondType_Forwarding,

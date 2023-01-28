@@ -3,6 +3,7 @@ module github.com/GhostNet-Dev/GhostNet-Core
 go 1.19
 
 require (
+	github.com/boltdb/bolt v1.3.1
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/kelindar/bitmap v1.4.1
 	github.com/mattn/go-sqlite3 v1.14.16

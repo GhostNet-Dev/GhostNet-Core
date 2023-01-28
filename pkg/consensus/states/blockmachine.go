@@ -11,9 +11,8 @@ type IBlockServer interface {
 	MiningStart()
 	MiningStop()
 	RequestGetBlock(pubKey string, blockIdx uint32)
-	RequestGetBlockHash(pubKey string, currBlockHeight uint32)
+	RequestGetBlockHash(pubKey string, blockIdx uint32)
 	MergeErrorNotification(pubKey string, result bool)
-	LocalBlockDbValidation() bool
 	BlockServerInitStart()
 	CheckHeightForRebuild(uint32) bool
 }
@@ -116,5 +115,5 @@ func (fsm *BlockMachine) MergeExecute() {
 }
 
 func (fsm *BlockMachine) LocalBlockCheckProcess() bool {
-	return fsm.con.LocalBlockCheckProcess()
+	return fsm.con.LocalBlockChainValidation()
 }

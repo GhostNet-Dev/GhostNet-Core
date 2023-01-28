@@ -33,7 +33,7 @@ type BlockManager struct {
 	owner          *gcrypto.GhostAddress
 	localIpAddr    *ptypes.GhostIp
 
-	packetSqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo
+	packetSqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo
 	packetCqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)
 }
 
@@ -59,7 +59,7 @@ func NewBlockManager(con *consensus.Consensus,
 		cloud:           cloud,
 		owner:           user,
 		localIpAddr:     myIpAddr,
-		packetSqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.PacketHeaderInfo),
+		packetSqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo),
 		packetCqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)),
 	}
 	blockMgr.InitHandler(master)
@@ -97,7 +97,7 @@ func (blockMgr *BlockManager) TriggerNewBlock() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	headerInfo := &p2p.PacketHeaderInfo{
+	headerInfo := &p2p.ResponseHeaderInfo{
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_BlockChain,
 		ThirdType:  packets.PacketThirdType_NewBlock,

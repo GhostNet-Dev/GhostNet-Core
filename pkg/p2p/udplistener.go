@@ -2,8 +2,10 @@ package p2p
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -23,7 +25,12 @@ type RequestPacketInfo struct {
 	PacketByte []byte
 }
 
-type PacketHeaderInfo struct {
+type RequestHeaderInfo struct {
+	FromAddr *net.UDPAddr
+	Header   *packets.Header
+}
+
+type ResponseHeaderInfo struct {
 	ToAddr     *net.UDPAddr
 	PacketType packets.PacketType
 	SecondType packets.PacketSecondType
@@ -40,6 +47,25 @@ func NewUdpServer(ip string, port string) *UdpServer {
 	}
 }
 
+func (udp *UdpServer) GetLocalIp() *ptypes.GhostIp {
+	return &ptypes.GhostIp{Ip: udp.Ip, Port: udp.Port}
+}
+
+func (udp *UdpServer) loadIp() *ptypes.GhostIp {
+	url := "https://api.ipify.org?format=text"
+	res, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer res.Body.Close()
+	ip, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	localIp := string(ip)
+	return &ptypes.GhostIp{Ip: localIp, Port: udp.Port}
+}
+
 func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 	service := udp.Ip + ":" + udp.Port
 
@@ -51,49 +77,55 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 
 	// setup listener for incoming UDP connection
 	if udp.UdpConn, err = net.ListenUDP("udp4", udpAddr); err != nil {
-		defer udp.UdpConn.Close()
 		log.Fatal(err)
 	}
+	defer udp.UdpConn.Close()
 
 	fmt.Println("UDP server up and listening on addr= ", service)
 
 	if netChannel == nil {
 		netChannel = make(chan RequestPacketInfo)
 		go func() {
-			for {
-				select {
-				case packetInfo := <-netChannel:
-					packetByte := packetInfo.PacketByte
-					recvPacket := packets.Header{}
-					if err := proto.Unmarshal(packetByte, &recvPacket); err != nil {
-						// packet type별로 callback handler를 만들어야한다.
-						log.Fatal(err)
-					}
-
-					// TODO: it need to refac
-					// sq
-					if recvPacket.SqFlag == true {
-						go func() {
-							if response := udp.Pf.firstLevel[recvPacket.Type].packetSqHandler[recvPacket.SecondType](&recvPacket,
-								&RoutingInfo{Level: 1, SourceIp: packetInfo.Addr}); response != nil {
-								for _, packet := range response {
-									packet.PacketType = recvPacket.Type
-									udp.SendResponse(&packet)
-								}
+			for packetInfo := range netChannel {
+				packetByte := packetInfo.PacketByte
+				recvPacket := packets.Header{}
+				if err := proto.Unmarshal(packetByte, &recvPacket); err != nil {
+					// packet type별로 callback handler를 만들어야한다.
+					log.Fatal(err)
+				}
+				firstLevel, exist := udp.Pf.firstLevel[recvPacket.Type]
+				if !exist {
+					return
+				}
+				// TODO: it need to refac
+				// sq
+				if recvPacket.SqFlag {
+					go func(packetInfo *RequestPacketInfo) {
+						secondLevel, exist := firstLevel.packetSqHandler[recvPacket.SecondType]
+						if !exist {
+							return
+						}
+						if response := secondLevel(&RequestHeaderInfo{FromAddr: packetInfo.Addr, Header: &recvPacket}); response != nil {
+							for _, packet := range response {
+								packet.PacketType = recvPacket.Type
+								udp.SendResponse(&packet)
 							}
-						}()
-					} else {
-						go func() {
-							// cq
-							if response := udp.Pf.firstLevel[recvPacket.Type].packetCqHandler[recvPacket.SecondType](&recvPacket,
-								&RoutingInfo{Level: 1, SourceIp: packetInfo.Addr}); response != nil {
-								for _, packet := range response {
-									packet.PacketType = recvPacket.Type
-									udp.SendResponse(&packet)
-								}
+						}
+					}(&packetInfo)
+				} else {
+					go func(packetInfo *RequestPacketInfo) {
+						// cq
+						secondLevel, exist := firstLevel.packetCqHandler[recvPacket.SecondType]
+						if !exist {
+							return
+						}
+						if response := secondLevel(&RequestHeaderInfo{FromAddr: packetInfo.Addr, Header: &recvPacket}); response != nil {
+							for _, packet := range response {
+								packet.PacketType = recvPacket.Type
+								udp.SendResponse(&packet)
 							}
-						}()
-					}
+						}
+					}(&packetInfo)
 				}
 			}
 		}()
@@ -101,8 +133,6 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 
 	buffer := make([]byte, 1024)
 	go func() {
-		defer udp.UdpConn.Close()
-
 		for {
 			n, addr /*n, addr*/, err := udp.UdpConn.ReadFromUDP(buffer)
 			if err != nil {
@@ -132,7 +162,7 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 	}()
 }
 
-func (sendInfo *PacketHeaderInfo) TranslationToHeader() *packets.Header {
+func (udp *UdpServer) TranslationToHeader(sendInfo *ResponseHeaderInfo) *packets.Header {
 	return &packets.Header{
 		Type:       sendInfo.PacketType,
 		SecondType: sendInfo.SecondType,
@@ -142,8 +172,8 @@ func (sendInfo *PacketHeaderInfo) TranslationToHeader() *packets.Header {
 	}
 }
 
-func (udp *UdpServer) SendUdpPacket(sendInfo *PacketHeaderInfo, to *net.UDPAddr) {
-	anyData := sendInfo.TranslationToHeader()
+func (udp *UdpServer) SendUdpPacket(sendInfo *ResponseHeaderInfo, to *net.UDPAddr) {
+	anyData := udp.TranslationToHeader(sendInfo)
 	sendData, err := proto.Marshal(anyData)
 	if err != nil {
 		log.Fatal(err)
@@ -151,20 +181,14 @@ func (udp *UdpServer) SendUdpPacket(sendInfo *PacketHeaderInfo, to *net.UDPAddr)
 	udp.RawSendPacket(to, sendData)
 }
 
-func (udp *UdpServer) SendPacket(sendInfo *PacketHeaderInfo, ipAddr *ptypes.GhostIp) {
+func (udp *UdpServer) SendPacket(sendInfo *ResponseHeaderInfo, ipAddr *ptypes.GhostIp) {
 	to, _ := net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
 	udp.SendUdpPacket(sendInfo, to)
 }
 
-func (udp *UdpServer) SendResponse(sendInfo *PacketHeaderInfo) {
-	anyData := packets.Header{
-		Type:       sendInfo.PacketType,
-		SecondType: sendInfo.SecondType,
-		ThirdType:  sendInfo.ThirdType,
-		SqFlag:     sendInfo.SqFlag,
-		PacketData: sendInfo.PacketData,
-	}
-	sendData, err := proto.Marshal(&anyData)
+func (udp *UdpServer) SendResponse(sendInfo *ResponseHeaderInfo) {
+	anyData := udp.TranslationToHeader(sendInfo)
+	sendData, err := proto.Marshal(anyData)
 	if err != nil {
 		log.Fatal(err)
 	}

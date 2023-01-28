@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.SendTransactionSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -30,7 +30,7 @@ func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *ne
 		log.Fatal(err)
 	}
 
-	return []p2p.PacketHeaderInfo{
+	return []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendTransaction,
@@ -41,7 +41,7 @@ func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *ne
 }
 func (blockMgr *BlockManager) SendTransactionCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (blockMgr *BlockManager) SearchTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) SearchTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.SearchTransactionSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -57,7 +57,7 @@ func (blockMgr *BlockManager) SearchTransactionSq(header *packets.Header, from *
 		log.Fatal(err)
 	}
 
-	return []p2p.PacketHeaderInfo{
+	return []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SearchTransaction,
@@ -69,7 +69,7 @@ func (blockMgr *BlockManager) SearchTransactionSq(header *packets.Header, from *
 
 func (blockMgr *BlockManager) SearchTransactionCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.SendDataTransactionSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -90,7 +90,7 @@ func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from
 		log.Fatal(err)
 	}
 
-	return []p2p.PacketHeaderInfo{
+	return []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendDataTransaction,
@@ -101,7 +101,7 @@ func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from
 }
 func (blockMgr *BlockManager) SendDataTransactionCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (blockMgr *BlockManager) SearchDataTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) SearchDataTransactionSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.SearchTransactionSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -116,7 +116,7 @@ func (blockMgr *BlockManager) SearchDataTransactionSq(header *packets.Header, fr
 		log.Fatal(err)
 	}
 
-	return []p2p.PacketHeaderInfo{
+	return []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SearchDataTransaction,
@@ -128,7 +128,7 @@ func (blockMgr *BlockManager) SearchDataTransactionSq(header *packets.Header, fr
 
 func (blockMgr *BlockManager) SearchDataTransactionCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (blockMgr *BlockManager) GetTxStatusSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) GetTxStatusSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.GetTxStatusSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -152,7 +152,7 @@ func (blockMgr *BlockManager) GetTxStatusSq(header *packets.Header, from *net.UD
 		log.Fatal(err)
 	}
 
-	return []p2p.PacketHeaderInfo{
+	return []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_GetTxStatus,
@@ -170,7 +170,7 @@ func (blockMgr *BlockManager) GetTxStatusSq(header *packets.Header, from *net.UD
 
 func (blockMgr *BlockManager) GetTxStatusCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (blockMgr *BlockManager) SendTxStatusSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) SendTxStatusSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.SendTxStatusSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -185,7 +185,7 @@ func (blockMgr *BlockManager) SendTxStatusSq(header *packets.Header, from *net.U
 		log.Fatal(err)
 	}
 
-	return []p2p.PacketHeaderInfo{
+	return []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendTxStatus,

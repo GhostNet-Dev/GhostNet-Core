@@ -148,7 +148,7 @@ func (con *Consensus) CheckIntegrityBlockChainList(startBlockId uint32, endBlock
 	return endBlockId
 }
 
-func (con *Consensus) LocalBlockCheckProcess() bool {
+func (con *Consensus) LocalBlockChainValidation() bool {
 	height := con.blockContainer.BlockHeight()
 	startBlockId := con.CheckIntegrityBlockChainList(2, height)
 	if startBlockId != height {

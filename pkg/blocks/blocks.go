@@ -11,6 +11,7 @@ type Blocks struct {
 	blockContainer *store.BlockContainer
 	gScript        *gvm.GScript
 	Version        uint32
+	miningFlag     bool
 }
 
 func NewBlocks(b *store.BlockContainer, t *txs.TXs, version uint32) *Blocks {
@@ -18,5 +19,6 @@ func NewBlocks(b *store.BlockContainer, t *txs.TXs, version uint32) *Blocks {
 		txs:            t,
 		blockContainer: b,
 		Version:        version,
+		miningFlag:     false,
 	}
 }

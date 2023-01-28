@@ -8,7 +8,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (fileService *FileService) RequestFileSq(header *packets.Header, routingInfo *p2p.RoutingInfo) []p2p.PacketHeaderInfo {
+func (fileService *FileService) RequestFileSq(requestHeaderInfo *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
+	header := requestHeaderInfo.Header
 	sq := &packets.RequestFilePacketSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -16,7 +17,7 @@ func (fileService *FileService) RequestFileSq(header *packets.Header, routingInf
 
 	switch sq.RequestType {
 	case packets.FileRequestType_GetFileInfo:
-		return []p2p.PacketHeaderInfo{*fileService.makeFileInfo(sq.Filename)}
+		return []p2p.ResponseHeaderInfo{*fileService.makeFileInfo(sq.Filename)}
 	case packets.FileRequestType_GetFileData:
 		fileObj, exist := fileService.fileObjManager.GetFileObject(sq.Filename)
 		if exist == false {
@@ -36,9 +37,9 @@ func (fileService *FileService) RequestFileSq(header *packets.Header, routingInf
 		if err != nil {
 			log.Fatal(err)
 		}
-		return []p2p.PacketHeaderInfo{
+		return []p2p.ResponseHeaderInfo{
 			{
-				ToAddr:     routingInfo.SourceIp,
+				ToAddr:     header.Source.GetUdpAddr(),
 				PacketType: packets.PacketType_FileTransfer,
 				SecondType: packets.PacketSecondType_RequestFile,
 				PacketData: sendData,
@@ -50,7 +51,8 @@ func (fileService *FileService) RequestFileSq(header *packets.Header, routingInf
 	return nil
 }
 
-func (fileService *FileService) RequestFileCq(header *packets.Header, routingInfo *p2p.RoutingInfo) []p2p.PacketHeaderInfo {
+func (fileService *FileService) RequestFileCq(requestHeaderInfo *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
+	header := requestHeaderInfo.Header
 	cq := &packets.RequestFilePacketCq{}
 	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
 		log.Fatal(err)
@@ -70,9 +72,9 @@ func (fileService *FileService) RequestFileCq(header *packets.Header, routingInf
 			log.Fatal(err)
 		}
 
-		return []p2p.PacketHeaderInfo{
+		return []p2p.ResponseHeaderInfo{
 			{
-				ToAddr:     routingInfo.SourceIp,
+				ToAddr:     header.Source.GetUdpAddr(),
 				PacketType: packets.PacketType_FileTransfer,
 				SecondType: packets.PacketSecondType_RequestFile,
 				PacketData: sendData,
@@ -84,7 +86,8 @@ func (fileService *FileService) RequestFileCq(header *packets.Header, routingInf
 }
 
 // ResponseFileSq
-func (fileService *FileService) ResponseFileSq(header *packets.Header, routingInfo *p2p.RoutingInfo) []p2p.PacketHeaderInfo {
+func (fileService *FileService) ResponseFileSq(requestHeaderInfo *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
+	header := requestHeaderInfo.Header
 	sq := &packets.ResponseFilePacketSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -99,9 +102,9 @@ func (fileService *FileService) ResponseFileSq(header *packets.Header, routingIn
 	if err != nil {
 		log.Fatal(err)
 	}
-	headerInfo := []p2p.PacketHeaderInfo{
+	headerInfo := []p2p.ResponseHeaderInfo{
 		{
-			ToAddr:     routingInfo.SourceIp,
+			ToAddr:     header.Source.GetUdpAddr(),
 			PacketType: packets.PacketType_FileTransfer,
 			SecondType: packets.PacketSecondType_ResponseFile,
 			PacketData: sendData,
@@ -120,8 +123,8 @@ func (fileService *FileService) ResponseFileSq(header *packets.Header, routingIn
 		if err != nil {
 			log.Fatal(err)
 		}
-		headerInfo = append(headerInfo, p2p.PacketHeaderInfo{
-			ToAddr:     routingInfo.SourceIp,
+		headerInfo = append(headerInfo, p2p.ResponseHeaderInfo{
+			ToAddr:     header.Source.GetUdpAddr(),
 			PacketType: packets.PacketType_FileTransfer,
 			SecondType: packets.PacketSecondType_RequestFile,
 			PacketData: newSqData,
@@ -132,6 +135,6 @@ func (fileService *FileService) ResponseFileSq(header *packets.Header, routingIn
 	return headerInfo
 }
 
-func (fileService *FileService) ResponseFileCq(header *packets.Header, routingInfo *p2p.RoutingInfo) []p2p.PacketHeaderInfo {
+func (fileService *FileService) ResponseFileCq(requestHeaderInfo *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
 	return nil
 }

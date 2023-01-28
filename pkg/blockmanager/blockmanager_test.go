@@ -19,31 +19,32 @@ import (
 )
 
 var (
-	Miner  = gcrypto.GenerateKeyPair()
-	ipAddr = &ptypes.GhostIp{
+	Miner   = gcrypto.GenerateKeyPair()
+	ghostIp = &ptypes.GhostIp{
 		Ip:   "127.0.0.1",
 		Port: "8888",
 	}
 	nickname = "test"
+	w        = gcrypto.NewWallet(nickname, Miner, ghostIp, nil)
 
 	config         = gconfig.DefaultConfig()
 	gScript        = gvm.NewGScript()
 	gVm            = gvm.NewGVM()
-	blockContainer = store.NewBlockContainer()
+	blockContainer = store.NewBlockContainer("sqlite3")
 	packetFactory  = p2p.NewPacketFactory()
-	udp            = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port)
+	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port)
 
 	account  = gnetwork.NewGhostAccount()
 	tTreeMap = gnetwork.NewTrieTreeMap(Miner.GetPubAddress(), account)
-	master   = gnetwork.NewMasterNode(nickname, Miner, ipAddr, config, packetFactory, udp, blockContainer, account, tTreeMap)
+	master   = gnetwork.NewMasterNode(w, ghostIp, config, packetFactory, udp, blockContainer, account, tTreeMap)
 
-	fileService = fileservice.NewFileServer(udp, packetFactory, Miner, ipAddr, "./")
+	fileService = fileservice.NewFileServer(udp, packetFactory, Miner, ghostIp, "./")
 	cloud       = cloudservice.NewCloudService(fileService, tTreeMap)
 	tXs         = txs.NewTXs(gScript, blockContainer, gVm)
 	block       = blocks.NewBlocks(blockContainer, tXs, 1)
 	con         = consensus.NewConsensus(blockContainer, block)
 	fsm         = states.NewBlockMachine(blockContainer, con)
-	blockServer = NewBlockManager(con, fsm, block, tXs, blockContainer, master, fileService, cloud, Miner, ipAddr)
+	blockServer = NewBlockManager(con, fsm, block, tXs, blockContainer, master, fileService, cloud, Miner, ghostIp)
 )
 
 func init() {

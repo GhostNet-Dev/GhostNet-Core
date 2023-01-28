@@ -15,7 +15,7 @@ type RoutingInfo struct {
 	Context     interface{}
 }
 
-type FuncPacketHandler func(*packets.Header, *RoutingInfo) []PacketHeaderInfo
+type FuncPacketHandler func(*RequestHeaderInfo) []ResponseHeaderInfo
 
 type PacketSecondHandler struct {
 	packetSqHandler map[packets.PacketSecondType]FuncPacketHandler

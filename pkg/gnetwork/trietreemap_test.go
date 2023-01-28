@@ -51,7 +51,7 @@ func MakePatternNode() {
 		owner = gcrypto.GenerateKeyPair()
 		ghostUser := &ptypes.GhostUser{
 			PubKey: fmt.Sprint("1aaaa", i),
-			Ip:     ipAddr,
+			Ip:     ghostIp,
 		}
 		account.AddMasterNode(&GhostNode{
 			User:    ghostUser,
@@ -65,7 +65,7 @@ func MakeDummyNode() {
 		owner = gcrypto.GenerateKeyPair()
 		ghostUser := &ptypes.GhostUser{
 			PubKey: owner.GetPubAddress(),
-			Ip:     ipAddr,
+			Ip:     ghostIp,
 		}
 		account.AddMasterNode(&GhostNode{
 			User:    ghostUser,

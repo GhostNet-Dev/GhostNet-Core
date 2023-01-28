@@ -40,7 +40,7 @@ func (blockMgr *BlockManager) InitHandler(master *gnetwork.MasterNetwork) {
 	master.RegisterBlockHandler(blockMgr.BlockHandlerSq, blockMgr.BlockHandlerCq)
 }
 
-func (blockMgr *BlockManager) BlockHandlerSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) BlockHandlerSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	return blockMgr.packetSqHandler[header.ThirdType](header, from)
 }
 
@@ -48,7 +48,7 @@ func (blockMgr *BlockManager) BlockHandlerCq(header *packets.Header, from *net.U
 	blockMgr.packetCqHandler[header.ThirdType](header, from)
 }
 
-func (blockMgr *BlockManager) GetHeightestBlockSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) GetHeightestBlockSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.GetHeightestBlockSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -63,7 +63,7 @@ func (blockMgr *BlockManager) GetHeightestBlockSq(header *packets.Header, from *
 	if err != nil {
 		log.Fatal(err)
 	}
-	return []p2p.PacketHeaderInfo{
+	return []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_GetHeightestBlock,
@@ -81,7 +81,7 @@ func (blockMgr *BlockManager) GetHeightestBlockCq(header *packets.Header, from *
 	blockMgr.fsm.State().RecvBlockHeight(cq.Height, cq.Master.Common.FromPubKeyAddress)
 }
 
-func (blockMgr *BlockManager) NewBlockSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) NewBlockSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.NewBlockSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -101,7 +101,7 @@ func (blockMgr *BlockManager) NewBlockSq(header *packets.Header, from *net.UDPAd
 	if err != nil {
 		log.Fatal(err)
 	}
-	return []p2p.PacketHeaderInfo{
+	return []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_NewBlock,
@@ -113,7 +113,7 @@ func (blockMgr *BlockManager) NewBlockSq(header *packets.Header, from *net.UDPAd
 
 func (blockMgr *BlockManager) NewBlockCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.GetBlockSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -131,7 +131,7 @@ func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAd
 		log.Fatal(err)
 	}
 
-	responseInfo := []p2p.PacketHeaderInfo{{
+	responseInfo := []p2p.ResponseHeaderInfo{{
 		ToAddr:     from,
 		ThirdType:  packets.PacketThirdType_GetBlock,
 		PacketData: cqData,
@@ -148,7 +148,7 @@ func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAd
 		if err != nil {
 			log.Fatal(err)
 		}
-		responseInfo = append(responseInfo, p2p.PacketHeaderInfo{
+		responseInfo = append(responseInfo, p2p.ResponseHeaderInfo{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendBlock,
 			PacketData: sendData,
@@ -161,7 +161,7 @@ func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAd
 
 func (blockMgr *BlockManager) GetBlockCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.SendBlockSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -182,7 +182,7 @@ func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPA
 		log.Fatal(err)
 	}
 
-	return []p2p.PacketHeaderInfo{
+	return []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendBlock,
@@ -194,7 +194,7 @@ func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPA
 
 func (blockMgr *BlockManager) SendBlockCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (blockMgr *BlockManager) GetBlockHashSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) GetBlockHashSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.GetBlockHashSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -208,7 +208,7 @@ func (blockMgr *BlockManager) GetBlockHashSq(header *packets.Header, from *net.U
 	if err != nil {
 		log.Fatal(err)
 	}
-	responseInfos := []p2p.PacketHeaderInfo{
+	responseInfos := []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_GetBlockHash,
@@ -231,7 +231,7 @@ func (blockMgr *BlockManager) GetBlockHashSq(header *packets.Header, from *net.U
 		if err != nil {
 			log.Fatal(err)
 		}
-		responseInfos = append(responseInfos, p2p.PacketHeaderInfo{
+		responseInfos = append(responseInfos, p2p.ResponseHeaderInfo{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendBlockHash,
 			PacketData: sendData,
@@ -244,7 +244,7 @@ func (blockMgr *BlockManager) GetBlockHashSq(header *packets.Header, from *net.U
 
 func (blockMgr *BlockManager) GetBlockHashCq(header *packets.Header, from *net.UDPAddr) {}
 
-func (blockMgr *BlockManager) SendBlockHashSq(header *packets.Header, from *net.UDPAddr) []p2p.PacketHeaderInfo {
+func (blockMgr *BlockManager) SendBlockHashSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
 	sq := &packets.SendBlockHashSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
@@ -261,7 +261,7 @@ func (blockMgr *BlockManager) SendBlockHashSq(header *packets.Header, from *net.
 
 	blockMgr.fsm.State().RecvBlockHash(sq.Master.Common.FromPubKeyAddress, sq.Hash, sq.BlockId)
 
-	return []p2p.PacketHeaderInfo{
+	return []p2p.ResponseHeaderInfo{
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendBlockHash,
