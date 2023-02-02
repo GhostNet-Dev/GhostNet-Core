@@ -11,13 +11,13 @@ import (
 
 var tables = []string{"nodes", "wallet"}
 
-func BootLoader(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig, nickname string) *gcrypto.Wallet {
-	db := NewLiteStore(config.DbPath, tables)
+func BootLoader(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig) *gcrypto.Wallet {
+	db := NewLiteStore(config.SqlPath, tables)
 	wallet := NewLoadWallet(tables[1], db, &ptypes.GhostIp{Ip: config.Ip, Port: config.Port})
-	w, err := wallet.OpenWallet(nickname)
+	w, err := wallet.OpenWallet(config.Username, config.Password)
 	if err != nil {
-		w = wallet.CreateWallet(nickname)
-		wallet.SaveWallet(w)
+		w = wallet.CreateWallet(config.Username, config.Password)
+		wallet.SaveWallet(w, config.Password)
 	}
 
 	if config.StandaloneMode {

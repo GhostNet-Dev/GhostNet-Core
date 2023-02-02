@@ -45,6 +45,7 @@ func NewMasterNode(w *gcrypto.Wallet, myIpAddr *ptypes.GhostIp,
 		blockContainer: blockContainer,
 		account:        account,
 		tTreeMap:       tTreeMap,
+		masterInfo:     &GhostNode{User: w.GetGhostUser()},
 	}
 	masterNode.RegisterHandler(packetFactory)
 	return masterNode

@@ -1,0 +1,70 @@
+syntax = "proto3";
+package ghostnet.rpc;
+option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/rpc";
+
+
+service GApi {
+    rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {}
+    rpc CreateGenesis (CreateGenesisRequest) returns (CreateGenesisResponse) {}
+    rpc GetPrivateKey (PrivateKeyRequest) returns (PrivateKeyResponse) {}
+    rpc CreateContainer (CreateContainerRequest) returns (CreateContainerResponse) {}
+    rpc ControlContainer (ControlContainerRequest) returns (ControlContainerResponse) {}
+    rpc ReleaseContainer (ReleaseRequest) returns (ReleaseResponse) {}
+    rpc GetLog (GetLogRequest) returns (GetLogResponse) {}
+    rpc CheckStatus (CoreStateRequest) returns (CoreStateResponse) {}
+}
+
+enum ContainerControlType {
+    Reserved = 0;
+    StartResume = 1;
+    StopSuspend = 2;
+}
+
+message CreateContainerRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message CreateContainerResponse { bool result = 1;}
+message CreateGenesisRequest { string password = 1;}
+message CreateGenesisResponse { bool result = 1;}
+message ControlContainerRequest { 
+    uint32 id = 1; 
+    ContainerControlType control = 2;
+}
+
+message ControlContainerResponse { bool result = 1;}
+message ReleaseRequest { uint32 id = 1; }
+message ReleaseResponse { bool result = 1; }
+message GetLogRequest { uint32 id = 1;}
+message GetLogResponse {
+    bytes logbuf = 1;
+}
+
+message PrivateKeyRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message PrivateKeyResponse {
+    bool result = 1;
+    bytes PrivateKey = 2;
+}
+
+message CreateAccountRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message CreateAccountResponse {
+    bool result = 1;
+    string PubKeyAddress = 2;
+}
+
+message CoreStateRequest {
+    uint32 id = 1;
+}
+
+message CoreStateResponse {
+    uint32 state = 1;
+}

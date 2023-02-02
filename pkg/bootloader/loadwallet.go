@@ -15,12 +15,12 @@ func NewLoadWallet(table string, db *LiteStore, ghostIp *ptypes.GhostIp) *LoadWa
 	return &LoadWallet{db: db, ghostIp: ghostIp, table: table}
 }
 
-func (loadWallet *LoadWallet) CreateWallet(nickname string) *gcrypto.Wallet {
+func (loadWallet *LoadWallet) CreateWallet(nickname string, password string) *gcrypto.Wallet {
 	newGhostAddress := gcrypto.GenerateKeyPair()
 	return gcrypto.NewWallet(nickname, newGhostAddress, loadWallet.ghostIp, nil)
 }
 
-func (loadWallet *LoadWallet) OpenWallet(nickname string) (*gcrypto.Wallet, error) {
+func (loadWallet *LoadWallet) OpenWallet(nickname string, password string) (*gcrypto.Wallet, error) {
 	der, err := loadWallet.db.SelectEntry(loadWallet.table, []byte(nickname))
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func (loadWallet *LoadWallet) OpenWallet(nickname string) (*gcrypto.Wallet, erro
 	return gcrypto.NewWallet(nickname, ghostAddr, loadWallet.ghostIp, nil), nil
 }
 
-func (loadWallet *LoadWallet) SaveWallet(w *gcrypto.Wallet) {
+func (loadWallet *LoadWallet) SaveWallet(w *gcrypto.Wallet, password string) {
 	nickname := w.GetNickname()
 	privateKey := w.GetGhostAddress().PrivateKeySerialize()
 	// TODO: need to encryption by passwd

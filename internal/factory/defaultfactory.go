@@ -38,15 +38,15 @@ type DefaultFactory struct {
 }
 
 type NetworkFactory struct {
-	packetFactory *p2p.PacketFactory
-	udp           *p2p.UdpServer
+	PacketFactory *p2p.PacketFactory
+	Udp           *p2p.UdpServer
 }
 
 func NewNetworkFactory(config *gconfig.GConfig) *NetworkFactory {
 
 	return &NetworkFactory{
-		packetFactory: p2p.NewPacketFactory(),
-		udp:           p2p.NewUdpServer(config.Ip, config.Port),
+		PacketFactory: p2p.NewPacketFactory(),
+		Udp:           p2p.NewUdpServer(config.Ip, config.Port),
 	}
 }
 
@@ -67,10 +67,10 @@ func NewDefaultFactory(networkFactory *NetworkFactory,
 
 	factory.Account = gnetwork.NewGhostAccount()
 	factory.TTreeMap = gnetwork.NewTrieTreeMap(user.GetPubAddress(), factory.Account)
-	factory.Master = gnetwork.NewMasterNode(user, ghostIp, config, networkFactory.packetFactory,
-		networkFactory.udp, factory.BlockContainer, factory.Account, factory.TTreeMap)
+	factory.Master = gnetwork.NewMasterNode(user, ghostIp, config, networkFactory.PacketFactory,
+		networkFactory.Udp, factory.BlockContainer, factory.Account, factory.TTreeMap)
 
-	factory.FileService = fileservice.NewFileServer(networkFactory.udp, networkFactory.packetFactory,
+	factory.FileService = fileservice.NewFileServer(networkFactory.Udp, networkFactory.PacketFactory,
 		user.GetGhostAddress(), ghostIp, config.FilePath)
 	factory.Cloud = cloudservice.NewCloudService(factory.FileService, factory.TTreeMap)
 	factory.Txs = txs.NewTXs(factory.GScript, factory.BlockContainer, factory.Gvm)

@@ -1263,210 +1263,6 @@ func (x *SendBlockHashCq) GetMaster() *MasterPacket {
 	return nil
 }
 
-type GetBlockPrevHashSq struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Master  *MasterPacket `protobuf:"bytes,1,opt,name=Master,proto3" json:"Master,omitempty"`
-	BlockId uint32        `protobuf:"varint,2,opt,name=BlockId,proto3" json:"BlockId,omitempty"`
-}
-
-func (x *GetBlockPrevHashSq) Reset() {
-	*x = GetBlockPrevHashSq{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_block_packet_proto_msgTypes[22]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetBlockPrevHashSq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetBlockPrevHashSq) ProtoMessage() {}
-
-func (x *GetBlockPrevHashSq) ProtoReflect() protoreflect.Message {
-	mi := &file_block_packet_proto_msgTypes[22]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetBlockPrevHashSq.ProtoReflect.Descriptor instead.
-func (*GetBlockPrevHashSq) Descriptor() ([]byte, []int) {
-	return file_block_packet_proto_rawDescGZIP(), []int{22}
-}
-
-func (x *GetBlockPrevHashSq) GetMaster() *MasterPacket {
-	if x != nil {
-		return x.Master
-	}
-	return nil
-}
-
-func (x *GetBlockPrevHashSq) GetBlockId() uint32 {
-	if x != nil {
-		return x.BlockId
-	}
-	return 0
-}
-
-type GetBlockPrevHashCq struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Master *MasterPacket `protobuf:"bytes,1,opt,name=Master,proto3" json:"Master,omitempty"`
-}
-
-func (x *GetBlockPrevHashCq) Reset() {
-	*x = GetBlockPrevHashCq{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_block_packet_proto_msgTypes[23]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetBlockPrevHashCq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetBlockPrevHashCq) ProtoMessage() {}
-
-func (x *GetBlockPrevHashCq) ProtoReflect() protoreflect.Message {
-	mi := &file_block_packet_proto_msgTypes[23]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetBlockPrevHashCq.ProtoReflect.Descriptor instead.
-func (*GetBlockPrevHashCq) Descriptor() ([]byte, []int) {
-	return file_block_packet_proto_rawDescGZIP(), []int{23}
-}
-
-func (x *GetBlockPrevHashCq) GetMaster() *MasterPacket {
-	if x != nil {
-		return x.Master
-	}
-	return nil
-}
-
-type SendBlockPrevHashSq struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Master *MasterPacket `protobuf:"bytes,1,opt,name=Master,proto3" json:"Master,omitempty"`
-	Hash   []byte        `protobuf:"bytes,2,opt,name=Hash,proto3" json:"Hash,omitempty"`
-}
-
-func (x *SendBlockPrevHashSq) Reset() {
-	*x = SendBlockPrevHashSq{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_block_packet_proto_msgTypes[24]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SendBlockPrevHashSq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SendBlockPrevHashSq) ProtoMessage() {}
-
-func (x *SendBlockPrevHashSq) ProtoReflect() protoreflect.Message {
-	mi := &file_block_packet_proto_msgTypes[24]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SendBlockPrevHashSq.ProtoReflect.Descriptor instead.
-func (*SendBlockPrevHashSq) Descriptor() ([]byte, []int) {
-	return file_block_packet_proto_rawDescGZIP(), []int{24}
-}
-
-func (x *SendBlockPrevHashSq) GetMaster() *MasterPacket {
-	if x != nil {
-		return x.Master
-	}
-	return nil
-}
-
-func (x *SendBlockPrevHashSq) GetHash() []byte {
-	if x != nil {
-		return x.Hash
-	}
-	return nil
-}
-
-type SendBlockPrevHashCq struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Master *MasterPacket `protobuf:"bytes,1,opt,name=Master,proto3" json:"Master,omitempty"`
-}
-
-func (x *SendBlockPrevHashCq) Reset() {
-	*x = SendBlockPrevHashCq{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_block_packet_proto_msgTypes[25]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SendBlockPrevHashCq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SendBlockPrevHashCq) ProtoMessage() {}
-
-func (x *SendBlockPrevHashCq) ProtoReflect() protoreflect.Message {
-	mi := &file_block_packet_proto_msgTypes[25]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SendBlockPrevHashCq.ProtoReflect.Descriptor instead.
-func (*SendBlockPrevHashCq) Descriptor() ([]byte, []int) {
-	return file_block_packet_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *SendBlockPrevHashCq) GetMaster() *MasterPacket {
-	if x != nil {
-		return x.Master
-	}
-	return nil
-}
-
 type GetTxStatusSq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1479,7 +1275,7 @@ type GetTxStatusSq struct {
 func (x *GetTxStatusSq) Reset() {
 	*x = GetTxStatusSq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_block_packet_proto_msgTypes[26]
+		mi := &file_block_packet_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1492,7 +1288,7 @@ func (x *GetTxStatusSq) String() string {
 func (*GetTxStatusSq) ProtoMessage() {}
 
 func (x *GetTxStatusSq) ProtoReflect() protoreflect.Message {
-	mi := &file_block_packet_proto_msgTypes[26]
+	mi := &file_block_packet_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1505,7 +1301,7 @@ func (x *GetTxStatusSq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTxStatusSq.ProtoReflect.Descriptor instead.
 func (*GetTxStatusSq) Descriptor() ([]byte, []int) {
-	return file_block_packet_proto_rawDescGZIP(), []int{26}
+	return file_block_packet_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *GetTxStatusSq) GetMaster() *MasterPacket {
@@ -1533,7 +1329,7 @@ type GetTxStatusCq struct {
 func (x *GetTxStatusCq) Reset() {
 	*x = GetTxStatusCq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_block_packet_proto_msgTypes[27]
+		mi := &file_block_packet_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1546,7 +1342,7 @@ func (x *GetTxStatusCq) String() string {
 func (*GetTxStatusCq) ProtoMessage() {}
 
 func (x *GetTxStatusCq) ProtoReflect() protoreflect.Message {
-	mi := &file_block_packet_proto_msgTypes[27]
+	mi := &file_block_packet_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1559,7 +1355,7 @@ func (x *GetTxStatusCq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTxStatusCq.ProtoReflect.Descriptor instead.
 func (*GetTxStatusCq) Descriptor() ([]byte, []int) {
-	return file_block_packet_proto_rawDescGZIP(), []int{27}
+	return file_block_packet_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *GetTxStatusCq) GetMaster() *MasterPacket {
@@ -1583,7 +1379,7 @@ type SendTxStatusSq struct {
 func (x *SendTxStatusSq) Reset() {
 	*x = SendTxStatusSq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_block_packet_proto_msgTypes[28]
+		mi := &file_block_packet_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1596,7 +1392,7 @@ func (x *SendTxStatusSq) String() string {
 func (*SendTxStatusSq) ProtoMessage() {}
 
 func (x *SendTxStatusSq) ProtoReflect() protoreflect.Message {
-	mi := &file_block_packet_proto_msgTypes[28]
+	mi := &file_block_packet_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1609,7 +1405,7 @@ func (x *SendTxStatusSq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendTxStatusSq.ProtoReflect.Descriptor instead.
 func (*SendTxStatusSq) Descriptor() ([]byte, []int) {
-	return file_block_packet_proto_rawDescGZIP(), []int{28}
+	return file_block_packet_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *SendTxStatusSq) GetMaster() *MasterPacket {
@@ -1651,7 +1447,7 @@ type SendTxStatusCq struct {
 func (x *SendTxStatusCq) Reset() {
 	*x = SendTxStatusCq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_block_packet_proto_msgTypes[29]
+		mi := &file_block_packet_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1664,7 +1460,7 @@ func (x *SendTxStatusCq) String() string {
 func (*SendTxStatusCq) ProtoMessage() {}
 
 func (x *SendTxStatusCq) ProtoReflect() protoreflect.Message {
-	mi := &file_block_packet_proto_msgTypes[29]
+	mi := &file_block_packet_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1677,7 +1473,7 @@ func (x *SendTxStatusCq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendTxStatusCq.ProtoReflect.Descriptor instead.
 func (*SendTxStatusCq) Descriptor() ([]byte, []int) {
-	return file_block_packet_proto_rawDescGZIP(), []int{29}
+	return file_block_packet_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *SendTxStatusCq) GetMaster() *MasterPacket {
@@ -1829,63 +1625,40 @@ var file_block_packet_proto_rawDesc = []byte{
 	0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68,
 	0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d,
 	0x61, 0x73, 0x74, 0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x52, 0x06, 0x4d, 0x61, 0x73,
-	0x74, 0x65, 0x72, 0x22, 0x66, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x50,
-	0x72, 0x65, 0x76, 0x48, 0x61, 0x73, 0x68, 0x53, 0x71, 0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73,
-	0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73,
-	0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73,
-	0x74, 0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65,
-	0x72, 0x12, 0x18, 0x0a, 0x07, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x0d, 0x52, 0x07, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x49, 0x64, 0x22, 0x4c, 0x0a, 0x12, 0x47,
-	0x65, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x50, 0x72, 0x65, 0x76, 0x48, 0x61, 0x73, 0x68, 0x43,
-	0x71, 0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63,
-	0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65,
-	0x74, 0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x22, 0x61, 0x0a, 0x13, 0x53, 0x65, 0x6e,
-	0x64, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x50, 0x72, 0x65, 0x76, 0x48, 0x61, 0x73, 0x68, 0x53, 0x71,
-	0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b,
-	0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74,
-	0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x48, 0x61, 0x73, 0x68,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x48, 0x61, 0x73, 0x68, 0x22, 0x4d, 0x0a, 0x13,
-	0x53, 0x65, 0x6e, 0x64, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x50, 0x72, 0x65, 0x76, 0x48, 0x61, 0x73,
-	0x68, 0x43, 0x71, 0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70,
-	0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x50, 0x61, 0x63,
-	0x6b, 0x65, 0x74, 0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x22, 0x5b, 0x0a, 0x0d, 0x47,
-	0x65, 0x74, 0x54, 0x78, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x53, 0x71, 0x12, 0x36, 0x0a, 0x06,
-	0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x67,
-	0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e,
-	0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x52, 0x06, 0x4d, 0x61,
-	0x73, 0x74, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x54, 0x78, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x0c, 0x52, 0x04, 0x54, 0x78, 0x49, 0x64, 0x22, 0x47, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x54,
-	0x78, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x71, 0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73,
-	0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73,
-	0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73,
-	0x74, 0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65,
-	0x72, 0x22, 0xaa, 0x01, 0x0a, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x54, 0x78, 0x53, 0x74, 0x61, 0x74,
+	0x74, 0x65, 0x72, 0x22, 0x5b, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x54, 0x78, 0x53, 0x74, 0x61, 0x74,
 	0x75, 0x73, 0x53, 0x71, 0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e,
 	0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x50, 0x61,
 	0x63, 0x6b, 0x65, 0x74, 0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04,
 	0x54, 0x78, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x54, 0x78, 0x49, 0x64,
-	0x12, 0x18, 0x0a, 0x07, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x49, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x0d, 0x52, 0x07, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x49, 0x64, 0x12, 0x32, 0x0a, 0x05, 0x54, 0x78,
-	0x4c, 0x6f, 0x63, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1c, 0x2e, 0x67, 0x68, 0x6f, 0x73,
-	0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e, 0x54, 0x78, 0x4c,
-	0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x05, 0x54, 0x78, 0x4c, 0x6f, 0x63, 0x22, 0x48,
-	0x0a, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x54, 0x78, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x71,
-	0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b,
-	0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74,
-	0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x2a, 0x3b, 0x0a, 0x0a, 0x54, 0x78, 0x4c, 0x6f,
-	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x0b, 0x0a, 0x07, 0x49, 0x6e, 0x42, 0x6c, 0x6f, 0x63,
-	0x6b, 0x10, 0x00, 0x12, 0x13, 0x0a, 0x0f, 0x49, 0x6e, 0x43, 0x61, 0x6e, 0x64, 0x69, 0x64, 0x61,
-	0x74, 0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x10, 0x01, 0x12, 0x0b, 0x0a, 0x07, 0x4d, 0x69, 0x73, 0x73,
-	0x69, 0x6e, 0x67, 0x10, 0x02, 0x42, 0x39, 0x5a, 0x37, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
-	0x63, 0x6f, 0x6d, 0x2f, 0x47, 0x68, 0x6f, 0x73, 0x74, 0x4e, 0x65, 0x74, 0x2d, 0x44, 0x65, 0x76,
-	0x2f, 0x47, 0x68, 0x6f, 0x73, 0x74, 0x4e, 0x65, 0x74, 0x2d, 0x43, 0x6f, 0x72, 0x65, 0x2f, 0x70,
-	0x6b, 0x67, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x22, 0x47, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x54, 0x78, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x43,
+	0x71, 0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63,
+	0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65,
+	0x74, 0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x22, 0xaa, 0x01, 0x0a, 0x0e, 0x53, 0x65,
+	0x6e, 0x64, 0x54, 0x78, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x53, 0x71, 0x12, 0x36, 0x0a, 0x06,
+	0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x67,
+	0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e,
+	0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x52, 0x06, 0x4d, 0x61,
+	0x73, 0x74, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x54, 0x78, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0c, 0x52, 0x04, 0x54, 0x78, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x42, 0x6c, 0x6f, 0x63,
+	0x6b, 0x49, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x07, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
+	0x49, 0x64, 0x12, 0x32, 0x0a, 0x05, 0x54, 0x78, 0x4c, 0x6f, 0x63, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x0e, 0x32, 0x1c, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63,
+	0x6b, 0x65, 0x74, 0x73, 0x2e, 0x54, 0x78, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52,
+	0x05, 0x54, 0x78, 0x4c, 0x6f, 0x63, 0x22, 0x48, 0x0a, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x54, 0x78,
+	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x71, 0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73, 0x74,
+	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74,
+	0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73, 0x74,
+	0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72,
+	0x2a, 0x3b, 0x0a, 0x0a, 0x54, 0x78, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x0b,
+	0x0a, 0x07, 0x49, 0x6e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x10, 0x00, 0x12, 0x13, 0x0a, 0x0f, 0x49,
+	0x6e, 0x43, 0x61, 0x6e, 0x64, 0x69, 0x64, 0x61, 0x74, 0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x10, 0x01,
+	0x12, 0x0b, 0x0a, 0x07, 0x4d, 0x69, 0x73, 0x73, 0x69, 0x6e, 0x67, 0x10, 0x02, 0x42, 0x39, 0x5a,
+	0x37, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x47, 0x68, 0x6f, 0x73,
+	0x74, 0x4e, 0x65, 0x74, 0x2d, 0x44, 0x65, 0x76, 0x2f, 0x47, 0x68, 0x6f, 0x73, 0x74, 0x4e, 0x65,
+	0x74, 0x2d, 0x43, 0x6f, 0x72, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2f, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1901,7 +1674,7 @@ func file_block_packet_proto_rawDescGZIP() []byte {
 }
 
 var file_block_packet_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_block_packet_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
+var file_block_packet_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_block_packet_proto_goTypes = []interface{}{
 	(TxLocation)(0),               // 0: ghostnet.packets.TxLocation
 	(*GetHeightestBlockSq)(nil),   // 1: ghostnet.packets.GetHeightestBlockSq
@@ -1926,53 +1699,45 @@ var file_block_packet_proto_goTypes = []interface{}{
 	(*GetBlockHashCq)(nil),        // 20: ghostnet.packets.GetBlockHashCq
 	(*SendBlockHashSq)(nil),       // 21: ghostnet.packets.SendBlockHashSq
 	(*SendBlockHashCq)(nil),       // 22: ghostnet.packets.SendBlockHashCq
-	(*GetBlockPrevHashSq)(nil),    // 23: ghostnet.packets.GetBlockPrevHashSq
-	(*GetBlockPrevHashCq)(nil),    // 24: ghostnet.packets.GetBlockPrevHashCq
-	(*SendBlockPrevHashSq)(nil),   // 25: ghostnet.packets.SendBlockPrevHashSq
-	(*SendBlockPrevHashCq)(nil),   // 26: ghostnet.packets.SendBlockPrevHashCq
-	(*GetTxStatusSq)(nil),         // 27: ghostnet.packets.GetTxStatusSq
-	(*GetTxStatusCq)(nil),         // 28: ghostnet.packets.GetTxStatusCq
-	(*SendTxStatusSq)(nil),        // 29: ghostnet.packets.SendTxStatusSq
-	(*SendTxStatusCq)(nil),        // 30: ghostnet.packets.SendTxStatusCq
-	(*MasterPacket)(nil),          // 31: ghostnet.packets.MasterPacket
+	(*GetTxStatusSq)(nil),         // 23: ghostnet.packets.GetTxStatusSq
+	(*GetTxStatusCq)(nil),         // 24: ghostnet.packets.GetTxStatusCq
+	(*SendTxStatusSq)(nil),        // 25: ghostnet.packets.SendTxStatusSq
+	(*SendTxStatusCq)(nil),        // 26: ghostnet.packets.SendTxStatusCq
+	(*MasterPacket)(nil),          // 27: ghostnet.packets.MasterPacket
 }
 var file_block_packet_proto_depIdxs = []int32{
-	31, // 0: ghostnet.packets.GetHeightestBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 1: ghostnet.packets.GetHeightestBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 2: ghostnet.packets.NewBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 3: ghostnet.packets.NewBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 4: ghostnet.packets.GetBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 5: ghostnet.packets.GetBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 6: ghostnet.packets.SendBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 7: ghostnet.packets.SendBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 8: ghostnet.packets.SendTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 9: ghostnet.packets.SendTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 10: ghostnet.packets.SendDataTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 11: ghostnet.packets.SendDataTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 12: ghostnet.packets.SearchTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 13: ghostnet.packets.SearchTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 14: ghostnet.packets.GetDataTxIdListSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 15: ghostnet.packets.GetDataTxIdListCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 16: ghostnet.packets.SendDataTxIdListSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 17: ghostnet.packets.SendDataTxIdListCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 18: ghostnet.packets.GetBlockHashSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 19: ghostnet.packets.GetBlockHashCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 20: ghostnet.packets.SendBlockHashSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 21: ghostnet.packets.SendBlockHashCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 22: ghostnet.packets.GetBlockPrevHashSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 23: ghostnet.packets.GetBlockPrevHashCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 24: ghostnet.packets.SendBlockPrevHashSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 25: ghostnet.packets.SendBlockPrevHashCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 26: ghostnet.packets.GetTxStatusSq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 27: ghostnet.packets.GetTxStatusCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // 28: ghostnet.packets.SendTxStatusSq.Master:type_name -> ghostnet.packets.MasterPacket
-	0,  // 29: ghostnet.packets.SendTxStatusSq.TxLoc:type_name -> ghostnet.packets.TxLocation
-	31, // 30: ghostnet.packets.SendTxStatusCq.Master:type_name -> ghostnet.packets.MasterPacket
-	31, // [31:31] is the sub-list for method output_type
-	31, // [31:31] is the sub-list for method input_type
-	31, // [31:31] is the sub-list for extension type_name
-	31, // [31:31] is the sub-list for extension extendee
-	0,  // [0:31] is the sub-list for field type_name
+	27, // 0: ghostnet.packets.GetHeightestBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 1: ghostnet.packets.GetHeightestBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 2: ghostnet.packets.NewBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 3: ghostnet.packets.NewBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 4: ghostnet.packets.GetBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 5: ghostnet.packets.GetBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 6: ghostnet.packets.SendBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 7: ghostnet.packets.SendBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 8: ghostnet.packets.SendTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 9: ghostnet.packets.SendTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 10: ghostnet.packets.SendDataTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 11: ghostnet.packets.SendDataTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 12: ghostnet.packets.SearchTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 13: ghostnet.packets.SearchTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 14: ghostnet.packets.GetDataTxIdListSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 15: ghostnet.packets.GetDataTxIdListCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 16: ghostnet.packets.SendDataTxIdListSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 17: ghostnet.packets.SendDataTxIdListCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 18: ghostnet.packets.GetBlockHashSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 19: ghostnet.packets.GetBlockHashCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 20: ghostnet.packets.SendBlockHashSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 21: ghostnet.packets.SendBlockHashCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 22: ghostnet.packets.GetTxStatusSq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 23: ghostnet.packets.GetTxStatusCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // 24: ghostnet.packets.SendTxStatusSq.Master:type_name -> ghostnet.packets.MasterPacket
+	0,  // 25: ghostnet.packets.SendTxStatusSq.TxLoc:type_name -> ghostnet.packets.TxLocation
+	27, // 26: ghostnet.packets.SendTxStatusCq.Master:type_name -> ghostnet.packets.MasterPacket
+	27, // [27:27] is the sub-list for method output_type
+	27, // [27:27] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_block_packet_proto_init() }
@@ -2247,54 +2012,6 @@ func file_block_packet_proto_init() {
 			}
 		}
 		file_block_packet_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetBlockPrevHashSq); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_block_packet_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetBlockPrevHashCq); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_block_packet_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SendBlockPrevHashSq); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_block_packet_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SendBlockPrevHashCq); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_block_packet_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetTxStatusSq); i {
 			case 0:
 				return &v.state
@@ -2306,7 +2023,7 @@ func file_block_packet_proto_init() {
 				return nil
 			}
 		}
-		file_block_packet_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+		file_block_packet_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetTxStatusCq); i {
 			case 0:
 				return &v.state
@@ -2318,7 +2035,7 @@ func file_block_packet_proto_init() {
 				return nil
 			}
 		}
-		file_block_packet_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+		file_block_packet_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SendTxStatusSq); i {
 			case 0:
 				return &v.state
@@ -2330,7 +2047,7 @@ func file_block_packet_proto_init() {
 				return nil
 			}
 		}
-		file_block_packet_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+		file_block_packet_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SendTxStatusCq); i {
 			case 0:
 				return &v.state
@@ -2349,7 +2066,7 @@ func file_block_packet_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_block_packet_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   30,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

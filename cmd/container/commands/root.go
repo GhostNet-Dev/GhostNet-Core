@@ -1,0 +1,87 @@
+package cmd
+
+import (
+	"fmt"
+	"log"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+
+	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
+)
+
+var (
+	cfg = gconfig.DefaultConfig()
+)
+
+// RootCmd root command binding
+func RootCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "ghostnet",
+		Short: "GhostNet in MasterNode",
+		Long:  `GhostNet Core Server for Distributed BlockChain Network`,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// You can bind cobra and viper in a few locations, but PersistencePreRunE on the root command works well
+			return initializeConfig(cmd)
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			// Working with OutOrStdout/OutOrStderr allows us to unit test our command easier
+			if port, err := strconv.Atoi(cfg.Port); err != nil {
+				log.Fatal(err)
+				cfg.GrpcPort = fmt.Sprint(port + 1)
+			}
+			fmt.Printf("Start GhostNet Node Addr = %s:%s", cfg.Ip, cfg.Port)
+			for {
+				<-time.After((time.Second * 3))
+			}
+		},
+	}
+	cmd.Flags().StringVarP(&cfg.Username, "username", "u", "", "Ghost Account Nickname")
+	cmd.Flags().StringVarP(&cfg.Password, "password", "p", "", "Ghost Account Password")
+	cmd.Flags().StringVarP(&cfg.Ip, "ip", "i", gconfig.DefaultIp, "Host Address")
+	cmd.Flags().StringVarP(&cfg.Port, "port", "", "50129", "Port Number")
+	cmd.Flags().StringVarP(&cfg.RootPath, "rootpath", "", "", "Home Directory Path")
+	cmd.Flags().StringVarP(&cfg.SqlPath, "sqlpath", "", "", "Sql Db File Directory Path")
+	cmd.Flags().StringVarP(&cfg.FilePath, "filepath", "", "", "Download File Directory Path")
+	cmd.Flags().StringVarP(&cfg.DbScheme, "dbscheme", "", "", "Db Scheme File Name")
+	cmd.Flags().StringVarP(&cfg.DbSchemePath, "dbschemepath", "", "", "Db Scheme File Path")
+	cmd.Flags().BoolVarP(&cfg.StandaloneMode, "standalonemode", "", false, "Single Node Mode")
+
+	return cmd
+}
+func initializeConfig(cmd *cobra.Command) error {
+	v := viper.New()
+	v.SetConfigName(cfg.DefaultConfigFilename)
+	v.AddConfigPath(".")
+	v.AddConfigPath("../")
+
+	if err := v.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return err
+		}
+	}
+
+	v.SetEnvPrefix(cfg.EnvPrefix)
+	v.AutomaticEnv()
+
+	bindFlags(cmd, v)
+	return nil
+}
+
+func bindFlags(cmd *cobra.Command, v *viper.Viper) {
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		if strings.Contains(f.Name, "-") {
+			envVarSuffix := strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))
+			v.BindEnv(f.Name, fmt.Sprintf("%s_%s", cfg.EnvPrefix, envVarSuffix))
+		}
+
+		if !f.Changed && v.IsSet(f.Name) {
+			val := v.Get(f.Name)
+			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+		}
+	})
+}
