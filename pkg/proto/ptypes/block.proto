@@ -32,7 +32,7 @@ message GhostNetBlockHeader {
 
 message GhostNetDataBlock {
 	GhostNetDataBlockHeader Header = 1;
-	repeated GhostDataTrasaction Transaction = 2;
+	repeated GhostDataTransaction Transaction = 2;
 }
 
 message GhostNetDataBlockHeader {

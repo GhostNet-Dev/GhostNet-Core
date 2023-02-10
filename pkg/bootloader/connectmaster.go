@@ -72,7 +72,7 @@ func (conn *ConnectMaster) SaveMasterNodeList(nodes []*ptypes.GhostUser) {
 }
 
 func (conn *ConnectMaster) LoadMasterNode() *ptypes.GhostUser {
-	nodes, err := conn.db.LoadEntry(conn.table)
+	_, nodes, err := conn.db.LoadEntry(conn.table)
 	if err != nil {
 		log.Fatal(err)
 	}

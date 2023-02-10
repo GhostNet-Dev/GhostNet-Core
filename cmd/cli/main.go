@@ -38,6 +38,8 @@ func main() {
 		cmd.UserAddCommand(),
 		cmd.GetPrivateKeyCommand(),
 		cmd.CreateContainerCommand(),
+		cmd.GetBlockInfoCommand(),
+		cmd.GetAccountListCommand(),
 	)
 
 	if err := startCmd.Execute(); err != nil {

@@ -6,18 +6,21 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/rpc"
 )
 
 type GrpcHandler struct {
+	loadWallet *bootloader.LoadWallet
 	containers *Containers
 	grpcServer *grpc.GrpcServer
 	config     *gconfig.GConfig
 }
 
-func NewGrpcHandler(containers *Containers, grpcServer *grpc.GrpcServer,
+func NewGrpcHandler(loadWallet *bootloader.LoadWallet, containers *Containers, grpcServer *grpc.GrpcServer,
 	config *gconfig.GConfig) *GrpcHandler {
 	gHandler := &GrpcHandler{
+		loadWallet: loadWallet,
 		containers: containers,
 		grpcServer: grpcServer,
 		config:     config,
@@ -32,6 +35,8 @@ func NewGrpcHandler(containers *Containers, grpcServer *grpc.GrpcServer,
 	grpcServer.CheckStatusHandler = gHandler.CheckStatusHandler
 	grpcServer.GetContainerListHandler = gHandler.GetContainerListHandler
 	grpcServer.GetInfoHandler = gHandler.GetInfoHandler
+	grpcServer.GetAccountHandler = gHandler.GetAccountHandler
+	grpcServer.GetBlockInfoHandler = gHandler.GetBlockInfoHandler
 	return gHandler
 }
 
@@ -43,6 +48,9 @@ func (ghandler *GrpcHandler) GetInfoHandler() *rpc.GetInfoResponse {
 
 func (ghandler *GrpcHandler) GetContainerListHandler(id uint32) *rpc.GetContainerListResponse {
 	container := ghandler.containers.GetContainer(id)
+	if container == nil {
+		return nil
+	}
 	return &rpc.GetContainerListResponse{
 		Id:       container.Id,
 		PID:      int32(container.PID),
@@ -53,12 +61,10 @@ func (ghandler *GrpcHandler) GetContainerListHandler(id uint32) *rpc.GetContaine
 }
 
 func (ghandler *GrpcHandler) CreateAccountHandler(password []byte, username string) bool {
-	db := bootloader.NewLiteStore(ghandler.config.SqlPath, bootloader.Tables)
-	wallet := bootloader.NewLoadWallet(bootloader.Tables[1], db, nil)
-	_, err := wallet.OpenWallet(username, password)
+	_, err := ghandler.loadWallet.OpenWallet(username, password)
 	if err != nil {
-		w := wallet.CreateWallet(username, password)
-		wallet.SaveWallet(w, password)
+		w := ghandler.loadWallet.CreateWallet(username, password)
+		ghandler.loadWallet.SaveWallet(w, password)
 	} else {
 		log.Print("already exist account")
 		return false
@@ -76,15 +82,13 @@ func (ghandler *GrpcHandler) ReleaseContainerHandler(id uint32) bool {
 }
 
 func (ghandler *GrpcHandler) GetPrivateKeyHandler(id uint32, password []byte, username string) ([]byte, bool) {
-	db := bootloader.NewLiteStore(ghandler.config.SqlPath, bootloader.Tables)
-	wallet := bootloader.NewLoadWallet(bootloader.Tables[1], db, nil)
-	w, err := wallet.OpenWallet(username, password)
+	w, err := ghandler.loadWallet.OpenWallet(username, password)
 	if err != nil {
 		log.Print(err)
 		return nil, false
 	}
 	privateKey := w.GetGhostAddress().PrivateKeySerialize()
-	cipherKey := wallet.Encryption(password, privateKey)
+	cipherKey := ghandler.loadWallet.Encryption(password, privateKey)
 	return cipherKey, true
 }
 
@@ -106,4 +110,17 @@ func (ghandler *GrpcHandler) GetLogHandler(id uint32) []byte {
 func (ghandler *GrpcHandler) CheckStatusHandler(id uint32) uint32 {
 	container := ghandler.containers.GetContainer(id)
 	return container.Client.CheckStatus(id)
+}
+
+func (ghandler *GrpcHandler) GetAccountHandler(id uint32) (users []*ptypes.GhostUser) {
+	names := ghandler.loadWallet.GetWalletList()
+	for _, name := range names {
+		users = append(users, &ptypes.GhostUser{Nickname: name})
+	}
+	return users
+}
+
+func (ghandler *GrpcHandler) GetBlockInfoHandler(id, blockId uint32) *ptypes.PairedBlocks {
+	container := ghandler.containers.GetContainer(id)
+	return container.Client.GetBlockInfo(id, blockId)
 }

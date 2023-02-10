@@ -36,4 +36,6 @@ func TestInAndOut(t *testing.T) {
 	v, err := db.SelectEntry(Tables[0], []byte(testUser.PubKey))
 	assert.Equal(t, nil, err, "db select error")
 	assert.Equal(t, 0, bytes.Compare(rawData, v), "load fail")
+
+	db.LoadEntry(Tables[0])
 }

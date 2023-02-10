@@ -1,7 +1,10 @@
 package manager
 
 import (
+	"fmt"
+	"log"
 	"os/exec"
+	"strconv"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 )
@@ -18,9 +21,16 @@ type Container struct {
 }
 
 func NewContainer(id uint32, ip, port string) *Container {
+	var grpcPort string
+	if portInt, err := strconv.Atoi(port); err != nil {
+		log.Fatal(err)
+	} else {
+		grpcPort = fmt.Sprint(portInt + 1)
+	}
+
 	return &Container{
 		Id: id, Ip: ip, Port: port,
-		Client: grpc.NewGrpcClient(ip, port),
+		Client: grpc.NewGrpcClient(ip, grpcPort),
 	}
 }
 

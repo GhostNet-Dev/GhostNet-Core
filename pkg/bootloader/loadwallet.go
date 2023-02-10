@@ -63,6 +63,18 @@ func (loadWallet *LoadWallet) SaveWallet(w *gcrypto.Wallet, password []byte) {
 	loadWallet.db.SaveEntry(loadWallet.table, []byte(nickname), cipherPivateKey)
 }
 
+func (loadWallet *LoadWallet) GetWalletList() (nicknames []string) {
+	if k, _, err := loadWallet.db.LoadEntry(loadWallet.table); err == nil {
+		for _, name := range k {
+			nicknames = append(nicknames, string(name))
+		}
+		return nicknames
+	} else {
+		log.Print(err)
+	}
+	return nil
+}
+
 func (loadWallet *LoadWallet) Encryption(key []byte, privateKey []byte) []byte {
 	block, err := aes.NewCipher(key)
 	if err != nil {

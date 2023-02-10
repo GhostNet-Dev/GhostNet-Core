@@ -39,11 +39,10 @@ message GetBlockInfoResponse {
 
 message GetAccountRequest {
     uint32 Id = 1;
-    string Username = 2;
 }
 message GetAccountResponse {
     uint32 Id = 1;
-    ptypes.GhostUser User = 2;
+    repeated ptypes.GhostUser User = 2;
 }
 
 message GetInfoRequest {}

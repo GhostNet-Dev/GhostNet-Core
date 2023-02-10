@@ -37,6 +37,7 @@ func createExecuteCommand(username, password, host, port string) {
 	grpcClient := grpc.NewGrpcClient(host, rpcPort)
 	grpcClient.ConnectServer()
 	defer grpcClient.CloseServer()
+	log.Printf("Create Container user = %s, host = %s, port = %s", username, host, port)
 	ret := grpcClient.CreateContainer(username, password, host, port)
-	log.Printf("Create Container = %t", ret)
+	log.Printf("Result = %t", ret)
 }

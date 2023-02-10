@@ -20,7 +20,7 @@ func (containers *Containers) GetContainer(id uint32) *Container {
 	return containers.List[id]
 }
 
-func (containers *Containers) ReleaseContainer(id uint32) bool{
+func (containers *Containers) ReleaseContainer(id uint32) bool {
 	containers.Count--
 	if container, exist := containers.List[id]; exist {
 		container.Cmd.Process.Kill()
@@ -43,12 +43,13 @@ func (containers *Containers) CheckExistAddr(host, port string) bool {
 func (containers *Containers) CreateContainer(password []byte, username, host, port string) *Container {
 	wg := sync.WaitGroup{}
 	id := containers.Id
-	containers.Id++
-	containers.Count++
 	if containers.CheckExistAddr(host, port) {
 		log.Printf("already allocated port number = %s", port)
 		return nil
 	}
+
+	containers.Id++
+	containers.Count++
 
 	container := NewContainer(id, host, port)
 	container.Username = username

@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/cmd/ghostd/manager"
+	"github.com/GhostNet-Dev/GhostNet-Core/internal/factory"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 	"github.com/spf13/cobra"
@@ -40,14 +41,24 @@ func RootCommand() *cobra.Command {
 }
 
 func ExecuteContainer() {
-	//todo rpc server
-	log.Println("Start Grpc Server")
+	log.Println("Initialize Component")
+	// for encrypt passwd
 	cfg.Password = grpc.PasswordToSha256(password)
 
-	containers := manager.NewContainers()
-	server := grpc.NewGrpcServer()
-	manager.NewGrpcHandler(containers, server, cfg)
+	// network factory initialize
+	netFactory := factory.NewNetworkFactory(cfg)
 
+	// boot factory initialize
+	bootFactory := factory.NewBootFactory(netFactory.Udp, netFactory.PacketFactory, cfg)
+
+	// container management initialize
+	containers := manager.NewContainers()
+
+	// grpc initiaize
+	server := grpc.NewGrpcServer()
+	manager.NewGrpcHandler(bootFactory.LoadWallet, containers, server, cfg)
+
+	log.Println("Start Grpc Server")
 	if err := server.ServeGRPC(cfg); err != nil {
 		log.Fatal(err)
 	}

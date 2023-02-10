@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/rpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -147,4 +148,24 @@ func (client *GrpcClient) CheckStatus(id uint32) uint32 {
 		log.Fatalf("could not connect: %v", err)
 	}
 	return r.State
+}
+
+func (client *GrpcClient) GetAccount(id uint32) []*ptypes.GhostUser {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := client.c.GetAccount(ctx, &rpc.GetAccountRequest{Id: id})
+	if err != nil {
+		log.Fatalf("could not connect: %v", err)
+	}
+	return r.User
+}
+
+func (client *GrpcClient) GetBlockInfo(id, blockId uint32) *ptypes.PairedBlocks {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := client.c.GetBlockInfo(ctx, &rpc.GetBlockInfoRequest{Id: id, BlockId: blockId})
+	if err != nil {
+		log.Fatalf("could not connect: %v", err)
+	}
+	return r.Pair
 }

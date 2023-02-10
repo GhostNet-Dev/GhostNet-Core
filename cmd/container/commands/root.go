@@ -5,13 +5,13 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
+	"github.com/GhostNet-Dev/GhostNet-Core/internal/maincontainer"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 )
 
@@ -35,12 +35,12 @@ func RootCmd() *cobra.Command {
 			cfg.Password = grpc.PasswordToSha256(password)
 			if port, err := strconv.Atoi(cfg.Port); err != nil {
 				log.Fatal(err)
+			} else {
 				cfg.GrpcPort = fmt.Sprint(port + 1)
 			}
 			fmt.Printf("Start GhostNet Node Addr = %s:%s", cfg.Ip, cfg.Port)
-			for {
-				<-time.After((time.Second * 3))
-			}
+			container := maincontainer.NewMainContainer(cfg)
+			container.StartContainer()
 		},
 	}
 	cmd.Flags().StringVarP(&cfg.Username, "username", "u", "", "Ghost Account Nickname")

@@ -1,6 +1,6 @@
 package glogger
 
-import "fmt"
+import "log"
 
 type LogLevel int32
 
@@ -12,5 +12,5 @@ const (
 )
 
 func DebugOutput(obj interface{}, msg string, level LogLevel) {
-	fmt.Printf(msg)
+	log.Print(msg)
 }

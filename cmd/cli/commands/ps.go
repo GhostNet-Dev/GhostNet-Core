@@ -38,7 +38,8 @@ func psExecuteCommand() {
 		if info == nil {
 			return
 		}
-		for i := uint32(0); i < info.TotalContainer; i++ {
+		log.Printf("Total Container = %d\n", info.TotalContainer)
+		for i := uint32(1); i <= info.TotalContainer; i++ {
 			response := grpcClient.GetContainerList(i)
 			log.Printf("[%d] Container User = %s, Port = %s, PID = %d",
 				response.Id, response.Username, response.Port, response.PID)

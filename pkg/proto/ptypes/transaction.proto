@@ -37,7 +37,7 @@ message GhostTransaction {
 	TxBody Body  = 2;
 }
 
-message GhostDataTrasaction {
+message GhostDataTransaction {
 	bytes TxId = 1;
 	uint64 LogicalAddress = 2;
 	uint32 DataSize = 3;

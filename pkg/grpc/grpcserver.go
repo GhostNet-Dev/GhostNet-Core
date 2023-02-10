@@ -2,12 +2,14 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/rpc"
 	"google.golang.org/grpc"
 )
@@ -24,10 +26,26 @@ type GrpcServer struct {
 	GetContainerListHandler func(id uint32) *rpc.GetContainerListResponse
 	CheckStatusHandler      func(id uint32) uint32
 	GetInfoHandler          func() *rpc.GetInfoResponse
+	GetAccountHandler       func(id uint32) []*ptypes.GhostUser
+	GetBlockInfoHandler     func(id, blockId uint32) *ptypes.PairedBlocks
 }
 
 func NewGrpcServer() *GrpcServer {
 	return &GrpcServer{}
+}
+
+func (grpcServer *GrpcServer) ServeGRPC(cfg *gconfig.GConfig) error {
+	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)
+	if err != nil {
+		return err
+	}
+	s := grpc.NewServer()
+	rpc.RegisterGApiServer(s, grpcServer)
+	glogger.DebugOutput(grpcServer, fmt.Sprint("start gRPC Server on ", cfg.GrpcPort, "\n"), 0)
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+	return nil
 }
 
 func (s *GrpcServer) GetInfo(ctx context.Context, in *rpc.GetInfoRequest) (*rpc.GetInfoResponse, error) {
@@ -116,17 +134,18 @@ func (s *GrpcServer) CheckStatus(ctx context.Context, in *rpc.CoreStateRequest) 
 	return &rpc.CoreStateResponse{State: status}, nil
 }
 
-func (grpcServer *GrpcServer) ServeGRPC(cfg *gconfig.GConfig) error {
-	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)
-	if err != nil {
-		return err
+func (s *GrpcServer) GetAccount(ctx context.Context, in *rpc.GetAccountRequest) (*rpc.GetAccountResponse, error) {
+	if s.GetAccountHandler != nil {
+		ghostUser := s.GetAccountHandler(in.Id)
+		return &rpc.GetAccountResponse{Id: in.Id, User: ghostUser}, nil
 	}
+	return &rpc.GetAccountResponse{}, errors.New("could not found user")
+}
 
-	s := grpc.NewServer()
-	rpc.RegisterGApiServer(s, grpcServer)
-	glogger.DebugOutput(grpcServer, fmt.Sprint("start gRPC Server on ", cfg.GrpcPort, "\n"), 0)
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+func (s *GrpcServer) GetBlockInfo(ctx context.Context, in *rpc.GetBlockInfoRequest) (*rpc.GetBlockInfoResponse, error) {
+	if s.GetBlockInfoHandler != nil {
+		pairedBlocks := s.GetBlockInfoHandler(in.Id, in.BlockId)
+		return &rpc.GetBlockInfoResponse{Id: in.Id, BlockId: in.BlockId, Pair: pairedBlocks}, nil
 	}
-	return nil
+	return &rpc.GetBlockInfoResponse{}, errors.New("could not found block")
 }

@@ -6,41 +6,61 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 )
 
-var Tables = []string{"nodes", "wallet"}
+type BootLoader struct {
+	udp           *p2p.UdpServer
+	packetFactory *p2p.PacketFactory
+	config        *gconfig.GConfig
+	db            *LiteStore
+	wallet        *LoadWallet
+	conn          *ConnectMaster
+}
 
-func BootLoader(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig) *gcrypto.Wallet {
-	db := NewLiteStore(config.SqlPath, Tables)
-	wallet := NewLoadWallet(Tables[1], db, &ptypes.GhostIp{Ip: config.Ip, Port: config.Port})
-	w, err := wallet.OpenWallet(config.Username, config.Password)
-	if err != nil {
-		w = wallet.CreateWallet(config.Username, config.Password)
-		wallet.SaveWallet(w, config.Password)
+var Tables []string
+
+func NewBootLoader(tables []string, udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig,
+	db *LiteStore, wallet *LoadWallet) *BootLoader {
+	Tables = tables
+
+	return &BootLoader{
+		udp:           udp,
+		packetFactory: packetFactory,
+		config:        config,
+		db:            db,
+		wallet:        wallet,
 	}
+}
+
+func (b *BootLoader) BootLoading(config *gconfig.GConfig) *gcrypto.Wallet {
+	w, err := b.wallet.OpenWallet(config.Username, config.Password)
+	if err != nil {
+		w = b.wallet.CreateWallet(config.Username, config.Password)
+		b.wallet.SaveWallet(w, config.Password)
+	}
+
+	b.conn = NewConnectMaster(Tables[0], b.db, b.packetFactory, b.udp, w)
 
 	if config.StandaloneMode {
 		return w
 	}
 
-	conn := NewConnectMaster(Tables[0], db, packetFactory, udp, w)
-	masterNode := conn.LoadMasterNode()
+	masterNode := b.conn.LoadMasterNode()
 
 	if masterNode == nil {
-		conn.RequestMasterNodesToAdam()
-		if timeout := conn.WaitEvent(); timeout {
+		b.conn.RequestMasterNodesToAdam()
+		if timeout := b.conn.WaitEvent(); timeout {
 			log.Fatal("could not connect to adam node")
 			return nil
 		}
-		masterNode = conn.LoadMasterNode()
+		masterNode = b.conn.LoadMasterNode()
 		if masterNode == nil {
 			log.Fatal("could not found masterNode")
 		}
 	}
 
-	conn.ConnectToMaster(masterNode)
-	if timeout := conn.WaitEvent(); timeout {
+	b.conn.ConnectToMaster(masterNode)
+	if timeout := b.conn.WaitEvent(); timeout {
 		log.Fatal("could not connect to masterNode = ", masterNode.Nickname)
 	}
 
