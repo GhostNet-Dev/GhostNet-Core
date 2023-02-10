@@ -7,7 +7,7 @@ const (
 
 	DefaultIp           = "127.0.0.1"
 	DefaultPort         = "50129"
-	DefaultGrpcPort     = "50130"
+	DefaultGrpcPort     = "50229"
 	DefaultRootPath     = "./"
 	DefaultSqlPath      = "./"
 	DefaultFilePath     = "./"
@@ -25,7 +25,7 @@ var (
 type GConfig struct {
 	GhostVersion uint32
 	Username     string
-	Password     string
+	Password     []byte
 
 	DefaultConfigFilename string
 	EnvPrefix             string

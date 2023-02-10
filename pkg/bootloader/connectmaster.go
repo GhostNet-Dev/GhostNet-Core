@@ -4,6 +4,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"time"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
@@ -88,8 +89,14 @@ func (conn *ConnectMaster) LoadMasterNode() *ptypes.GhostUser {
 	return ghostUser
 }
 
-func (conn *ConnectMaster) WaitEvent() {
-	<-conn.eventChannel
+func (conn *ConnectMaster) WaitEvent() (timeout bool) {
+	select {
+	case <-conn.eventChannel:
+		timeout = false
+	case <-time.After(time.Second * 8):
+		timeout = true
+	}
+	return timeout
 }
 
 func (conn *ConnectMaster) GetGhostNetVersion(masterNode *ptypes.GhostUser) {

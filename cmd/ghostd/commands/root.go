@@ -1,72 +1,54 @@
 package commands
 
 import (
-	"fmt"
 	"log"
-	"os/exec"
-	"time"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/cmd/ghostd/manager"
+	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 	"github.com/spf13/cobra"
 )
 
 var (
-	port string
-	host string
-	id   uint32 = 0
+	cfg      = gconfig.DefaultConfig()
+	password string
 )
 
 // RootCmd root command binding
 func RootCommand() *cobra.Command {
-	rootCmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "ghostd",
 		Short: "GhostNet Deamon",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// You can bind cobra and viper in a few locations, but PersistencePreRunE on the root command works well
-			log.Printf("%v", args)
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Printf("%v", args)
+			log.SetFlags(log.LstdFlags | log.Lshortfile)
 			// Working with OutOrStdout/OutOrStderr allows us to unit test our command easier
 			ExecuteContainer()
 		},
 	}
-	rootCmd.Flags().StringVarP(&port, "port", "p", "50129", "Port Number")
-	rootCmd.Flags().StringVarP(&host, "ip", "i", "", "Host Address")
-	return rootCmd
+	cmd.Flags().StringVarP(&cfg.Username, "username", "u", "", "Ghost Account Nickname")
+	cmd.Flags().StringVarP(&password, "password", "p", "", "Ghost Account Password")
+	cmd.Flags().StringVarP(&cfg.Ip, "ip", "i", gconfig.DefaultIp, "Host Address")
+	cmd.Flags().StringVarP(&cfg.Port, "port", "", "50129", "Port Number")
+	cmd.Flags().StringVarP(&cfg.GrpcPort, "rpc", "r", "50229", "GRPC Port Number")
+	cmd.Flags().StringVarP(&cfg.RootPath, "rootpath", "", "", "Home Directory Path")
+	cmd.Flags().StringVarP(&cfg.SqlPath, "sqlpath", "", "", "Sql Db File Directory Path")
+	return cmd
 }
 
 func ExecuteContainer() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	//netChannel := make(chan []byte)
-	id++
-	go func(cid uint32) {
-		fmt.Printf("execute node addr = %s:%s\n", host, port)
-		args := []string{"-p=" + port}
-		if host != "" {
-			args = append(args, host)
-		}
-		cmd := exec.Command("ghostnet", args...)
-		out, err := cmd.StdoutPipe()
-		cmd.Stderr = cmd.Stdout
-		if err != nil {
-			log.Fatal(err)
-		}
-		if err := cmd.Start(); err != nil {
-			log.Fatal(err)
-		}
-		log.Println(cmd.Process.Pid)
+	//todo rpc server
+	log.Println("Start Grpc Server")
+	cfg.Password = grpc.PasswordToSha256(password)
 
-		outBuf := make([]byte, 128)
-		for {
-			_, err := out.Read(outBuf)
-			log.Printf("[%d] %s", cid, string(outBuf))
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-	}(id)
-	for {
-		<-time.After((time.Second * 3))
+	containers := manager.NewContainers()
+	server := grpc.NewGrpcServer()
+	manager.NewGrpcHandler(containers, server, cfg)
+
+	if err := server.ServeGRPC(cfg); err != nil {
+		log.Fatal(err)
 	}
 }

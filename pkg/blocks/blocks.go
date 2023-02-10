@@ -22,3 +22,9 @@ func NewBlocks(b *store.BlockContainer, t *txs.TXs, version uint32) *Blocks {
 		miningFlag:     false,
 	}
 }
+
+func (blocks *Blocks) ResetBlocks() {
+	blocks.blockContainer.Close()
+	blocks.blockContainer.Reset()
+	blocks.blockContainer.Reopen()
+}

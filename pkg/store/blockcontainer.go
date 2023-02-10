@@ -9,6 +9,9 @@ type BlockContainer struct {
 	gSql         gsql.GSql
 	TxContainer  *TxContainer
 	CandidateBlk *CandidateBlock
+
+	schemeSqlFilePath string
+	dbFilePath        string
 }
 
 func NewBlockContainer(dbname string) *BlockContainer {
@@ -27,6 +30,19 @@ func (blockContainer *BlockContainer) BlockContainerOpen(schemeSqlFilePath strin
 	blockContainer.gSql.OpenSQL(dbFilePath)
 	blockContainer.gSql.CreateTable(schemeSqlFilePath)
 	blockContainer.TxContainer.Initialize()
+}
+
+func (blockContainer *BlockContainer) Reopen() {
+	blockContainer.BlockContainerOpen(blockContainer.schemeSqlFilePath, blockContainer.dbFilePath)
+}
+
+func (blockContainer *BlockContainer) Close() {
+	blockContainer.gSql.CloseSQL()
+}
+
+func (blockContainer *BlockContainer) Reset() {
+	blockContainer.gSql.DropTable()
+	blockContainer.CandidateBlk.Reset()
 }
 
 func (blockContainer *BlockContainer) GetBlock(blockId uint32) *types.PairedBlock {

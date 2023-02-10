@@ -7,23 +7,16 @@ import (
 	"os"
 	"testing"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/stretchr/testify/assert"
 	mems "github.com/traherom/memstream"
 )
 
-var (
-	creator = []string{
-		"Alice", "Bob", "Carol", "Dave", "Eve", "Frank", "Grace",
-		"Heidi", "Ivan", "Judy", "Michael", "Niaj", "Oscar", "Peggy",
-		"Root", "Sybil", "Theo", "Terry", "Victor", "Walter", "Wendy",
-	}
-)
-
 func TestMakeGenesisHeader(t *testing.T) {
 	//todo block sign을 만들어야함
-	genesis, _ := blocks.MakeGenesisBlock(creator)
+	genesis := blocks.MakeGenesisBlock(nil)
 	block := genesis.Block
 	header := block.Header
 	size := header.Size()
@@ -44,7 +37,7 @@ func TestMakeGenesisHeader(t *testing.T) {
 }
 
 func TestMakeGenesis(t *testing.T) {
-	genesis, _ := blocks.MakeGenesisBlock(creator)
+	genesis := blocks.MakeGenesisBlock(nil)
 	blockByte := genesis.SerializeToByte()
 
 	newBlock := types.PairedBlock{}
@@ -64,8 +57,12 @@ func TestMakeGenesisFileIo(t *testing.T) {
 	if err := os.Mkdir("./samples", os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
+	accountFile := map[string]*gcrypto.GhostAddress{}
 
-	genesis, accountFile := blocks.MakeGenesisBlock(creator)
+	genesis := blocks.MakeGenesisBlock(func(name string, address *gcrypto.GhostAddress) {
+		accountFile[name+"@"+address.GetPubAddress()+".ghost"] = address
+	})
+
 	blockFilename := "./samples/1@" + base58.Encode(genesis.Block.GetHashKey()) + ".ghost"
 	genesisBuf := genesis.SerializeToByte()
 	if err := ioutil.WriteFile(blockFilename, genesisBuf, 0); err != nil {

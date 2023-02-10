@@ -28,9 +28,19 @@ func appendPaths(envPath string, path string) string {
 }
 
 func main() {
-	startCmd := cmd.RootCmd
-	startCmd.AddCommand(cmd.StartNodeCommand())
+	startCmd := cmd.NewRootCommand()
+	startCmd.AddCommand(
+		cmd.NewGenesisCommand(),
+		cmd.PsCommand(),
+		cmd.ResumeCommand(),
+		cmd.StartNodeCommand(),
+		cmd.SuspendCommand(),
+		cmd.UserAddCommand(),
+		cmd.GetPrivateKeyCommand(),
+		cmd.CreateContainerCommand(),
+	)
+
 	if err := startCmd.Execute(); err != nil {
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }

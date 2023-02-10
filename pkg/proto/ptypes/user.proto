@@ -14,3 +14,7 @@ message GhostUser {
     GhostIp ip = 4;
 }
 
+message KeyPair {
+    string PubKey = 1;
+    bytes PrivateKey = 2;
+}

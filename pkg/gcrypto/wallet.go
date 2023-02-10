@@ -3,18 +3,18 @@ package gcrypto
 import "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 
 type Wallet struct {
-	masterNode   *ptypes.GhostUser
-	ghostIp  *ptypes.GhostIp
-	myAddr   GhostAddress
-	nickname string
+	masterNode *ptypes.GhostUser
+	ghostIp    *ptypes.GhostIp
+	myAddr     *GhostAddress
+	nickname   string
 }
 
 func NewWallet(nickname string, myAddr *GhostAddress, ghostIp *ptypes.GhostIp, master *ptypes.GhostUser) *Wallet {
 	return &Wallet{
-		masterNode:   master,
-		nickname: nickname,
-		myAddr:   *myAddr,
-		ghostIp:  ghostIp,
+		masterNode: master,
+		nickname:   nickname,
+		myAddr:     myAddr,
+		ghostIp:    ghostIp,
 	}
 }
 
@@ -31,7 +31,7 @@ func (w *Wallet) GetGhostUser() *ptypes.GhostUser {
 }
 
 func (w *Wallet) GetGhostAddress() *GhostAddress {
-	return &w.myAddr
+	return w.myAddr
 }
 
 func (w *Wallet) MyPubKey() []byte {

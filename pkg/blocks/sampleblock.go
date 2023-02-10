@@ -6,17 +6,24 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
-func (blocks *Blocks) MakeGenesisBlock(creator []string) (*types.PairedBlock, map[string]*gcrypto.GhostAddress) {
-	accountFile := map[string]*gcrypto.GhostAddress{}
+var (
+	creator = []string{
+		"Alice", "Bob", "Carol", "Dave", "Eve", "Frank", "Grace",
+		"Heidi", "Ivan", "Judy", "Michael", "Niaj", "Oscar", "Peggy",
+		"Root", "Sybil", "Theo", "Terry", "Victor", "Walter", "Wendy",
+	}
+)
+
+func (blocks *Blocks) MakeGenesisBlock(saveCall func(string, *gcrypto.GhostAddress)) *types.PairedBlock {
 	txs := blocks.txs
 	tx, root := txs.MakeSampleRootAccount("Adam", nil)
-	accountFile["Adam@"+root.GetPubAddress()+".ghost"] = root
+	saveCall("Adam", root)
 
 	newTxs := []types.GhostTransaction{*tx}
 	for _, name := range creator {
 		tx, address := txs.MakeSampleRootAccount(name, root.Get160PubKey())
 		newTxs = append(newTxs, *tx)
-		accountFile[name+"@"+address.GetPubAddress()+".ghost"] = address
+		saveCall(name, address)
 	}
 
 	msg := make([]byte, gbytes.HashSize)
@@ -29,5 +36,5 @@ func (blocks *Blocks) MakeGenesisBlock(creator []string) (*types.PairedBlock, ma
 		DataBlock: *blocks.CreateGhostNetDataBlock(1, msg, nil),
 	}
 
-	return pair, accountFile
+	return pair
 }

@@ -12,10 +12,12 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 )
 
 var (
-	cfg = gconfig.DefaultConfig()
+	cfg      = gconfig.DefaultConfig()
+	password string
 )
 
 // RootCmd root command binding
@@ -30,6 +32,7 @@ func RootCmd() *cobra.Command {
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			// Working with OutOrStdout/OutOrStderr allows us to unit test our command easier
+			cfg.Password = grpc.PasswordToSha256(password)
 			if port, err := strconv.Atoi(cfg.Port); err != nil {
 				log.Fatal(err)
 				cfg.GrpcPort = fmt.Sprint(port + 1)
@@ -41,7 +44,7 @@ func RootCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&cfg.Username, "username", "u", "", "Ghost Account Nickname")
-	cmd.Flags().StringVarP(&cfg.Password, "password", "p", "", "Ghost Account Password")
+	cmd.Flags().StringVarP(&password, "password", "p", "", "Ghost Account Password")
 	cmd.Flags().StringVarP(&cfg.Ip, "ip", "i", gconfig.DefaultIp, "Host Address")
 	cmd.Flags().StringVarP(&cfg.Port, "port", "", "50129", "Port Number")
 	cmd.Flags().StringVarP(&cfg.RootPath, "rootpath", "", "", "Home Directory Path")

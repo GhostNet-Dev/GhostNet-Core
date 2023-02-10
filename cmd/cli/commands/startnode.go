@@ -8,13 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	port     string
-	host     string
-	username string
-	password string
-)
-
 // StartNodeCmd root command binding
 func StartNodeCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -29,8 +22,8 @@ func StartNodeCommand() *cobra.Command {
 			ExecuteNode()
 		},
 	}
-	cmd.Flags().StringVarP(&port, "port", "", "50129", "Port Number")
 	cmd.Flags().StringVarP(&host, "ip", "i", "", "Host Address")
+	cmd.Flags().StringVarP(&port, "port", "", "50129", "Port Number")
 	cmd.Flags().StringVarP(&username, "username", "u", "", "Ghost Account Nickname")
 	cmd.Flags().StringVarP(&password, "password", "p", "", "Ghost Account Password")
 	return cmd

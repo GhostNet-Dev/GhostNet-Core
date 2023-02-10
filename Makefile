@@ -38,7 +38,7 @@ endif
 
 container:
 ifeq ($(OS),Windows_NT)
-	GOARCH=amd64 GOOS=window go build -o $(APP_BIN_CONTAINER_PATH).exe ${APP_CONTAINER_SRC_PATH}/main.go
+	set GOARCH=amd64 & set GOOS=window & go build -o $(APP_BIN_CONTAINER_PATH).exe ${APP_CONTAINER_SRC_PATH}/main.go
 else
     ifeq ($(UNAME_S),Linux)
 	GOARCH=amd64 GOOS=linux go build -o $(APP_BIN_CONTAINER_PATH) ${APP_CONTAINER_SRC_PATH}/main.go
@@ -89,7 +89,7 @@ lint:
 
 protoc:
 	protoc --go_out=./pkg/proto/rpc --go_opt=paths=source_relative \
-		--go-grpc_out=./pkg/proto/rpc --go-grpc_opt=paths=source_relative -I ./pkg/proto/rpc controls.proto
+		--go-grpc_out=./pkg/proto/rpc --go-grpc_opt=paths=source_relative -I ./pkg/proto/ptypes -I ./pkg/proto/rpc controls.proto
 	protoc --go_out=./pkg/proto/ptypes --go_opt=paths=source_relative -I ./pkg/proto/ptypes block.proto
 	protoc --go_out=./pkg/proto/ptypes --go_opt=paths=source_relative -I ./pkg/proto/ptypes transaction.proto
 	protoc --go_out=./pkg/proto/ptypes --go_opt=paths=source_relative -I ./pkg/proto/ptypes user.proto

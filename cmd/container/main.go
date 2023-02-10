@@ -1,7 +1,7 @@
 package main
 
 import (
-	"os"
+	"log"
 
 	cmd "github.com/GhostNet-Dev/GhostNet-Core/cmd/container/commands"
 )
@@ -9,6 +9,6 @@ import (
 func main() {
 	startCmd := cmd.RootCmd()
 	if err := startCmd.Execute(); err != nil {
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }

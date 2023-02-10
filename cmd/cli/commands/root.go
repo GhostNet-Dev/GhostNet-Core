@@ -12,20 +12,34 @@ import (
 
 var (
 	ghostDeamonName = "ghostd"
+	port            string
+	host            string
+	username        string
+	password        string
+	id              uint32
+	rpcPort         string
 )
 
 // RootCmd root command binding
-var RootCmd = &cobra.Command{
-	Use:   "ghost",
-	Short: "terminal in GhostNet",
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		// You can bind cobra and viper in a few locations, but PersistencePreRunE on the root command works well
-		return initializeConfig(cmd)
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-		// Working with OutOrStdout/OutOrStderr allows us to unit test our command easier
-		ExecuteNode()
-	},
+func NewRootCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "ghost",
+		Short: "terminal in GhostNet",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// You can bind cobra and viper in a few locations, but PersistencePreRunE on the root command works well
+			return initializeConfig(cmd)
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			// Working with OutOrStdout/OutOrStderr allows us to unit test our command easier
+			ExecuteNode()
+		},
+	}
+	cmd.Flags().StringVarP(&host, "ip", "i", "", "Host Address")
+	cmd.Flags().StringVarP(&port, "port", "", "50129", "Port Number")
+	cmd.Flags().StringVarP(&username, "username", "u", "", "Ghost Account Nickname")
+	cmd.Flags().StringVarP(&password, "password", "p", "", "Ghost Account Password")
+
+	return cmd
 }
 
 func initializeConfig(cmd *cobra.Command) error {

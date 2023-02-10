@@ -29,7 +29,11 @@ type GApiClient interface {
 	ControlContainer(ctx context.Context, in *ControlContainerRequest, opts ...grpc.CallOption) (*ControlContainerResponse, error)
 	ReleaseContainer(ctx context.Context, in *ReleaseRequest, opts ...grpc.CallOption) (*ReleaseResponse, error)
 	GetLog(ctx context.Context, in *GetLogRequest, opts ...grpc.CallOption) (*GetLogResponse, error)
+	GetContainerList(ctx context.Context, in *GetContainerListRequest, opts ...grpc.CallOption) (*GetContainerListResponse, error)
+	GetInfo(ctx context.Context, in *GetInfoRequest, opts ...grpc.CallOption) (*GetInfoResponse, error)
 	CheckStatus(ctx context.Context, in *CoreStateRequest, opts ...grpc.CallOption) (*CoreStateResponse, error)
+	GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*GetAccountResponse, error)
+	GetBlockInfo(ctx context.Context, in *GetBlockInfoRequest, opts ...grpc.CallOption) (*GetBlockInfoResponse, error)
 }
 
 type gApiClient struct {
@@ -103,9 +107,45 @@ func (c *gApiClient) GetLog(ctx context.Context, in *GetLogRequest, opts ...grpc
 	return out, nil
 }
 
+func (c *gApiClient) GetContainerList(ctx context.Context, in *GetContainerListRequest, opts ...grpc.CallOption) (*GetContainerListResponse, error) {
+	out := new(GetContainerListResponse)
+	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/GetContainerList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gApiClient) GetInfo(ctx context.Context, in *GetInfoRequest, opts ...grpc.CallOption) (*GetInfoResponse, error) {
+	out := new(GetInfoResponse)
+	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/GetInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *gApiClient) CheckStatus(ctx context.Context, in *CoreStateRequest, opts ...grpc.CallOption) (*CoreStateResponse, error) {
 	out := new(CoreStateResponse)
 	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/CheckStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gApiClient) GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*GetAccountResponse, error) {
+	out := new(GetAccountResponse)
+	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/GetAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gApiClient) GetBlockInfo(ctx context.Context, in *GetBlockInfoRequest, opts ...grpc.CallOption) (*GetBlockInfoResponse, error) {
+	out := new(GetBlockInfoResponse)
+	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/GetBlockInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +163,11 @@ type GApiServer interface {
 	ControlContainer(context.Context, *ControlContainerRequest) (*ControlContainerResponse, error)
 	ReleaseContainer(context.Context, *ReleaseRequest) (*ReleaseResponse, error)
 	GetLog(context.Context, *GetLogRequest) (*GetLogResponse, error)
+	GetContainerList(context.Context, *GetContainerListRequest) (*GetContainerListResponse, error)
+	GetInfo(context.Context, *GetInfoRequest) (*GetInfoResponse, error)
 	CheckStatus(context.Context, *CoreStateRequest) (*CoreStateResponse, error)
+	GetAccount(context.Context, *GetAccountRequest) (*GetAccountResponse, error)
+	GetBlockInfo(context.Context, *GetBlockInfoRequest) (*GetBlockInfoResponse, error)
 	mustEmbedUnimplementedGApiServer()
 }
 
@@ -152,8 +196,20 @@ func (UnimplementedGApiServer) ReleaseContainer(context.Context, *ReleaseRequest
 func (UnimplementedGApiServer) GetLog(context.Context, *GetLogRequest) (*GetLogResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLog not implemented")
 }
+func (UnimplementedGApiServer) GetContainerList(context.Context, *GetContainerListRequest) (*GetContainerListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetContainerList not implemented")
+}
+func (UnimplementedGApiServer) GetInfo(context.Context, *GetInfoRequest) (*GetInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInfo not implemented")
+}
 func (UnimplementedGApiServer) CheckStatus(context.Context, *CoreStateRequest) (*CoreStateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckStatus not implemented")
+}
+func (UnimplementedGApiServer) GetAccount(context.Context, *GetAccountRequest) (*GetAccountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAccount not implemented")
+}
+func (UnimplementedGApiServer) GetBlockInfo(context.Context, *GetBlockInfoRequest) (*GetBlockInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBlockInfo not implemented")
 }
 func (UnimplementedGApiServer) mustEmbedUnimplementedGApiServer() {}
 
@@ -294,6 +350,42 @@ func _GApi_GetLog_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GApi_GetContainerList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetContainerListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GApiServer).GetContainerList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ghostnet.rpc.GApi/GetContainerList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GApiServer).GetContainerList(ctx, req.(*GetContainerListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GApi_GetInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GApiServer).GetInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ghostnet.rpc.GApi/GetInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GApiServer).GetInfo(ctx, req.(*GetInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GApi_CheckStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CoreStateRequest)
 	if err := dec(in); err != nil {
@@ -308,6 +400,42 @@ func _GApi_CheckStatus_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GApiServer).CheckStatus(ctx, req.(*CoreStateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GApi_GetAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GApiServer).GetAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ghostnet.rpc.GApi/GetAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GApiServer).GetAccount(ctx, req.(*GetAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GApi_GetBlockInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBlockInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GApiServer).GetBlockInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ghostnet.rpc.GApi/GetBlockInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GApiServer).GetBlockInfo(ctx, req.(*GetBlockInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -348,8 +476,24 @@ var GApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GApi_GetLog_Handler,
 		},
 		{
+			MethodName: "GetContainerList",
+			Handler:    _GApi_GetContainerList_Handler,
+		},
+		{
+			MethodName: "GetInfo",
+			Handler:    _GApi_GetInfo_Handler,
+		},
+		{
 			MethodName: "CheckStatus",
 			Handler:    _GApi_CheckStatus_Handler,
+		},
+		{
+			MethodName: "GetAccount",
+			Handler:    _GApi_GetAccount_Handler,
+		},
+		{
+			MethodName: "GetBlockInfo",
+			Handler:    _GApi_GetBlockInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

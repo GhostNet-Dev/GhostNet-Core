@@ -2,6 +2,9 @@ syntax = "proto3";
 package ghostnet.rpc;
 option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/rpc";
 
+import "block.proto";
+import "user.proto";
+
 
 service GApi {
     rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {}
@@ -11,7 +14,11 @@ service GApi {
     rpc ControlContainer (ControlContainerRequest) returns (ControlContainerResponse) {}
     rpc ReleaseContainer (ReleaseRequest) returns (ReleaseResponse) {}
     rpc GetLog (GetLogRequest) returns (GetLogResponse) {}
+    rpc GetContainerList (GetContainerListRequest) returns (GetContainerListResponse) {}
+    rpc GetInfo (GetInfoRequest) returns (GetInfoResponse) {}
     rpc CheckStatus (CoreStateRequest) returns (CoreStateResponse) {}
+    rpc GetAccount (GetAccountRequest) returns (GetAccountResponse) {}
+    rpc GetBlockInfo (GetBlockInfoRequest) returns (GetBlockInfoResponse) {}
 }
 
 enum ContainerControlType {
@@ -20,13 +27,58 @@ enum ContainerControlType {
     StopSuspend = 2;
 }
 
+message GetBlockInfoRequest {
+    uint32 Id = 1;
+    uint32 BlockId = 2;
+}
+message GetBlockInfoResponse {
+    uint32 Id = 1;
+    uint32 BlockId = 2;
+    ptypes.PairedBlocks Pair = 3;
+}
+
+message GetAccountRequest {
+    uint32 Id = 1;
+    string Username = 2;
+}
+message GetAccountResponse {
+    uint32 Id = 1;
+    ptypes.GhostUser User = 2;
+}
+
+message GetInfoRequest {}
+
+message GetInfoResponse {
+    uint32 totalContainer = 1;
+}
+
+message GetContainerListRequest {
+    uint32 Id = 1;
+}
+
+message GetContainerListResponse{
+    uint32 Id = 1;
+    string PubKey = 2;
+    ContainerControlType State = 3;
+    string Username = 4;
+    int32 PID = 5;
+    string Port = 6;
+    bytes Info = 7;
+}
+
 message CreateContainerRequest {
     string username = 1;
-    string password = 2;
+    bytes password = 2;
+    string ip = 3;
+    string port = 4;
 }
 
 message CreateContainerResponse { bool result = 1;}
-message CreateGenesisRequest { string password = 1;}
+message CreateGenesisRequest { 
+    uint32 id = 1; 
+    bytes password = 2;
+}
+
 message CreateGenesisResponse { bool result = 1;}
 message ControlContainerRequest { 
     uint32 id = 1; 
@@ -42,8 +94,9 @@ message GetLogResponse {
 }
 
 message PrivateKeyRequest {
-    string username = 1;
-    string password = 2;
+    uint32 id = 1; 
+    string username = 2;
+    bytes password = 3;
 }
 
 message PrivateKeyResponse {
@@ -53,7 +106,7 @@ message PrivateKeyResponse {
 
 message CreateAccountRequest {
     string username = 1;
-    string password = 2;
+    bytes password = 2;
 }
 
 message CreateAccountResponse {
