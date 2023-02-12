@@ -23,7 +23,7 @@ var (
 	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port)
 	packetFactory  = p2p.NewPacketFactory()
 	blockContainer = store.NewBlockContainer("sqlite3")
-	config         = gconfig.DefaultConfig()
+	config         = gconfig.NewDefaultConfig()
 	from, _        = net.ResolveUDPAddr("udp", ghostIp.Ip+":"+ghostIp.Port)
 	owner          = gcrypto.GenerateKeyPair()
 
@@ -147,7 +147,7 @@ func TestSearchMasterPubKey(t *testing.T) {
 	sq := &packets.SearchGhostPubKeySq{
 		Master:   p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
 		Nickname: "test",
-		PubKey: master.owner.GetPubAddress(),
+		PubKey:   master.owner.GetPubAddress(),
 	}
 
 	sendData, err := proto.Marshal(sq)

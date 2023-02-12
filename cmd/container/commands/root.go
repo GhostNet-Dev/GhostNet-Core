@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -16,7 +14,7 @@ import (
 )
 
 var (
-	cfg      = gconfig.DefaultConfig()
+	cfg      = gconfig.NewDefaultConfig()
 	password string
 )
 
@@ -33,11 +31,7 @@ func RootCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			// Working with OutOrStdout/OutOrStderr allows us to unit test our command easier
 			cfg.Password = grpc.PasswordToSha256(password)
-			if port, err := strconv.Atoi(cfg.Port); err != nil {
-				log.Fatal(err)
-			} else {
-				cfg.GrpcPort = fmt.Sprint(port + 1)
-			}
+
 			fmt.Printf("Start GhostNet Node Addr = %s:%s", cfg.Ip, cfg.Port)
 			container := maincontainer.NewMainContainer(cfg)
 			container.StartContainer()
@@ -54,6 +48,7 @@ func RootCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&cfg.DbSchemePath, "dbschemepath", "", "", "Db Scheme File Path")
 	cmd.Flags().BoolVarP(&cfg.StandaloneMode, "standalonemode", "", false, "Single Node Mode")
 
+	cmd.MarkFlagRequired("username")
 	return cmd
 }
 func initializeConfig(cmd *cobra.Command) error {

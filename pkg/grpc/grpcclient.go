@@ -35,7 +35,7 @@ func PasswordToSha256(password string) []byte {
 func (client *GrpcClient) ConnectServer() {
 	conn, err := grpc.Dial(client.GrpcIp+":"+client.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Printf("did not connect: %v", err)
 	}
 	client.c = rpc.NewGApiClient(conn)
 	client.conn = conn
@@ -50,7 +50,7 @@ func (client *GrpcClient) GetInfo() *rpc.GetInfoResponse {
 	defer cancel()
 	r, err := client.c.GetInfo(ctx, &rpc.GetInfoRequest{})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
 	}
 	return r
 }
@@ -60,7 +60,7 @@ func (client *GrpcClient) GetContainerList(id uint32) *rpc.GetContainerListRespo
 	defer cancel()
 	r, err := client.c.GetContainerList(ctx, &rpc.GetContainerListRequest{Id: id})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
 	}
 	return r
 }
@@ -70,7 +70,8 @@ func (client *GrpcClient) CreateAccount(username, password string) bool {
 	defer cancel()
 	r, err := client.c.CreateAccount(ctx, &rpc.CreateAccountRequest{Username: username, Password: PasswordToSha256(password)})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
+		return false
 	}
 	return r.Result
 }
@@ -84,7 +85,8 @@ func (client *GrpcClient) CreateGenesis(id uint32, password []byte) bool {
 	defer cancel()
 	r, err := client.c.CreateGenesis(ctx, &rpc.CreateGenesisRequest{Id: id, Password: password})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
+		return false
 	}
 	return r.Result
 }
@@ -94,9 +96,22 @@ func (client *GrpcClient) GetPrivateKey(id uint32, username, password string) ([
 	defer cancel()
 	r, err := client.c.GetPrivateKey(ctx, &rpc.PrivateKeyRequest{Id: id, Username: username, Password: PasswordToSha256(password)})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
+		return nil, false
 	}
 	return r.PrivateKey, r.Result
+}
+
+func (client *GrpcClient) ForkContainer(username, password, ip, port string) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := client.c.ForkContainer(ctx, &rpc.ForkContainerRequest{
+		Username: username, Password: PasswordToSha256(password), Ip: ip, Port: port})
+	if err != nil {
+		log.Printf("could not connect: %v", err)
+		return false
+	}
+	return r.Result
 }
 
 func (client *GrpcClient) CreateContainer(username, password, ip, port string) bool {
@@ -105,9 +120,23 @@ func (client *GrpcClient) CreateContainer(username, password, ip, port string) b
 	r, err := client.c.CreateContainer(ctx, &rpc.CreateContainerRequest{
 		Username: username, Password: PasswordToSha256(password), Ip: ip, Port: port})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
+		return false
 	}
 	return r.Result
+}
+
+func (client *GrpcClient) LoginContainer(password []byte, username, ip, port string) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := client.c.LoginContainer(ctx, &rpc.LoginRequest{
+		Username: username, Password: password, Ip: ip, Port: port})
+	if err != nil {
+		log.Printf("could not connect: %v", err)
+		return false
+	}
+	return r.Result
+
 }
 
 func (client *GrpcClient) ControlContainer(id uint32, control rpc.ContainerControlType) bool {
@@ -115,7 +144,8 @@ func (client *GrpcClient) ControlContainer(id uint32, control rpc.ContainerContr
 	defer cancel()
 	r, err := client.c.ControlContainer(ctx, &rpc.ControlContainerRequest{Id: id, Control: control})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
+		return false
 	}
 	return r.Result
 }
@@ -125,7 +155,8 @@ func (client *GrpcClient) ReleaseContainer(id uint32) bool {
 	defer cancel()
 	r, err := client.c.ReleaseContainer(ctx, &rpc.ReleaseRequest{Id: id})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
+		return false
 	}
 	return r.Result
 }
@@ -135,7 +166,7 @@ func (client *GrpcClient) GetLog(id uint32) []byte {
 	defer cancel()
 	r, err := client.c.GetLog(ctx, &rpc.GetLogRequest{Id: id})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
 	}
 	return r.Logbuf
 }
@@ -145,7 +176,7 @@ func (client *GrpcClient) CheckStatus(id uint32) uint32 {
 	defer cancel()
 	r, err := client.c.CheckStatus(ctx, &rpc.CoreStateRequest{Id: id})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
 	}
 	return r.State
 }
@@ -155,7 +186,7 @@ func (client *GrpcClient) GetAccount(id uint32) []*ptypes.GhostUser {
 	defer cancel()
 	r, err := client.c.GetAccount(ctx, &rpc.GetAccountRequest{Id: id})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
 	}
 	return r.User
 }
@@ -165,7 +196,7 @@ func (client *GrpcClient) GetBlockInfo(id, blockId uint32) *ptypes.PairedBlocks 
 	defer cancel()
 	r, err := client.c.GetBlockInfo(ctx, &rpc.GetBlockInfoRequest{Id: id, BlockId: blockId})
 	if err != nil {
-		log.Fatalf("could not connect: %v", err)
+		log.Printf("could not connect: %v", err)
 	}
 	return r.Pair
 }

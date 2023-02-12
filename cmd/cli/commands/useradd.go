@@ -26,6 +26,8 @@ func UserAddCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&username, "username", "u", "", "Ghost Account Nickname")
 	cmd.Flags().StringVarP(&password, "password", "p", "", "Ghost Account Password")
 	cmd.Flags().Uint32VarP(&id, "id", "", 0, "Container Id, if not select, show all container")
+	cmd.MarkFlagRequired("username")
+	cmd.MarkFlagRequired("password")
 	return cmd
 }
 

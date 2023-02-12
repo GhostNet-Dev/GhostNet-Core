@@ -1,6 +1,8 @@
 package gapi
 
 import (
+	"log"
+
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
@@ -18,6 +20,7 @@ type GhostApi struct {
 	blockContainer *store.BlockContainer
 	loadWallet     *bootloader.LoadWallet
 	config         *gconfig.GConfig
+	eventListener  map[rpc.ContainerControlType][]func(rpc.ContainerControlType)
 }
 
 func NewGhostApi(grpcServer *grpc.GrpcServer, block *blocks.Blocks,
@@ -29,13 +32,19 @@ func NewGhostApi(grpcServer *grpc.GrpcServer, block *blocks.Blocks,
 		blockContainer: blockContainer,
 		loadWallet:     loadWallet,
 		config:         config,
+		eventListener:  make(map[rpc.ContainerControlType][]func(rpc.ContainerControlType)),
 	}
 
 	grpcServer.CreateGenesisHandler = ghostApi.CreateGenesisHandler
 	grpcServer.ControlContainerHandler = ghostApi.ControlContainerHandler
+	grpcServer.LoginContainerHandler = ghostApi.LoginContainerHandler
 	grpcServer.GetLogHandler = ghostApi.GetLogHandler
 	grpcServer.GetBlockInfoHandler = ghostApi.GetBlockInfoHandler
 	return ghostApi
+}
+
+func (gApi *GhostApi) RegisterEventListener(control rpc.ContainerControlType, handler func(rpc.ContainerControlType)) {
+	gApi.eventListener[control] = append(gApi.eventListener[control], handler)
 }
 
 func (gApi *GhostApi) CreateGenesisHandler(id uint32, password []byte) bool {
@@ -45,8 +54,25 @@ func (gApi *GhostApi) CreateGenesisHandler(id uint32, password []byte) bool {
 	return false
 }
 
+func (gApi *GhostApi) LoginContainerHandler(password []byte, username, ip, port string) bool {
+	if w, _ := gApi.loadWallet.OpenWallet(username, password); w == nil {
+		log.Println("Login fail user = ", username)
+		return false
+	}
+	gApi.config.Username = username
+	gApi.config.Password = password
+	control := rpc.ContainerControlType_StartResume
+	for _, handler := range gApi.eventListener[control] {
+		handler(control)
+	}
+	return true
+}
+
 func (gApi *GhostApi) ControlContainerHandler(id uint32, control rpc.ContainerControlType) bool {
-	return false
+	for _, handler := range gApi.eventListener[control] {
+		handler(control)
+	}
+	return true
 }
 
 func (gApi *GhostApi) GetLogHandler(id uint32) []byte {

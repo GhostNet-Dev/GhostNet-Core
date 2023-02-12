@@ -18,6 +18,7 @@ var (
 	password        string
 	id              uint32
 	rpcPort         string
+	defaultCfg      = gconfig.NewDefaultConfig()
 )
 
 // RootCmd root command binding
@@ -43,7 +44,6 @@ func NewRootCommand() *cobra.Command {
 }
 
 func initializeConfig(cmd *cobra.Command) error {
-	var defaultCfg = gconfig.DefaultConfig()
 	v := viper.New()
 	v.SetConfigName(defaultCfg.DefaultConfigFilename)
 	v.AddConfigPath(".")
@@ -66,7 +66,6 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) {
 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
 		if strings.Contains(f.Name, "-") {
 			envVarSuffix := strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))
-			var defaultCfg = gconfig.DefaultConfig()
 			v.BindEnv(f.Name, fmt.Sprintf("%s_%s", defaultCfg.EnvPrefix, envVarSuffix))
 		}
 

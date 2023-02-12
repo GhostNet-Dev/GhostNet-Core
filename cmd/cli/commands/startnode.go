@@ -32,10 +32,10 @@ func StartNodeCommand() *cobra.Command {
 func ExecuteNode() {
 	fmt.Printf("execute node port = %s\n", port)
 	args := []string{
-		"-port=" + port,
-		"-ip=" + host,
-		"-username=" + username,
-		"-password=" + password,
+		"--port=" + port,
+		"--ip=" + host,
+		"--username=" + username,
+		"--password=" + password,
 	}
 	execCmd := exec.Command(ghostDeamonName, args...)
 	if err := execCmd.Start(); err != nil {

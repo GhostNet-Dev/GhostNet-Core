@@ -18,10 +18,6 @@ const (
 	DefaultStandaloneMode = false
 )
 
-var (
-	GlobalConfig *GConfig
-)
-
 type GConfig struct {
 	GhostVersion uint32
 	Username     string
@@ -41,23 +37,20 @@ type GConfig struct {
 	StandaloneMode        bool
 }
 
-func DefaultConfig() *GConfig {
-	if GlobalConfig == nil {
-		GlobalConfig = &GConfig{
-			GhostVersion:          1,
-			DefaultConfigFilename: DefaultConfigFilename,
-			EnvPrefix:             EnvPrefix,
-			Ip:                    DefaultIp,
-			Port:                  DefaultPort,
-			GrpcPort:              DefaultGrpcPort,
-			RootPath:              DefaultRootPath,
-			SqlPath:               DefaultSqlPath,
-			FilePath:              DefaultFilePath,
-			DbName:                DefaultDbName,
-			DbScheme:              DefaultDbScheme,
-			DbSchemePath:          DefaultDbSchemePath,
-			StandaloneMode:        DefaultStandaloneMode,
-		}
+func NewDefaultConfig() *GConfig {
+	return &GConfig{
+		GhostVersion:          1,
+		DefaultConfigFilename: DefaultConfigFilename,
+		EnvPrefix:             EnvPrefix,
+		Ip:                    DefaultIp,
+		Port:                  DefaultPort,
+		GrpcPort:              DefaultGrpcPort,
+		RootPath:              DefaultRootPath,
+		SqlPath:               DefaultSqlPath,
+		FilePath:              DefaultFilePath,
+		DbName:                DefaultDbName,
+		DbScheme:              DefaultDbScheme,
+		DbSchemePath:          DefaultDbSchemePath,
+		StandaloneMode:        DefaultStandaloneMode,
 	}
-	return GlobalConfig
 }

@@ -27,6 +27,8 @@ func NewGrpcHandler(loadWallet *bootloader.LoadWallet, containers *Containers, g
 	}
 	grpcServer.CreateAccountHandler = gHandler.CreateAccountHandler
 	grpcServer.CreateGenesisHandler = gHandler.CreateGenesisHandler
+	grpcServer.LoginContainerHandler = gHandler.LoginContainerHandler
+	grpcServer.ForkContainerHandler = gHandler.ForkContainerHandler
 	grpcServer.CreateContainerHandler = gHandler.CreateContainerHandler
 	grpcServer.ControlContainerHandler = gHandler.ControlContainerHandler
 	grpcServer.ReleaseContainerHandler = gHandler.ReleaseContainerHandler
@@ -61,9 +63,9 @@ func (ghandler *GrpcHandler) GetContainerListHandler(id uint32) *rpc.GetContaine
 }
 
 func (ghandler *GrpcHandler) CreateAccountHandler(password []byte, username string) bool {
-	_, err := ghandler.loadWallet.OpenWallet(username, password)
-	if err != nil {
-		w := ghandler.loadWallet.CreateWallet(username, password)
+	w, _ := ghandler.loadWallet.OpenWallet(username, password)
+	if w == nil {
+		w = ghandler.loadWallet.CreateWallet(username, password)
 		ghandler.loadWallet.SaveWallet(w, password)
 	} else {
 		log.Print("already exist account")
@@ -92,8 +94,29 @@ func (ghandler *GrpcHandler) GetPrivateKeyHandler(id uint32, password []byte, us
 	return cipherKey, true
 }
 
+func (ghandler *GrpcHandler) LoginContainerHandler(password []byte, username, ip, port string) bool {
+	if w, err := ghandler.loadWallet.OpenWallet(username, password); w == nil {
+		log.Print("not exist account = ", username, "or err = ", err)
+		return false
+	}
+	return ghandler.containers.LoginContainer(password, username, ip, port) != nil
+}
+
+func (ghandler *GrpcHandler) ForkContainerHandler(password []byte, username, ip, port string) bool {
+	log.Print("CreateContainerHandler")
+	if w, err := ghandler.loadWallet.OpenWallet(username, password); w == nil {
+		log.Print("not exist account = ", username, "or err = ", err)
+		return false
+	}
+	return ghandler.containers.ForkContainer(password, username, ip, port) != nil
+}
+
 func (ghandler *GrpcHandler) CreateContainerHandler(password []byte, username, ip, port string) bool {
 	log.Print("CreateContainerHandler")
+	if w, err := ghandler.loadWallet.OpenWallet(username, password); w == nil {
+		log.Print("not exist account = ", username, "or err = ", err)
+		return false
+	}
 	return ghandler.containers.CreateContainer(password, username, ip, port) != nil
 }
 

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	cfg      = gconfig.DefaultConfig()
+	cfg      = gconfig.NewDefaultConfig()
 	password string
 )
 

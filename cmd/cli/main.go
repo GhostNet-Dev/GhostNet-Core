@@ -36,8 +36,9 @@ func main() {
 		cmd.StartNodeCommand(),
 		cmd.SuspendCommand(),
 		cmd.UserAddCommand(),
-		cmd.GetPrivateKeyCommand(),
 		cmd.CreateContainerCommand(),
+		cmd.ForkContainerCommand(),
+		cmd.GetPrivateKeyCommand(),
 		cmd.GetBlockInfoCommand(),
 		cmd.GetAccountListCommand(),
 	)

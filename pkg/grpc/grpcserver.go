@@ -18,6 +18,8 @@ type GrpcServer struct {
 	rpc.UnimplementedGApiServer
 	CreateAccountHandler    func(passwdHash []byte, username string) bool
 	CreateGenesisHandler    func(id uint32, passwdHash []byte) bool
+	LoginContainerHandler   func(passwdHash []byte, username, ip, port string) bool
+	ForkContainerHandler    func(passwdHash []byte, username, ip, port string) bool
 	CreateContainerHandler  func(passwdHash []byte, username, ip, port string) bool
 	ControlContainerHandler func(id uint32, control rpc.ContainerControlType) bool
 	ReleaseContainerHandler func(id uint32) bool
@@ -58,14 +60,19 @@ func (s *GrpcServer) GetInfo(ctx context.Context, in *rpc.GetInfoRequest) (*rpc.
 	return response, nil
 }
 
-func (s *GrpcServer) GetContainerList(ctx context.Context, in *rpc.GetContainerListRequest) (*rpc.GetContainerListResponse, error) {
-	var response *rpc.GetContainerListResponse = nil
-	if s.GetContainerListHandler != nil {
-		response = s.GetContainerListHandler(in.Id)
-	} else {
-		response = &rpc.GetContainerListResponse{Id: in.Id}
+func (s *GrpcServer) LoginContainer(ctx context.Context, in *rpc.LoginRequest) (*rpc.LoginResponse, error) {
+	result := false
+	if s.LoginContainerHandler != nil {
+		result = s.LoginContainerHandler(in.Password, in.Username, in.Ip, in.Port)
 	}
-	return response, nil
+	return &rpc.LoginResponse{Result: result}, nil
+}
+
+func (s *GrpcServer) GetContainerList(ctx context.Context, in *rpc.GetContainerListRequest) (*rpc.GetContainerListResponse, error) {
+	if s.GetContainerListHandler != nil {
+		return s.GetContainerListHandler(in.Id), nil
+	}
+	return &rpc.GetContainerListResponse{Id: in.Id}, nil
 }
 
 func (s *GrpcServer) GetLog(ctx context.Context, in *rpc.GetLogRequest) (*rpc.GetLogResponse, error) {
@@ -90,6 +97,14 @@ func (s *GrpcServer) ControlContainer(ctx context.Context, in *rpc.ControlContai
 		result = s.ControlContainerHandler(in.Id, in.Control)
 	}
 	return &rpc.ControlContainerResponse{Result: result}, nil
+}
+
+func (s *GrpcServer) ForkContainer(ctx context.Context, in *rpc.ForkContainerRequest) (*rpc.ForkContainerResponse, error) {
+	result := false
+	if s.ForkContainerHandler != nil {
+		result = s.ForkContainerHandler(in.Password, in.Username, in.Ip, in.Port)
+	}
+	return &rpc.ForkContainerResponse{Result: result}, nil
 }
 
 func (s *GrpcServer) CreateContainer(ctx context.Context, in *rpc.CreateContainerRequest) (*rpc.CreateContainerResponse, error) {

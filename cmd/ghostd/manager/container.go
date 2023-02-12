@@ -25,6 +25,10 @@ func NewContainer(id uint32, ip, port string) *Container {
 	if portInt, err := strconv.Atoi(port); err != nil {
 		log.Fatal(err)
 	} else {
+		if portInt%2 == 0 {
+			log.Println("the port number must be an odd number ")
+			return nil
+		}
 		grpcPort = fmt.Sprint(portInt + 1)
 	}
 
@@ -32,8 +36,4 @@ func NewContainer(id uint32, ip, port string) *Container {
 		Id: id, Ip: ip, Port: port,
 		Client: grpc.NewGrpcClient(ip, grpcPort),
 	}
-}
-
-func (c *Container) ConnectServer() {
-	c.Client.ConnectServer()
 }

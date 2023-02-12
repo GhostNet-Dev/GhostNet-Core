@@ -27,7 +27,7 @@ var (
 	nickname = "test"
 	w        = gcrypto.NewWallet(nickname, Miner, ghostIp, nil)
 
-	config         = gconfig.DefaultConfig()
+	config         = gconfig.NewDefaultConfig()
 	gScript        = gvm.NewGScript()
 	gVm            = gvm.NewGVM()
 	blockContainer = store.NewBlockContainer("sqlite3")

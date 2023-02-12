@@ -30,10 +30,13 @@ func (loadWallet *LoadWallet) CreateWallet(nickname string, password []byte) *gc
 
 func (loadWallet *LoadWallet) OpenWallet(nickname string, password []byte) (*gcrypto.Wallet, error) {
 	cipherPivateKey, err := loadWallet.db.SelectEntry(loadWallet.table, []byte(nickname))
-	if err != nil {
+	if err != nil || cipherPivateKey == nil {
 		return nil, err
 	}
 	der := loadWallet.Decryption(password, cipherPivateKey)
+	if der == nil {
+		return nil, errors.New("password is wrong")
+	}
 	keyPair := &ptypes.KeyPair{}
 	if err := proto.Unmarshal(der, keyPair); err != nil {
 		log.Fatal(err)
@@ -120,7 +123,8 @@ func decrypt(b cipher.Block, ciphertext []byte) []byte {
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil
 	}
 	return plaintext
 }

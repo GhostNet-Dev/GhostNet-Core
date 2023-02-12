@@ -12,7 +12,7 @@ import (
 var (
 	server = NewGrpcServer()
 	client = NewGrpcClient("localhost", "50229")
-	cfg    = gconfig.DefaultConfig()
+	cfg    = gconfig.NewDefaultConfig()
 )
 
 func PreCondition() {

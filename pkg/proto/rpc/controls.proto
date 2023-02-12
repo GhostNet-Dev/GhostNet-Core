@@ -10,11 +10,15 @@ service GApi {
     rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {}
     rpc CreateGenesis (CreateGenesisRequest) returns (CreateGenesisResponse) {}
     rpc GetPrivateKey (PrivateKeyRequest) returns (PrivateKeyResponse) {}
+
+    rpc LoginContainer (LoginRequest) returns (LoginResponse) {}
+    rpc ForkContainer (ForkContainerRequest) returns (ForkContainerResponse) {}
     rpc CreateContainer (CreateContainerRequest) returns (CreateContainerResponse) {}
     rpc ControlContainer (ControlContainerRequest) returns (ControlContainerResponse) {}
     rpc ReleaseContainer (ReleaseRequest) returns (ReleaseResponse) {}
-    rpc GetLog (GetLogRequest) returns (GetLogResponse) {}
     rpc GetContainerList (GetContainerListRequest) returns (GetContainerListResponse) {}
+
+    rpc GetLog (GetLogRequest) returns (GetLogResponse) {}
     rpc GetInfo (GetInfoRequest) returns (GetInfoResponse) {}
     rpc CheckStatus (CoreStateRequest) returns (CoreStateResponse) {}
     rpc GetAccount (GetAccountRequest) returns (GetAccountResponse) {}
@@ -25,6 +29,18 @@ enum ContainerControlType {
     Reserved = 0;
     StartResume = 1;
     StopSuspend = 2;
+}
+
+message LoginRequest {
+    uint32 Id = 1;
+    string Ip = 2;
+    string Port = 3;
+    string Username = 4;
+    bytes Password = 5;
+}
+
+message LoginResponse {
+    bool Result = 1;
 }
 
 message GetBlockInfoRequest {
@@ -64,6 +80,15 @@ message GetContainerListResponse{
     string Port = 6;
     bytes Info = 7;
 }
+
+message ForkContainerRequest {
+    string username = 1;
+    bytes password = 2;
+    string ip = 3;
+    string port = 4;
+}
+
+message ForkContainerResponse { bool result = 1;}
 
 message CreateContainerRequest {
     string username = 1;

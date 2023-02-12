@@ -25,11 +25,13 @@ type GApiClient interface {
 	CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*CreateAccountResponse, error)
 	CreateGenesis(ctx context.Context, in *CreateGenesisRequest, opts ...grpc.CallOption) (*CreateGenesisResponse, error)
 	GetPrivateKey(ctx context.Context, in *PrivateKeyRequest, opts ...grpc.CallOption) (*PrivateKeyResponse, error)
+	LoginContainer(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	ForkContainer(ctx context.Context, in *ForkContainerRequest, opts ...grpc.CallOption) (*ForkContainerResponse, error)
 	CreateContainer(ctx context.Context, in *CreateContainerRequest, opts ...grpc.CallOption) (*CreateContainerResponse, error)
 	ControlContainer(ctx context.Context, in *ControlContainerRequest, opts ...grpc.CallOption) (*ControlContainerResponse, error)
 	ReleaseContainer(ctx context.Context, in *ReleaseRequest, opts ...grpc.CallOption) (*ReleaseResponse, error)
-	GetLog(ctx context.Context, in *GetLogRequest, opts ...grpc.CallOption) (*GetLogResponse, error)
 	GetContainerList(ctx context.Context, in *GetContainerListRequest, opts ...grpc.CallOption) (*GetContainerListResponse, error)
+	GetLog(ctx context.Context, in *GetLogRequest, opts ...grpc.CallOption) (*GetLogResponse, error)
 	GetInfo(ctx context.Context, in *GetInfoRequest, opts ...grpc.CallOption) (*GetInfoResponse, error)
 	CheckStatus(ctx context.Context, in *CoreStateRequest, opts ...grpc.CallOption) (*CoreStateResponse, error)
 	GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*GetAccountResponse, error)
@@ -71,6 +73,24 @@ func (c *gApiClient) GetPrivateKey(ctx context.Context, in *PrivateKeyRequest, o
 	return out, nil
 }
 
+func (c *gApiClient) LoginContainer(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/LoginContainer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gApiClient) ForkContainer(ctx context.Context, in *ForkContainerRequest, opts ...grpc.CallOption) (*ForkContainerResponse, error) {
+	out := new(ForkContainerResponse)
+	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/ForkContainer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *gApiClient) CreateContainer(ctx context.Context, in *CreateContainerRequest, opts ...grpc.CallOption) (*CreateContainerResponse, error) {
 	out := new(CreateContainerResponse)
 	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/CreateContainer", in, out, opts...)
@@ -98,18 +118,18 @@ func (c *gApiClient) ReleaseContainer(ctx context.Context, in *ReleaseRequest, o
 	return out, nil
 }
 
-func (c *gApiClient) GetLog(ctx context.Context, in *GetLogRequest, opts ...grpc.CallOption) (*GetLogResponse, error) {
-	out := new(GetLogResponse)
-	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/GetLog", in, out, opts...)
+func (c *gApiClient) GetContainerList(ctx context.Context, in *GetContainerListRequest, opts ...grpc.CallOption) (*GetContainerListResponse, error) {
+	out := new(GetContainerListResponse)
+	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/GetContainerList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *gApiClient) GetContainerList(ctx context.Context, in *GetContainerListRequest, opts ...grpc.CallOption) (*GetContainerListResponse, error) {
-	out := new(GetContainerListResponse)
-	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/GetContainerList", in, out, opts...)
+func (c *gApiClient) GetLog(ctx context.Context, in *GetLogRequest, opts ...grpc.CallOption) (*GetLogResponse, error) {
+	out := new(GetLogResponse)
+	err := c.cc.Invoke(ctx, "/ghostnet.rpc.GApi/GetLog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -159,11 +179,13 @@ type GApiServer interface {
 	CreateAccount(context.Context, *CreateAccountRequest) (*CreateAccountResponse, error)
 	CreateGenesis(context.Context, *CreateGenesisRequest) (*CreateGenesisResponse, error)
 	GetPrivateKey(context.Context, *PrivateKeyRequest) (*PrivateKeyResponse, error)
+	LoginContainer(context.Context, *LoginRequest) (*LoginResponse, error)
+	ForkContainer(context.Context, *ForkContainerRequest) (*ForkContainerResponse, error)
 	CreateContainer(context.Context, *CreateContainerRequest) (*CreateContainerResponse, error)
 	ControlContainer(context.Context, *ControlContainerRequest) (*ControlContainerResponse, error)
 	ReleaseContainer(context.Context, *ReleaseRequest) (*ReleaseResponse, error)
-	GetLog(context.Context, *GetLogRequest) (*GetLogResponse, error)
 	GetContainerList(context.Context, *GetContainerListRequest) (*GetContainerListResponse, error)
+	GetLog(context.Context, *GetLogRequest) (*GetLogResponse, error)
 	GetInfo(context.Context, *GetInfoRequest) (*GetInfoResponse, error)
 	CheckStatus(context.Context, *CoreStateRequest) (*CoreStateResponse, error)
 	GetAccount(context.Context, *GetAccountRequest) (*GetAccountResponse, error)
@@ -184,6 +206,12 @@ func (UnimplementedGApiServer) CreateGenesis(context.Context, *CreateGenesisRequ
 func (UnimplementedGApiServer) GetPrivateKey(context.Context, *PrivateKeyRequest) (*PrivateKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPrivateKey not implemented")
 }
+func (UnimplementedGApiServer) LoginContainer(context.Context, *LoginRequest) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LoginContainer not implemented")
+}
+func (UnimplementedGApiServer) ForkContainer(context.Context, *ForkContainerRequest) (*ForkContainerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ForkContainer not implemented")
+}
 func (UnimplementedGApiServer) CreateContainer(context.Context, *CreateContainerRequest) (*CreateContainerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateContainer not implemented")
 }
@@ -193,11 +221,11 @@ func (UnimplementedGApiServer) ControlContainer(context.Context, *ControlContain
 func (UnimplementedGApiServer) ReleaseContainer(context.Context, *ReleaseRequest) (*ReleaseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReleaseContainer not implemented")
 }
-func (UnimplementedGApiServer) GetLog(context.Context, *GetLogRequest) (*GetLogResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLog not implemented")
-}
 func (UnimplementedGApiServer) GetContainerList(context.Context, *GetContainerListRequest) (*GetContainerListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContainerList not implemented")
+}
+func (UnimplementedGApiServer) GetLog(context.Context, *GetLogRequest) (*GetLogResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLog not implemented")
 }
 func (UnimplementedGApiServer) GetInfo(context.Context, *GetInfoRequest) (*GetInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInfo not implemented")
@@ -278,6 +306,42 @@ func _GApi_GetPrivateKey_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GApi_LoginContainer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GApiServer).LoginContainer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ghostnet.rpc.GApi/LoginContainer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GApiServer).LoginContainer(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GApi_ForkContainer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ForkContainerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GApiServer).ForkContainer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ghostnet.rpc.GApi/ForkContainer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GApiServer).ForkContainer(ctx, req.(*ForkContainerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GApi_CreateContainer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateContainerRequest)
 	if err := dec(in); err != nil {
@@ -332,24 +396,6 @@ func _GApi_ReleaseContainer_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GApi_GetLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLogRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GApiServer).GetLog(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ghostnet.rpc.GApi/GetLog",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GApiServer).GetLog(ctx, req.(*GetLogRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _GApi_GetContainerList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetContainerListRequest)
 	if err := dec(in); err != nil {
@@ -364,6 +410,24 @@ func _GApi_GetContainerList_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GApiServer).GetContainerList(ctx, req.(*GetContainerListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GApi_GetLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GApiServer).GetLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ghostnet.rpc.GApi/GetLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GApiServer).GetLog(ctx, req.(*GetLogRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -460,6 +524,14 @@ var GApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GApi_GetPrivateKey_Handler,
 		},
 		{
+			MethodName: "LoginContainer",
+			Handler:    _GApi_LoginContainer_Handler,
+		},
+		{
+			MethodName: "ForkContainer",
+			Handler:    _GApi_ForkContainer_Handler,
+		},
+		{
 			MethodName: "CreateContainer",
 			Handler:    _GApi_CreateContainer_Handler,
 		},
@@ -472,12 +544,12 @@ var GApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GApi_ReleaseContainer_Handler,
 		},
 		{
-			MethodName: "GetLog",
-			Handler:    _GApi_GetLog_Handler,
-		},
-		{
 			MethodName: "GetContainerList",
 			Handler:    _GApi_GetContainerList_Handler,
+		},
+		{
+			MethodName: "GetLog",
+			Handler:    _GApi_GetLog_Handler,
 		},
 		{
 			MethodName: "GetInfo",
