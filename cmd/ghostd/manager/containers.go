@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"sync"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/internal/factory"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/maincontainer"
 )
@@ -13,10 +14,19 @@ type Containers struct {
 	List  map[uint32]*Container
 	Id    uint32
 	Count uint32
+
+	networkFactory *factory.NetworkFactory
+	bootFactory    *factory.BootFactory
+	config         *gconfig.GConfig
 }
 
-func NewContainers() *Containers {
-	return &Containers{Id: 1, Count: 0, List: make(map[uint32]*Container)}
+func NewContainers(networkFactory *factory.NetworkFactory, bootFactory *factory.BootFactory, config *gconfig.GConfig) *Containers {
+	return &Containers{
+		Id: 1, Count: 0, List: make(map[uint32]*Container),
+		networkFactory: networkFactory,
+		bootFactory:    bootFactory,
+		config:         config,
+	}
 }
 
 func (containers *Containers) GetContainer(id uint32) *Container {
@@ -52,7 +62,7 @@ func (containers *Containers) LoginContainer(password []byte, username, host, po
 	}
 
 	id := containers.Id
-	container := NewContainer(id, host, port)
+	container := NewContainer(id, host, port, containers.config)
 	if container == nil {
 		return nil
 	}
@@ -82,7 +92,7 @@ func (containers *Containers) ForkContainer(password []byte, username, host, por
 	containers.Id++
 	containers.Count++
 
-	container := NewContainer(id, host, port)
+	container := NewContainer(id, host, port, containers.config)
 	if container == nil {
 		return nil
 	}
@@ -145,7 +155,7 @@ func (containers *Containers) CreateContainer(password []byte, username, host, p
 	containers.Id++
 	containers.Count++
 
-	container := NewContainer(id, host, port)
+	container := NewContainer(id, host, port, containers.config)
 	if container == nil {
 		return nil
 	}
@@ -160,9 +170,9 @@ func (containers *Containers) CreateContainer(password []byte, username, host, p
 		cfg.Password = password
 		cfg.Ip = host
 		cfg.Port = port
-		main := maincontainer.NewMainContainer(cfg)
-		main.StartContainer()
+		main := maincontainer.NewMainContainer(containers.networkFactory, containers.bootFactory, cfg)
 		wg.Done()
+		main.StartContainer()
 	}(id)
 
 	wg.Wait()

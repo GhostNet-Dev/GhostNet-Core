@@ -23,13 +23,19 @@ type MainContainer struct {
 	ghostApi       *gapi.GhostApi
 }
 
-func NewMainContainer(config *gconfig.GConfig) *MainContainer {
-	networkFactory := factory.NewNetworkFactory(config)
-	bootFactory := factory.NewBootFactory(networkFactory.Udp, networkFactory.PacketFactory, config)
+func NewMainContainer(networkFactory *factory.NetworkFactory, bootFactory *factory.BootFactory,
+	config *gconfig.GConfig) *MainContainer {
+	if networkFactory == nil {
+		networkFactory = factory.NewNetworkFactory(config)
+	}
+	if bootFactory == nil {
+		bootFactory = factory.NewBootFactory(networkFactory.Udp, networkFactory.PacketFactory, config)
+	}
 	return &MainContainer{
 		config:         config,
-		networkFactory: networkFactory,
 		bootFactory:    bootFactory,
+		networkFactory: networkFactory,
+		udp:            networkFactory.Udp,
 	}
 }
 
@@ -50,6 +56,13 @@ func (main *MainContainer) StartContainer() {
 		}
 		main.config.Username = username
 		main.config.Password = passwdHash
+		main.config.Ip = ip
+		main.config.Port = port
+
+		log.Println("Net Open")
+		main.udp.Start(nil, ip, port)
+
+		log.Println("Start Bootloading")
 		main.StartBootLoading()
 		return true
 	}
@@ -75,5 +88,4 @@ func (main *MainContainer) StartBootLoading() {
 }
 
 func (main *MainContainer) StartServer() {
-	main.udp.Start(nil)
 }

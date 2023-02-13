@@ -20,8 +20,8 @@ var (
 		Ip:   "127.0.0.1",
 		Port: "8888",
 	}
-	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port)
 	packetFactory  = p2p.NewPacketFactory()
+	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory)
 	blockContainer = store.NewBlockContainer("sqlite3")
 	config         = gconfig.NewDefaultConfig()
 	from, _        = net.ResolveUDPAddr("udp", ghostIp.Ip+":"+ghostIp.Port)

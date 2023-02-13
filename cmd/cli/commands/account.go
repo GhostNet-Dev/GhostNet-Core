@@ -27,11 +27,12 @@ func GetAccountListCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&port, "port", "", "50129", "Port Number")
 	cmd.Flags().StringVarP(&rpcPort, "rpc", "r", "50229", "GRPC Port Number")
 	cmd.Flags().Uint32VarP(&id, "id", "", 0, "Container Id, if not select, show all container")
+	cmd.Flags().Uint32VarP(&timeout, "timeout", "t", 3, "rpc connection timeout")
 	return cmd
 }
 
 func getAccountListExecute(id uint32) {
-	grpcClient := grpc.NewGrpcClient(host, rpcPort)
+	grpcClient := grpc.NewGrpcClient(host, rpcPort, timeout)
 	grpcClient.ConnectServer()
 	defer grpcClient.CloseServer()
 	users := grpcClient.GetAccount(id)
@@ -61,11 +62,12 @@ func GetPrivateKeyCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&username, "username", "u", "", "Ghost Account Nickname")
 	cmd.Flags().StringVarP(&password, "password", "p", "", "Ghost Account Password")
 	cmd.Flags().Uint32VarP(&id, "id", "", 0, "Container Id, if not select, show all container")
+	cmd.Flags().Uint32VarP(&timeout, "timeout", "t", 3, "rpc connection timeout")
 	return cmd
 }
 
 func getPrivateKeyExecuteCommand(id uint32, username, password string) {
-	grpcClient := grpc.NewGrpcClient(host, rpcPort)
+	grpcClient := grpc.NewGrpcClient(host, rpcPort, timeout)
 	grpcClient.ConnectServer()
 	defer grpcClient.CloseServer()
 	key, ret := grpcClient.GetPrivateKey(id, username, password)

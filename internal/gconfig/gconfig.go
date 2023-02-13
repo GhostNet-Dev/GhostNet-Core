@@ -35,6 +35,8 @@ type GConfig struct {
 	DbScheme              string
 	DbSchemePath          string
 	StandaloneMode        bool
+
+	Timeout uint32
 }
 
 func NewDefaultConfig() *GConfig {

@@ -40,13 +40,13 @@ func (tTree *TrieTreeMap) LoadTrieTree() {
 }
 
 func (tTree *TrieTreeMap) AddNode(pubKey string) {
-	if _, exist := tTree.checkList[pubKey]; exist == true {
+	if _, exist := tTree.checkList[pubKey]; exist {
 		return
 	}
 
 	key := pubKey[tTree.currentLevel]
 	tTree.checkList[pubKey] = key
-	if _, exist := tTree.nodes[key]; exist == false {
+	if _, exist := tTree.nodes[key]; !exist {
 		tTree.nodes[key] = NewTNode(tTree.ownerPubKey, tTree.account,
 			tTree.currentLevel+1, key)
 		tTree.keyMap[key] = struct{}{}
@@ -56,15 +56,15 @@ func (tTree *TrieTreeMap) AddNode(pubKey string) {
 }
 
 func (tTree *TrieTreeMap) DelNode(pubKey string) {
-	if _, exist := tTree.checkList[pubKey]; exist == false {
+	if _, exist := tTree.checkList[pubKey]; !exist {
 		return
 	}
 	delete(tTree.checkList, pubKey)
 	key := pubKey[tTree.currentLevel]
-	if node, exist := tTree.nodes[key]; exist == false {
+	if node, exist := tTree.nodes[key]; !exist {
 		return
 	} else {
-		if node.RemoveChildNode(pubKey) == true {
+		if node.RemoveChildNode(pubKey) {
 			node.childNum--
 		}
 		if node.childNum == 0 {
@@ -88,7 +88,7 @@ func (tTree *TrieTreeMap) GetLevelMasterList(targetLevel uint32) []*ptypes.Ghost
 	}
 
 	c := tTree.ownerPubKey[tTree.currentLevel]
-	if node, exist := tTree.nodes[c]; targetLevel > DefaultTreeLevel && exist == true {
+	if node, exist := tTree.nodes[c]; targetLevel > DefaultTreeLevel && exist {
 		return node.GetLevelMasterList(targetLevel, "1")
 	}
 
@@ -104,7 +104,7 @@ func (tTree *TrieTreeMap) GetLevelMasterList(targetLevel uint32) []*ptypes.Ghost
 
 func (tTree *TrieTreeMap) GetCharLevelMasterList(searchPubKey string, targetLevel uint32) []*ptypes.GhostUser {
 	c := searchPubKey[1]
-	if _, exist := tTree.keyMap[c]; exist == false || targetLevel < DefaultTreeLevel {
+	if _, exist := tTree.keyMap[c]; !exist || targetLevel < DefaultTreeLevel {
 		log.Fatal("Level 0 or char is not exist!!")
 	}
 

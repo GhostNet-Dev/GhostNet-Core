@@ -43,10 +43,11 @@ type NetworkFactory struct {
 }
 
 func NewNetworkFactory(config *gconfig.GConfig) *NetworkFactory {
+	packetFactory := p2p.NewPacketFactory()
 
 	return &NetworkFactory{
-		PacketFactory: p2p.NewPacketFactory(),
-		Udp:           p2p.NewUdpServer(config.Ip, config.Port),
+		PacketFactory: packetFactory,
+		Udp:           p2p.NewUdpServer(config.Ip, config.Port, packetFactory),
 	}
 }
 

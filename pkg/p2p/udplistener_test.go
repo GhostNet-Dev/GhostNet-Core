@@ -14,14 +14,14 @@ import (
 var srv *UdpServer
 
 func init() {
-	srv = NewUdpServer("127.0.0.1", "8888")
+	srv = NewUdpServer("127.0.0.1", "8888", NewPacketFactory())
 }
 
 func TestUdpDefault(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	netChannel := make(chan RequestPacketInfo)
-	srv.Start(netChannel)
+	srv.Start(netChannel, "", "")
 
 	go func() {
 		packetInfo := <-netChannel
@@ -72,7 +72,7 @@ func TestPacketHandler(t *testing.T) {
 	GlobalWg.Add(1)
 	TestResult = false
 
-	srv.Start(nil)
+	srv.Start(nil, "", "")
 	srv.Pf.SingleRegisterPacketHandler(packets.PacketType_MasterNetwork,
 		packets.PacketSecondType_NotificationMasterNode,
 		PacketSqHandler, nil)

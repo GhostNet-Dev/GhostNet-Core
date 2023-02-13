@@ -45,11 +45,12 @@ func SuspendCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&port, "port", "", "50129", "Port Number")
 	cmd.Flags().StringVarP(&rpcPort, "rpc", "r", "50229", "GRPC Port Number")
 	cmd.Flags().Uint32VarP(&id, "id", "", 0, "Container Id, if not select, show all container")
+	cmd.Flags().Uint32VarP(&timeout, "timeout", "t", 3, "rpc connection timeout")
 	return cmd
 }
 
 func ctrlExecuteCommand(id uint32, operation string) {
-	grpcClient := grpc.NewGrpcClient(host, rpcPort)
+	grpcClient := grpc.NewGrpcClient(host, rpcPort, timeout)
 	grpcClient.ConnectServer()
 	defer grpcClient.CloseServer()
 	result := false

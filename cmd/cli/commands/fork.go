@@ -25,6 +25,7 @@ func ForkContainerCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&rpcPort, "rpc", "r", "50229", "GRPC Port Number")
 	cmd.Flags().StringVarP(&username, "username", "u", "", "Ghost Account Nickname")
 	cmd.Flags().StringVarP(&password, "password", "p", "", "Ghost Account Password")
+	cmd.Flags().Uint32VarP(&timeout, "timeout", "t", 3, "rpc connection timeout")
 	cmd.MarkFlagRequired("username")
 	return cmd
 }
@@ -34,7 +35,7 @@ func forkExecuteCommand(username, password, host, port string) {
 		log.Println("ghostnet need username to login")
 		return
 	}
-	grpcClient := grpc.NewGrpcClient(host, rpcPort)
+	grpcClient := grpc.NewGrpcClient(host, rpcPort, timeout)
 	grpcClient.ConnectServer()
 	defer grpcClient.CloseServer()
 	log.Printf("Fork Container user = %s, host = %s, port = %s", username, host, port)

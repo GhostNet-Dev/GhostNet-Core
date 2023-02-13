@@ -28,11 +28,12 @@ func GetBlockInfoCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&rpcPort, "rpc", "r", "50229", "GRPC Port Number")
 	cmd.Flags().Uint32VarP(&id, "id", "", 0, "Container Id, if not select, show all container")
 	cmd.Flags().Uint32VarP(&blockId, "bid", "", 0, "block id for information")
+	cmd.Flags().Uint32VarP(&timeout, "timeout", "t", 3, "rpc connection timeout")
 	return cmd
 }
 
 func getBlockInfoExecute(id, blockId uint32) {
-	grpcClient := grpc.NewGrpcClient(host, rpcPort)
+	grpcClient := grpc.NewGrpcClient(host, rpcPort, timeout)
 	grpcClient.ConnectServer()
 	defer grpcClient.CloseServer()
 	paired := grpcClient.GetBlockInfo(id, blockId)

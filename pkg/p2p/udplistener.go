@@ -39,11 +39,11 @@ type ResponseHeaderInfo struct {
 	SqFlag     bool
 }
 
-func NewUdpServer(ip string, port string) *UdpServer {
+func NewUdpServer(ip, port string, packetFactory *PacketFactory) *UdpServer {
 	return &UdpServer{
 		Ip:   ip,
 		Port: port,
-		Pf:   NewPacketFactory(),
+		Pf:   packetFactory,
 	}
 }
 
@@ -66,7 +66,14 @@ func (udp *UdpServer) loadIp() *ptypes.GhostIp {
 	return &ptypes.GhostIp{Ip: localIp, Port: udp.Port}
 }
 
-func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
+func (udp *UdpServer) Start(netChannel chan RequestPacketInfo, ip, port string) {
+	if ip != "" {
+		udp.Ip = ip
+	}
+	if port != "" {
+		udp.Port = port
+	}
+
 	service := udp.Ip + ":" + udp.Port
 
 	udpAddr, err := net.ResolveUDPAddr("udp4", service)
@@ -79,7 +86,6 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo) {
 	if udp.UdpConn, err = net.ListenUDP("udp4", udpAddr); err != nil {
 		log.Fatal(err)
 	}
-	defer udp.UdpConn.Close()
 
 	fmt.Println("UDP server up and listening on addr= ", service)
 

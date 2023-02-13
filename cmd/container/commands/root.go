@@ -33,7 +33,7 @@ func RootCmd() *cobra.Command {
 			cfg.Password = grpc.PasswordToSha256(password)
 
 			fmt.Printf("Start GhostNet Node Addr = %s:%s", cfg.Ip, cfg.Port)
-			container := maincontainer.NewMainContainer(cfg)
+			container := maincontainer.NewMainContainer(nil, nil, cfg)
 			container.StartContainer()
 		},
 	}

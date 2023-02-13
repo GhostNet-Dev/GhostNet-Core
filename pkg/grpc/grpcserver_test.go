@@ -11,7 +11,7 @@ import (
 
 var (
 	server = NewGrpcServer()
-	client = NewGrpcClient("localhost", "50229")
+	client = NewGrpcClient("localhost", "50229", 3)
 	cfg    = gconfig.NewDefaultConfig()
 )
 

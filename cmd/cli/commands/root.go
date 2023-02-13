@@ -18,6 +18,7 @@ var (
 	password        string
 	id              uint32
 	rpcPort         string
+	timeout         uint32
 	defaultCfg      = gconfig.NewDefaultConfig()
 )
 

@@ -21,8 +21,8 @@ var (
 		Port: "8888",
 	}
 	from, _       = net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
-	udp           = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port)
 	packetFactory = p2p.NewPacketFactory()
+	udp           = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port, packetFactory)
 	owner         = gcrypto.GenerateKeyPair()
 	fileService    = NewFileServer(udp, packetFactory, owner, ipAddr, "./")
 )

@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strconv"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 )
 
@@ -20,7 +21,7 @@ type Container struct {
 	Client   *grpc.GrpcClient
 }
 
-func NewContainer(id uint32, ip, port string) *Container {
+func NewContainer(id uint32, ip, port string, config *gconfig.GConfig) *Container {
 	var grpcPort string
 	if portInt, err := strconv.Atoi(port); err != nil {
 		log.Fatal(err)
@@ -34,6 +35,6 @@ func NewContainer(id uint32, ip, port string) *Container {
 
 	return &Container{
 		Id: id, Ip: ip, Port: port,
-		Client: grpc.NewGrpcClient(ip, grpcPort),
+		Client: grpc.NewGrpcClient(ip, grpcPort, config.Timeout),
 	}
 }

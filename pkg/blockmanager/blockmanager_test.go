@@ -32,7 +32,7 @@ var (
 	gVm            = gvm.NewGVM()
 	blockContainer = store.NewBlockContainer("sqlite3")
 	packetFactory  = p2p.NewPacketFactory()
-	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port)
+	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory)
 
 	account  = gnetwork.NewGhostAccount()
 	tTreeMap = gnetwork.NewTrieTreeMap(Miner.GetPubAddress(), account)

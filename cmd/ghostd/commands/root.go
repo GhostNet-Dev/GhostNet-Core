@@ -37,6 +37,7 @@ func RootCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&cfg.GrpcPort, "rpc", "r", "50229", "GRPC Port Number")
 	cmd.Flags().StringVarP(&cfg.RootPath, "rootpath", "", "", "Home Directory Path")
 	cmd.Flags().StringVarP(&cfg.SqlPath, "sqlpath", "", "", "Sql Db File Directory Path")
+	cmd.Flags().Uint32VarP(&cfg.Timeout, "timeout", "t", 3, "rpc connection timeout")
 	return cmd
 }
 
@@ -52,7 +53,7 @@ func ExecuteContainer() {
 	bootFactory := factory.NewBootFactory(netFactory.Udp, netFactory.PacketFactory, cfg)
 
 	// container management initialize
-	containers := manager.NewContainers()
+	containers := manager.NewContainers(netFactory, bootFactory, cfg)
 
 	// grpc initiaize
 	server := grpc.NewGrpcServer()

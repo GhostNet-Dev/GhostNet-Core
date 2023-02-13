@@ -43,7 +43,7 @@ func (tNode *TNode) AddChildNode(pubKey string) {
 	}
 
 	nextKey := pubKey[tNode.level]
-	if _, exist := tNode.nodes[nextKey]; exist == false {
+	if _, exist := tNode.nodes[nextKey]; !exist {
 		tNode.nodes[nextKey] = NewTNode(tNode.pubKeyAddr, tNode.account, tNode.level+1, nextKey)
 		tNode.keyMap[nextKey] = struct{}{}
 	}
@@ -59,10 +59,10 @@ func (tNode *TNode) RemoveChildNode(pubKey string) bool {
 
 	key := pubKey[tNode.level]
 	node, exist := tNode.nodes[key]
-	if exist == false {
+	if !exist {
 		return false
 	}
-	if node.RemoveChildNode(pubKey) == true {
+	if node.RemoveChildNode(pubKey) {
 		tNode.childNum--
 	}
 	if node.childNum == 0 {
@@ -113,7 +113,7 @@ func (tNode *TNode) GetLevelMasterList(targetLevel uint32, buildString string) [
 		return userList
 	} else {
 		c := tNode.pubKeyAddr[tNode.level]
-		if node, exist := tNode.nodes[c]; exist == true {
+		if node, exist := tNode.nodes[c]; exist {
 			return node.GetLevelMasterList(targetLevel, builder.String())
 		} else {
 			return nil

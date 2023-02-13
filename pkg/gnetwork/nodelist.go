@@ -54,17 +54,17 @@ func (account *GhostAccount) AddMasterUserList(userList []*ptypes.GhostUser) {
 }
 
 func (account *GhostAccount) GetUserNode(pubKey string) *GhostNode {
-	find, err := account.nodeList[pubKey]
-	if err == false {
+	find, exist := account.nodeList[pubKey]
+	if !exist {
 		log.Fatal("pubkey not found")
 	}
 	return find
 }
 
 func (account *GhostAccount) GetNodeInfo(pubKey string) *GhostNode {
-	find, err := account.masterNodeList[pubKey]
-	if err == false {
-		if find, err = account.nodeList[pubKey]; err == false {
+	find, exist := account.masterNodeList[pubKey]
+	if !exist {
+		if find, exist = account.nodeList[pubKey]; !exist {
 			return nil
 		}
 	}
@@ -72,8 +72,8 @@ func (account *GhostAccount) GetNodeInfo(pubKey string) *GhostNode {
 }
 
 func (account *GhostAccount) GetNodeByNickname(nickname string) *GhostNode {
-	find, err := account.nicknameToPubKey[nickname]
-	if err == false {
+	find, exist := account.nicknameToPubKey[nickname]
+	if !exist {
 		log.Fatal("nickname not found")
 	}
 	return find
@@ -114,7 +114,7 @@ func (account *GhostAccount) GetMasterNodeList() []*ptypes.GhostUser {
 func (account *GhostAccount) GetMasterNodeSearch(pubKey string) []*ptypes.GhostUser {
 	userList := []*ptypes.GhostUser{}
 	for _, item := range account.masterNodeList {
-		if strings.HasPrefix(item.User.PubKey, pubKey) == true {
+		if strings.HasPrefix(item.User.PubKey, pubKey) {
 			userList = append(userList, item.User)
 		}
 	}
@@ -123,7 +123,7 @@ func (account *GhostAccount) GetMasterNodeSearch(pubKey string) []*ptypes.GhostU
 
 func (account *GhostAccount) GetMasterNodeSearchPick(pubKey string) *ptypes.GhostUser {
 	for _, item := range account.masterNodeList {
-		if strings.HasPrefix(item.User.PubKey, pubKey) == true {
+		if strings.HasPrefix(item.User.PubKey, pubKey) {
 			return item.User
 		}
 	}

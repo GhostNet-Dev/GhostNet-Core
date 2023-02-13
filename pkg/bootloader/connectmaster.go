@@ -28,6 +28,7 @@ type ConnectMaster struct {
 	masterNode      *ptypes.GhostUser
 	table           string
 	eventChannel    chan bool
+	eventWait       bool
 	packetSqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
 	packetCqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
 }
@@ -43,6 +44,7 @@ func NewConnectMaster(table string, db *LiteStore, packetFactory *p2p.PacketFact
 		wallet:          w,
 		table:           table,
 		eventChannel:    make(chan bool),
+		eventWait:       false,
 		packetSqHandler: make(map[packets.PacketSecondType]p2p.FuncPacketHandler),
 		packetCqHandler: make(map[packets.PacketSecondType]p2p.FuncPacketHandler),
 	}
@@ -90,12 +92,14 @@ func (conn *ConnectMaster) LoadMasterNode() *ptypes.GhostUser {
 }
 
 func (conn *ConnectMaster) WaitEvent() (timeout bool) {
+	conn.eventWait = true
 	select {
 	case <-conn.eventChannel:
 		timeout = false
 	case <-time.After(time.Second * 8):
 		timeout = true
 	}
+	conn.eventWait = false
 	return timeout
 }
 
@@ -180,7 +184,9 @@ func (conn *ConnectMaster) ConnectToMasterNodeCq(requestHeaderInfo *p2p.RequestH
 		log.Fatal(err)
 	}
 	conn.masterNode = cq.User
-	conn.eventChannel <- true
+	if conn.eventWait {
+		conn.eventChannel <- true
+	}
 	return nil
 }
 
@@ -196,7 +202,9 @@ func (conn *ConnectMaster) ResponseMasterNodeListSq(requestHeaderInfo *p2p.Reque
 	}
 
 	conn.SaveMasterNodeList(sq.User)
-	conn.eventChannel <- true
+	if conn.eventWait {
+		conn.eventChannel <- true
+	}
 
 	cq := packets.ResponseMasterNodeListCq{
 		Master: p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),

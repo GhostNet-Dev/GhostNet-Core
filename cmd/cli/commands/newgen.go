@@ -25,11 +25,12 @@ func NewGenesisCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&rpcPort, "rpc", "r", "50229", "GRPC Port Number")
 	cmd.Flags().StringVarP(&password, "password", "p", "", "Ghost Account Password")
 	cmd.Flags().Uint32VarP(&id, "id", "", 0, "Container Id, if not select, show all container")
+	cmd.Flags().Uint32VarP(&timeout, "timeout", "t", 3, "rpc connection timeout")
 	return cmd
 }
 
 func newGenExecuteCommand(id uint32, password string) {
-	grpcClient := grpc.NewGrpcClient(host, rpcPort)
+	grpcClient := grpc.NewGrpcClient(host, rpcPort, timeout)
 	grpcClient.ConnectServer()
 	defer grpcClient.CloseServer()
 	ret := grpcClient.CreateGenesisEncrypt(id, password)
