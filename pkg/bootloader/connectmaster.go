@@ -57,7 +57,7 @@ func GetRootIpAddress() *net.UDPAddr {
 	if err != nil {
 		log.Fatal(err)
 	}
-	to, _ := net.ResolveUDPAddr("udp", ips[0].String()+":50129")
+	to, _ := net.ResolveUDPAddr("udp", ips[0].String()+":50029")
 	return to
 }
 

@@ -1,6 +1,7 @@
 package txs
 
 import (
+	"log"
 	"testing"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
@@ -22,6 +23,7 @@ var (
 )
 
 func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
 	txInfo := TransferCoinInfo{
 		ToAddr:       Recver.Get160PubKey(),

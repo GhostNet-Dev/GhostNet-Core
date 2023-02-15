@@ -7,7 +7,6 @@ import (
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
@@ -17,12 +16,10 @@ var (
 )
 
 func TestGetHeightestBlock(t *testing.T) {
-	sq := &packets.MasterNodeUserInfoSq{
+	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
+	defer blockContainer.Close()
+	sq := &packets.GetHeightestBlockSq{
 		Master: p2p.MakeMasterPacket(blockServer.owner.GetPubAddress(), 0, 0, blockServer.localIpAddr),
-		User: &ptypes.GhostUser{
-			Nickname: nickname,
-			PubKey:   blockServer.owner.GetPubAddress(),
-		},
 	}
 
 	sendData, err := proto.Marshal(sq)
@@ -31,12 +28,10 @@ func TestGetHeightestBlock(t *testing.T) {
 	}
 
 	responseInfos := blockServer.GetHeightestBlockSq(&packets.Header{PacketData: sendData}, from)
-	cq := &packets.MasterNodeUserInfoCq{}
+	cq := &packets.GetHeightestBlockCq{}
 	if err := proto.Unmarshal(responseInfos[0].PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
 
-	assert.Equal(t, packets.PacketSecondType_ConnectToMasterNode, responseInfos[0].SecondType, "packet type is wrong")
-	assert.Equal(t, "test", cq.User.Nickname, "nickname is wrong")
-	assert.Equal(t, Miner.GetPubAddress(), cq.User.PubKey, "pubkey is wrong")
+	assert.Equal(t, packets.PacketThirdType_GetHeightestBlock, responseInfos[0].ThirdType, "packet type is wrong")
 }

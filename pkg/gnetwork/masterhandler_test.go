@@ -20,6 +20,7 @@ var (
 		Ip:   "127.0.0.1",
 		Port: "8888",
 	}
+	gAccount       = NewGhostAccount()
 	packetFactory  = p2p.NewPacketFactory()
 	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory)
 	blockContainer = store.NewBlockContainer("sqlite3")
@@ -28,7 +29,7 @@ var (
 	owner          = gcrypto.GenerateKeyPair()
 
 	w      = gcrypto.NewWallet("test", owner, ghostIp, &ptypes.GhostUser{PubKey: "masterpubkey", Nickname: "master"})
-	master = NewMasterNode(w, ghostIp, config, packetFactory, udp, blockContainer, account, tTreeMap)
+	master = NewMasterNode(w, ghostIp, config, packetFactory, udp, blockContainer, gAccount, NewTrieTreeMap(owner.GetPubAddress(), gAccount))
 )
 
 func TestGetVersionSq(t *testing.T) {

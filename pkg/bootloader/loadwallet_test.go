@@ -11,13 +11,14 @@ import (
 )
 
 var (
-	wallet   = NewLoadWallet(Tables[1], db, ghostIp)
+	wallet   = NewLoadWallet(TestTables[1], db, ghostIp)
 	username = "User"
 	password = "pass"
 )
 
 func TestOpenWallet(t *testing.T) {
 	err := db.OpenStore()
+	defer db.Close()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	db          = NewLiteStore("./", Tables)
+	TestTables  = []string{"nodes", "wallet"}
+	db          = NewLiteStore("./", TestTables)
 	testAddress = gcrypto.GenerateKeyPair()
 	ghostIp     = &ptypes.GhostIp{
 		Ip:   "127.0.0.1",
@@ -22,6 +23,7 @@ var (
 
 func TestInAndOut(t *testing.T) {
 	err := db.OpenStore()
+	defer db.Close()
 	assert.Equal(t, nil, err, "db open error")
 	testUser := &ptypes.GhostUser{
 		PubKey:   testAddress.GetPubAddress(),
@@ -32,10 +34,10 @@ func TestInAndOut(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.SaveEntry(Tables[0], []byte(testUser.PubKey), rawData)
-	v, err := db.SelectEntry(Tables[0], []byte(testUser.PubKey))
+	db.SaveEntry(TestTables[0], []byte(testUser.PubKey), rawData)
+	v, err := db.SelectEntry(TestTables[0], []byte(testUser.PubKey))
 	assert.Equal(t, nil, err, "db select error")
 	assert.Equal(t, 0, bytes.Compare(rawData, v), "load fail")
 
-	db.LoadEntry(Tables[0])
+	db.LoadEntry(TestTables[0])
 }

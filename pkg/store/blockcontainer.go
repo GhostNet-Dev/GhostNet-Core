@@ -1,6 +1,8 @@
 package store
 
 import (
+	"log"
+
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
@@ -27,8 +29,12 @@ func NewBlockContainer(dbname string) *BlockContainer {
 }
 
 func (blockContainer *BlockContainer) BlockContainerOpen(schemeSqlFilePath string, dbFilePath string) {
-	blockContainer.gSql.OpenSQL(dbFilePath)
-	blockContainer.gSql.CreateTable(schemeSqlFilePath)
+	if err := blockContainer.gSql.OpenSQL(dbFilePath); err != nil {
+		log.Fatal(err)
+	}
+	if err := blockContainer.gSql.CreateTable(schemeSqlFilePath); err != nil {
+		log.Fatal(err)
+	}
 	blockContainer.TxContainer.Initialize()
 }
 

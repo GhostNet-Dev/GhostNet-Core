@@ -2,6 +2,7 @@ package fileservice
 
 import (
 	"log"
+	"sync"
 
 	"github.com/kelindar/bitmap"
 )
@@ -64,15 +65,25 @@ func (fileManager *FileObjManager) DeleteObject(filename string) {
 	delete(fileManager.FileObjs, filename)
 }
 
-func (fileObj *FileObject) UpdateFileImage(offset uint64) bool {
-	bitOffset := uint32(offset / BufferSize)
-	if fileObj.DownloadBitmap.Contains(bitOffset) == true {
+func (fileObj *FileObject) UpdateFileImage(offset uint64, bufSize uint64) bool {
+	bitOffset := uint32(offset / bufSize)
+	mutex := &sync.Mutex{}
+
+	if fileObj.CompleteDone {
+		return true
+	}
+
+	mutex.Lock()
+	if fileObj.DownloadBitmap.Contains(bitOffset) {
+		mutex.Unlock()
 		return false
 	}
 	fileObj.DownloadBitmap.Set(bitOffset)
+	mutex.Unlock()
+
 	writtenSize := fileObj.FileLength - offset
-	if writtenSize > BufferSize {
-		writtenSize = BufferSize
+	if writtenSize > bufSize {
+		writtenSize = bufSize
 	}
 
 	fileObj.FileWrittenSize += writtenSize
@@ -82,7 +93,7 @@ func (fileObj *FileObject) UpdateFileImage(offset uint64) bool {
 			fileObj.Callback(fileObj, fileObj.Context)
 		}
 	} else if fileObj.FileWrittenSize > fileObj.FileLength {
-		log.Fatal("overflow")
+		log.Print("overflow WrittenSize=", fileObj.FileWrittenSize, ", FileLength=", fileObj.FileLength)
 	}
 
 	return true

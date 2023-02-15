@@ -16,7 +16,10 @@ import (
 
 func TestMakeGenesisHeader(t *testing.T) {
 	//todo block sign을 만들어야함
-	genesis := blocks.MakeGenesisBlock(nil)
+	accountFile := map[string]*gcrypto.GhostAddress{}
+	genesis := blocks.MakeGenesisBlock(func(name string, address *gcrypto.GhostAddress) {
+		accountFile[name+"@"+address.GetPubAddress()+".ghost"] = address
+	})
 	block := genesis.Block
 	header := block.Header
 	size := header.Size()
@@ -37,7 +40,10 @@ func TestMakeGenesisHeader(t *testing.T) {
 }
 
 func TestMakeGenesis(t *testing.T) {
-	genesis := blocks.MakeGenesisBlock(nil)
+	accountFile := map[string]*gcrypto.GhostAddress{}
+	genesis := blocks.MakeGenesisBlock(func(name string, address *gcrypto.GhostAddress) {
+		accountFile[name+"@"+address.GetPubAddress()+".ghost"] = address
+	})
 	blockByte := genesis.SerializeToByte()
 
 	newBlock := types.PairedBlock{}

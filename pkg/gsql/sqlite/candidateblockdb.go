@@ -11,24 +11,31 @@ func (gSql *GSqlite3) GetMinPoolId() uint32 {
 	var min uint32
 	query, err := gSql.db.Prepare(`select min(TxIndex) from c_transactions`)
 	if err != nil {
-		log.Printf("%s", err)
+		log.Fatalf("%s", err)
 	}
 	defer query.Close()
 
-	err = query.QueryRow().Scan(&min)
+	if err = query.QueryRow().Scan(&min); err != nil {
+		log.Printf("%s", err)
+		return 0
+	}
 	return min
 }
 
 func (gSql *GSqlite3) GetMaxPoolId() uint32 {
-	var min uint32
+	var max uint32
 	query, err := gSql.db.Prepare(`select max(TxIndex) from c_transactions`)
 	if err != nil {
-		log.Printf("%s", err)
+		log.Fatalf("%s", err)
 	}
 	defer query.Close()
 
-	err = query.QueryRow().Scan(&min)
-	return min
+	if err = query.QueryRow().Scan(&max); err != nil {
+		log.Printf("%s", err)
+		return 0
+	}
+
+	return max
 }
 
 // InsertTx ..
@@ -68,11 +75,14 @@ func (gSql *GSqlite3) SelectCandidateTxCount() uint32 {
 	var count uint32
 	query, err := gSql.db.Prepare("select count(*) from c_transactions")
 	if err != nil {
-		log.Printf("%s", err)
+		log.Fatalf("%s", err)
 	}
 	defer query.Close()
 
-	err = query.QueryRow().Scan(&count)
+	if err = query.QueryRow().Scan(&count); err != nil {
+		log.Printf("%s", err)
+		return 0
+	}
 	return count
 }
 

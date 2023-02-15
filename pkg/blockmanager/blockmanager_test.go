@@ -1,6 +1,7 @@
 package blockmanager
 
 import (
+	"log"
 	"testing"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
@@ -48,11 +49,12 @@ var (
 )
 
 func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fsm.SetServer(blockServer)
-	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
 }
 
 func TestStartServer(t *testing.T) {
+	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
+	defer blockContainer.Close()
 	blockServer.BlockSync()
-
 }

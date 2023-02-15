@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const BufferSize = 1024
+const Buffer_Size = 1024
 
 type FileService struct {
 	udp            *p2p.UdpServer
@@ -97,7 +97,7 @@ func (fileService *FileService) DeleteFile(filename string) {
 func (fileService *FileService) LoadFileToMemory(filename string) *FileObject {
 	fileFullPath := fileService.localFilePath + filename
 	fileObj, ok := fileService.fileObjManager.GetFileObject(filename)
-	if ok == true {
+	if ok {
 		return fileObj
 	}
 
@@ -203,16 +203,16 @@ func (fileService *FileService) sendFileData(filename string, startPos uint64, s
 		fp.Seek(int64(startPos), 0)
 
 		readSize := uint64(fileInfo.Size()) - startPos
-		if readSize > BufferSize {
-			readSize = BufferSize
+		if readSize > Buffer_Size {
+			readSize = Buffer_Size
 		}
 		buf = make([]byte, readSize)
 		fp.Read(buf)
 	} else {
 		fileSize = fileObj.FileLength
 		readSize := fileSize - startPos
-		if readSize > BufferSize {
-			readSize = BufferSize
+		if readSize > Buffer_Size {
+			readSize = Buffer_Size
 		}
 		buf = make([]byte, readSize)
 		copy(buf, fileObj.Buffer[startPos:startPos+readSize])
@@ -244,13 +244,14 @@ func (fileService *FileService) sendFileData(filename string, startPos uint64, s
 
 func (fileService *FileService) saveToFileObject(filename string, startPos uint64, bufSize uint32, buffer []byte, fileLength uint64) bool {
 	fileObj, exist := fileService.fileObjManager.GetFileObject(filename)
-	if exist == false {
+	if !exist {
 		fileObj = fileService.fileObjManager.CreateFileObj(filename, nil, fileLength, nil, nil)
 	}
 	copy(fileObj.Buffer[startPos:startPos+uint64(bufSize)], buffer[:])
-	fileObj.UpdateFileImage(startPos)
-	if fileObj.CheckComplete() == true {
+	fileObj.UpdateFileImage(startPos, uint64(bufSize))
+	if fileObj.CheckComplete() {
 		fileService.commitFile(fileObj)
+		return true
 	}
 	return false
 }

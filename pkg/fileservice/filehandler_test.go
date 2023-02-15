@@ -12,7 +12,7 @@ import (
 )
 
 func TestRequestFileSq(t *testing.T) {
-	testFileInit()
+	testFileInit(fileService.localFilePath + testfile)
 	sq := packets.RequestFilePacketSq{
 		Master:      p2p.MakeMasterPacket(owner.GetPubAddress(), 0, 0, ipAddr),
 		RequestType: packets.FileRequestType_GetFileInfo,
@@ -39,12 +39,12 @@ func TestRequestFileSq(t *testing.T) {
 }
 
 func TestRequestFileDataSq(t *testing.T) {
-	testFileInit()
+	testFileInit(fileService.localFilePath + testfile)
 	fileService.LoadFileToMemory(testfile)
 	info, _ := os.Stat(fileService.localFilePath + testfile)
 	totalDownloadSize := uint32(0)
 	// todo for total file packet
-	for offset := uint64(0); offset < uint64(info.Size()); offset += BufferSize {
+	for offset := uint64(0); offset < uint64(info.Size()); offset += Buffer_Size {
 		sq := packets.RequestFilePacketSq{
 			Master:      p2p.MakeMasterPacket(owner.GetPubAddress(), 0, 0, ipAddr),
 			RequestType: packets.FileRequestType_GetFileData,
@@ -77,9 +77,9 @@ func TestRequestFileDataSq(t *testing.T) {
 }
 
 func TestResponseSqTest(t *testing.T) {
-	testFileInit()
+	testFileInit(fileService.localFilePath + testfile)
 	// todo: fileread
-	buf := make([]byte, BufferSize)
+	buf := make([]byte, Buffer_Size)
 	fp, err := os.Open(testfile)
 	if err != nil {
 		log.Fatal(err)

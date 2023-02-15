@@ -40,13 +40,21 @@ func (gSql *GSqlite3) CreateTable(schemaFile string) error {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
-	// Execute all
 	query := string(file)
-	_, err = gSql.db.Exec(query)
-	if err != nil {
-		log.Fatal(err.Error())
+	if _, err = gSql.db.Exec(query); err != nil {
+		log.Fatal(err.Error(), ": ", query)
 	}
+	/*
+		// Execute all
+		querys := strings.Split(string(file), ";")
+
+		for _, query := range querys {
+			query = strings.TrimSpace(query)
+			if _, err = gSql.db.Exec(query); err != nil {
+				log.Fatal(err.Error(), ": ", query)
+			}
+		}
+	*/
 
 	return err
 }
@@ -352,7 +360,9 @@ func (gSql *GSqlite3) CheckExistTxId(txId []byte) bool {
 	}
 	defer query.Close()
 
-	err = query.QueryRow(txId).Scan(&count)
+	if err := query.QueryRow(txId).Scan(&count); err != nil {
+		log.Print(err)
+	}
 	return count > 0
 }
 
@@ -365,7 +375,9 @@ func (gSql *GSqlite3) CheckExistRefOutout(refTxId []byte, outIndex uint32, notTx
 	}
 	defer query.Close()
 
-	err = query.QueryRow(refTxId, outIndex, notTxId).Scan(&count)
+	if err := query.QueryRow(refTxId, outIndex, notTxId).Scan(&count); err != nil {
+		log.Print(err)
+	}
 	return count > 0
 }
 
@@ -377,7 +389,9 @@ func (gSql *GSqlite3) GetBlockHeight() uint32 {
 	}
 	defer query.Close()
 
-	err = query.QueryRow().Scan(&id)
+	if err := query.QueryRow().Scan(&id); err != nil {
+		log.Print(err)
+	}
 	return id
 }
 

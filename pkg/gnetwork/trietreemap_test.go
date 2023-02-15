@@ -10,13 +10,13 @@ import (
 )
 
 var (
-	account  = NewGhostAccount()
-	tTreeMap = NewTrieTreeMap(owner.GetPubAddress(), account)
 	TestNode = 10
 )
 
 func TestMakeTrieTree(t *testing.T) {
-	MakePatternNode()
+	account := NewGhostAccount()
+	tTreeMap := NewTrieTreeMap(owner.GetPubAddress(), account)
+	MakePatternNode(tTreeMap, account)
 	tTreeMap.LoadTrieTree()
 	for i := uint32(1); i <= MaxNodeDepth; i++ {
 		ret := tTreeMap.GetLevelMasterList(i)
@@ -30,7 +30,9 @@ func TestMakeTrieTree(t *testing.T) {
 }
 
 func TestAddRemove(t *testing.T) {
-	MakePatternNode()
+	account := NewGhostAccount()
+	tTreeMap := NewTrieTreeMap(owner.GetPubAddress(), account)
+	MakePatternNode(tTreeMap, account)
 	tTreeMap.LoadTrieTree()
 	tTreeMap.AddNode("1aaaab")
 	tTreeMap.AddNode("1aaaac")
@@ -45,7 +47,7 @@ func TestAddRemove(t *testing.T) {
 	assert.Equal(t, TestNode+2, tTreeMap.GetTotalNodeNum(), "total num is wrong")
 }
 
-func MakePatternNode() {
+func MakePatternNode(tTreeMap *TrieTreeMap, account *GhostAccount) {
 	tTreeMap.ownerPubKey = "1aaaaa"
 	for i := 0; i < TestNode; i++ {
 		owner = gcrypto.GenerateKeyPair()
@@ -60,7 +62,7 @@ func MakePatternNode() {
 	}
 }
 
-func MakeDummyNode() {
+func MakeDummyNode(account *GhostAccount) {
 	for i := 0; i < TestNode; i++ {
 		owner = gcrypto.GenerateKeyPair()
 		ghostUser := &ptypes.GhostUser{

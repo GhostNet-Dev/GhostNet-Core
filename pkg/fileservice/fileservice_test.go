@@ -1,7 +1,9 @@
 package fileservice
 
 import (
+	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"testing"
@@ -24,14 +26,14 @@ var (
 	packetFactory = p2p.NewPacketFactory()
 	udp           = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port, packetFactory)
 	owner         = gcrypto.GenerateKeyPair()
-	fileService    = NewFileServer(udp, packetFactory, owner, ipAddr, "./")
+	fileService   = NewFileServer(udp, packetFactory, owner, ipAddr, "./")
 )
 
-func testFileInit() {
-	if _, err := os.Stat(fileService.localFilePath + testfile); os.IsNotExist(err) {
-		if fp, err := os.Create(fileService.localFilePath + testfile); err == nil {
+func testFileInit(filename string) {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		if fp, err := os.Create(filename); err == nil {
 			defer fp.Close()
-			fp.Write(make([]byte, BufferSize*16-128))
+			fp.Write(make([]byte, Buffer_Size*16-128))
 		} else {
 			log.Fatal(err)
 		}
@@ -40,7 +42,7 @@ func testFileInit() {
 
 func TestLoadFile(t *testing.T) {
 	// create file -> send/recv -> defer delete file
-	testFileInit()
+	testFileInit(fileService.localFilePath + testfile)
 	exist := fileService.CheckFileExist(testfile)
 	assert.Equal(t, true, exist, "fail to create test file")
 	fileObj := fileService.LoadFileToMemory(testfile)
@@ -49,10 +51,10 @@ func TestLoadFile(t *testing.T) {
 }
 
 func TestFileInfoCq(t *testing.T) {
-	testFileInit()
-	info, err := os.Stat(fileService.localFilePath + testfile)
+	testFileInit(fileService.localFilePath + testfile)
+	info, _ := os.Stat(fileService.localFilePath + testfile)
+	assert.Equal(t, true, info.Size() > 0, "get file stat error")
 	fileService.LoadFileToMemory(testfile)
-	assert.Equal(t, nil, err, "errrrr")
 	header := fileService.makeFileInfo(testfile)
 	assert.Equal(t, packets.PacketSecondType_RequestFile, header.SecondType, "wrong second type")
 	assert.Equal(t, false, header.SqFlag, "wrong SqFlag")
@@ -66,7 +68,7 @@ func TestFileInfoCq(t *testing.T) {
 }
 
 func TestSendFileData(t *testing.T) {
-	testFileInit()
+	testFileInit(fileService.localFilePath + testfile)
 	fileObj := fileService.LoadFileToMemory(testfile)
 
 	for offset := uint64(0); offset < fileObj.FileLength; offset += 1024 {
@@ -81,11 +83,12 @@ func TestSendFileData(t *testing.T) {
 	}
 }
 
-func TestSaveToFileSystem(t *testing.T) {
-	testFileInit()
+func TestSaveToExistFileSystem(t *testing.T) {
+	testFileInit(fileService.localFilePath + testfile)
 	fileInfo, _ := os.Stat(fileService.localFilePath + testfile)
+	assert.Equal(t, true, fileInfo.Size() > 0, "get file stat error")
 	fileSize := uint64(fileInfo.Size())
-	bufferSize := uint64(BufferSize)
+	bufferSize := uint64(Buffer_Size)
 	buf := make([]byte, bufferSize)
 	for offset := uint64(0); offset < fileSize; offset += bufferSize {
 		if fileSize-offset < bufferSize {
@@ -93,11 +96,42 @@ func TestSaveToFileSystem(t *testing.T) {
 		}
 
 		done := fileService.saveToFileObject(testfile, offset, uint32(bufferSize), buf, fileSize)
-		if offset+BufferSize >= fileSize {
-			assert.Equal(t, true, done, "wrong complete")
+		if offset+bufferSize < fileSize && !done {
+			assert.Equal(t, false, done, fmt.Sprint("wrong saving, offset=", offset,
+				", buffer size =", bufferSize, ", fileSize =", fileSize))
 		} else {
-			assert.Equal(t, false, done, "wrong saving")
+			assert.Equal(t, true, done, fmt.Sprint("wrong complete, offset=", offset,
+				", buffer size =", bufferSize, ", fileSize =", fileSize))
+			break
 		}
-		bufferSize = BufferSize
+		bufferSize = Buffer_Size
 	}
+}
+
+func TestSaveToFileSystem(t *testing.T) {
+	randfilename := testfile + fmt.Sprint(rand.Intn(100))
+	filepath := fileService.localFilePath + randfilename
+	testFileInit(filepath)
+	fileInfo, _ := os.Stat(filepath)
+	assert.Equal(t, true, fileInfo.Size() > 0, "get file stat error")
+	fileSize := uint64(fileInfo.Size())
+	bufferSize := uint64(Buffer_Size)
+	buf := make([]byte, bufferSize)
+	for offset := uint64(0); offset < fileSize; offset += bufferSize {
+		if fileSize-offset < bufferSize {
+			bufferSize = fileSize - offset
+		}
+
+		done := fileService.saveToFileObject(randfilename, offset, uint32(bufferSize), buf, fileSize)
+		if offset+bufferSize >= fileSize {
+			assert.Equal(t, true, done, fmt.Sprint("wrong complete, offset=", offset,
+				", buffer size =", bufferSize, ", fileSize =", fileSize))
+		} else {
+			assert.Equal(t, false, done, fmt.Sprint("wrong saving, offset=", offset,
+				", buffer size =", bufferSize, ", fileSize =", fileSize))
+		}
+		bufferSize = Buffer_Size
+	}
+	os.Remove(filepath)
+
 }

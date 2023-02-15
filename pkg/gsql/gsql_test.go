@@ -3,12 +3,17 @@ package gsql
 import (
 	"bytes"
 	"crypto/sha256"
+	"log"
 	"testing"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 	"github.com/stretchr/testify/assert"
 	mems "github.com/traherom/memstream"
 )
+
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
 
 func TestSqlCreateTable(t *testing.T) {
 	gSql := NewGSql("sqlite3")

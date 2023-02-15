@@ -49,8 +49,8 @@ func (ghandler *GrpcHandler) GetInfoHandler() *rpc.GetInfoResponse {
 }
 
 func (ghandler *GrpcHandler) GetContainerListHandler(id uint32) *rpc.GetContainerListResponse {
-	container := ghandler.containers.GetContainer(id)
-	if container == nil {
+	container, exist := ghandler.containers.GetContainer(id)
+	if !exist {
 		return nil
 	}
 	return &rpc.GetContainerListResponse{
@@ -75,8 +75,10 @@ func (ghandler *GrpcHandler) CreateAccountHandler(password []byte, username stri
 }
 
 func (ghandler *GrpcHandler) CreateGenesisHandler(id uint32, password []byte) bool {
-	container := ghandler.containers.GetContainer(id)
-	return container.Client.CreateGenesis(id, password)
+	if container, exist := ghandler.containers.GetContainer(id); exist {
+		return container.Client.CreateGenesis(id, password)
+	}
+	return false
 }
 
 func (ghandler *GrpcHandler) ReleaseContainerHandler(id uint32) bool {
@@ -121,18 +123,24 @@ func (ghandler *GrpcHandler) CreateContainerHandler(password []byte, username, i
 }
 
 func (ghandler *GrpcHandler) ControlContainerHandler(id uint32, control rpc.ContainerControlType) bool {
-	container := ghandler.containers.GetContainer(id)
-	return container.Client.ControlContainer(id, control)
+	if container, exist := ghandler.containers.GetContainer(id); exist {
+		return container.Client.ControlContainer(id, control)
+	}
+	return false
 }
 
 func (ghandler *GrpcHandler) GetLogHandler(id uint32) []byte {
-	container := ghandler.containers.GetContainer(id)
-	return container.Client.GetLog(id)
+	if container, exist := ghandler.containers.GetContainer(id); exist {
+		return container.Client.GetLog(id)
+	}
+	return nil
 }
 
 func (ghandler *GrpcHandler) CheckStatusHandler(id uint32) uint32 {
-	container := ghandler.containers.GetContainer(id)
-	return container.Client.CheckStatus(id)
+	if container, exist := ghandler.containers.GetContainer(id); exist {
+		return container.Client.CheckStatus(id)
+	}
+	return 0
 }
 
 func (ghandler *GrpcHandler) GetAccountHandler(id uint32) (users []*ptypes.GhostUser) {
@@ -144,6 +152,8 @@ func (ghandler *GrpcHandler) GetAccountHandler(id uint32) (users []*ptypes.Ghost
 }
 
 func (ghandler *GrpcHandler) GetBlockInfoHandler(id, blockId uint32) *ptypes.PairedBlocks {
-	container := ghandler.containers.GetContainer(id)
-	return container.Client.GetBlockInfo(id, blockId)
+	if container, exist := ghandler.containers.GetContainer(id); exist {
+		return container.Client.GetBlockInfo(id, blockId)
+	}
+	return nil
 }

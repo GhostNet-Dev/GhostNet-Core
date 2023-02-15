@@ -29,8 +29,9 @@ func NewContainers(networkFactory *factory.NetworkFactory, bootFactory *factory.
 	}
 }
 
-func (containers *Containers) GetContainer(id uint32) *Container {
-	return containers.List[id]
+func (containers *Containers) GetContainer(id uint32) (*Container, bool) {
+	container, exist := containers.List[id]
+	return container, exist
 }
 
 func (containers *Containers) ReleaseContainer(id uint32) bool {
