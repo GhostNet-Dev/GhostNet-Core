@@ -46,8 +46,12 @@ else
 endif
 
 cli:
-ifeq ($(UNAME_S),Linux)
+ifeq ($(OS),Windows_NT)
+	set GOARCH=amd64& set GOOS=windows& go build -o $(APP_BIN_CLI_PATH).exe ${APP_CLI_SRC_PATH}/main.go
+else
+	ifeq ($(UNAME_S),Linux)
 	GOARCH=amd64 GOOS=linux go build -o $(APP_BIN_CLI_PATH) ${APP_CLI_SRC_PATH}/main.go
+	endif
 endif
 
 runs:
