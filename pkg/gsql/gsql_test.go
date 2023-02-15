@@ -17,7 +17,10 @@ func init() {
 
 func TestSqlCreateTable(t *testing.T) {
 	gSql := NewGSql("sqlite3")
-	gSql.OpenSQL("./")
+	err := gSql.OpenSQL("./")
+	if err == nil {
+		defer gSql.CloseSQL()
+	}
 	gSql.CreateTable("../../db.sqlite3.sql")
 }
 

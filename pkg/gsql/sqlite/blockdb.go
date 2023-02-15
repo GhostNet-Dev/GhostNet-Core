@@ -88,7 +88,7 @@ func (gSql *GSqlite3) InsertBlock(pair *types.PairedBlock) {
 		`, header.Id, header.Version, header.PreviousBlockHeaderHash, header.MerkleRoot,
 		header.DataBlockHeaderHash, header.TimeStamp, header.Bits, header.Nonce,
 		header.AliceCount, header.TransactionCount, header.SignatureSize,
-		header.BlockSignature, dataHeader.PreviousBlockHeaderHash,
+		header.BlockSignature.SerializeToByte(), dataHeader.PreviousBlockHeaderHash,
 		dataHeader.MerkleRoot, dataHeader.Nonce, dataHeader.TransactionCount)
 
 	for i, tx := range pair.Block.Alice {
@@ -113,17 +113,20 @@ func (gSql *GSqlite3) SelectBlockHeader(blockId uint32) (*types.GhostNetBlockHea
 	}
 	defer rows.Close()
 
+	var blockSig []byte
 	header := types.GhostNetBlockHeader{}
 	dataHeader := types.GhostNetDataBlockHeader{}
+	sigHash := types.SigHash{}
 	for rows.Next() {
 		if err = rows.Scan(&header.Id, &header.Version, &header.PreviousBlockHeaderHash,
 			&header.MerkleRoot, &header.DataBlockHeaderHash, &header.TimeStamp, &header.Bits,
 			&header.Nonce, &header.AliceCount, &header.TransactionCount, &header.SignatureSize,
-			&header.BlockSignature, &dataHeader.PreviousBlockHeaderHash, &dataHeader.MerkleRoot,
+			&blockSig, &dataHeader.PreviousBlockHeaderHash, &dataHeader.MerkleRoot,
 			&dataHeader.Nonce, &dataHeader.TransactionCount); err != nil {
 			log.Fatal(err)
 		}
 	}
+	sigHash.DeserializeSigHashFromByte(blockSig)
 	dataHeader.Id = header.Id
 	dataHeader.Version = header.Version
 	return &header, &dataHeader

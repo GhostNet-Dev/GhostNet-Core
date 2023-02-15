@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	Sender = gcrypto.GenerateKeyPair()
-	Broker = gcrypto.GenerateKeyPair()
-	Recver = gcrypto.GenerateKeyPair()
+	Sender   = gcrypto.GenerateKeyPair()
+	Broker   = gcrypto.GenerateKeyPair()
+	Recver   = gcrypto.GenerateKeyPair()
+	MyWallet = gcrypto.NewWallet("", Sender, nil, nil)
 
 	gScript        = gvm.NewGScript()
 	gVm            = gvm.NewGVM()
@@ -26,6 +27,7 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
 	txInfo := TransferCoinInfo{
+		MyWallet:     *MyWallet,
 		ToAddr:       Recver.Get160PubKey(),
 		Broker:       Broker.Get160PubKey(),
 		FeeAddr:      Broker.Get160PubKey(),
@@ -40,6 +42,7 @@ func init() {
 
 func TestSaveCoinTx(t *testing.T) {
 	txInfo := TransferCoinInfo{
+		MyWallet:     *MyWallet,
 		ToAddr:       Recver.Get160PubKey(),
 		Broker:       Broker.Get160PubKey(),
 		FeeAddr:      Broker.Get160PubKey(),
@@ -62,6 +65,7 @@ func TestMakeCoinTx(t *testing.T) {
 	prevMap[types.TxTypeCoinTransfer] = outputParams
 
 	txInfo := TransferCoinInfo{
+		MyWallet:     *MyWallet,
 		ToAddr:       Recver.Get160PubKey(),
 		Broker:       Broker.Get160PubKey(),
 		FeeAddr:      Broker.Get160PubKey(),
