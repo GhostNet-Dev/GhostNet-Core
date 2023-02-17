@@ -15,9 +15,9 @@ type GFuncParam struct {
 }
 
 type GVMRegister struct {
-	stack container.Stack
-	r0    []byte
-	r1    []byte
+	Stack container.Stack
+	R0    []byte
+	R1    []byte
 }
 
 type GVM struct {
@@ -53,11 +53,11 @@ func (gvm *GVM) ExecuteGFunction(buf []byte, params []GFuncParam) bool {
 	for _, param := range params {
 		gvm.Clear()
 
-		if verify = gvm.PushParam(param.InputSig); verify == false {
+		if verify = gvm.PushParam(param.InputSig); !verify {
 			return false
 		}
 
-		if verify = gvm.ExecuteScript(param.ScriptPubbKey, buf); verify == false {
+		if verify = gvm.ExecuteScript(param.ScriptPubbKey, buf); !verify {
 			return false
 		}
 	}
@@ -120,5 +120,5 @@ func (gvm *GVM) ExecuteScript(scriptPubKey []byte, param []byte) bool {
 }
 
 func (gvm *GVM) Clear() {
-	gvm.Regs.stack.Clear()
+	gvm.Regs.Stack.Clear()
 }

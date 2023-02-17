@@ -10,7 +10,7 @@ import (
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/maincontainer"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 )
 
 var (
@@ -30,7 +30,7 @@ func RootCmd() *cobra.Command {
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			// Working with OutOrStdout/OutOrStderr allows us to unit test our command easier
-			cfg.Password = grpc.PasswordToSha256(password)
+			cfg.Password = gcrypto.PasswordToSha256(password)
 
 			fmt.Printf("Start GhostNet Node Addr = %s:%s", cfg.Ip, cfg.Port)
 			container := maincontainer.NewMainContainer(nil, nil, cfg)

@@ -5,6 +5,7 @@ import (
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/rpc"
@@ -12,15 +13,17 @@ import (
 
 type GrpcHandler struct {
 	loadWallet *bootloader.LoadWallet
+	genesis    *bootloader.LoadGenesis
 	containers *Containers
 	grpcServer *grpc.GrpcServer
 	config     *gconfig.GConfig
 }
 
-func NewGrpcHandler(loadWallet *bootloader.LoadWallet, containers *Containers, grpcServer *grpc.GrpcServer,
-	config *gconfig.GConfig) *GrpcHandler {
+func NewGrpcHandler(loadWallet *bootloader.LoadWallet, genesis *bootloader.LoadGenesis,
+	containers *Containers, grpcServer *grpc.GrpcServer, config *gconfig.GConfig) *GrpcHandler {
 	gHandler := &GrpcHandler{
 		loadWallet: loadWallet,
+		genesis:    genesis,
 		containers: containers,
 		grpcServer: grpcServer,
 		config:     config,
@@ -92,7 +95,7 @@ func (ghandler *GrpcHandler) GetPrivateKeyHandler(id uint32, password []byte, us
 		return nil, false
 	}
 	privateKey := w.GetGhostAddress().PrivateKeySerialize()
-	cipherKey := ghandler.loadWallet.Encryption(password, privateKey)
+	cipherKey := gcrypto.Encryption(password, privateKey)
 	return cipherKey, true
 }
 
@@ -115,10 +118,14 @@ func (ghandler *GrpcHandler) ForkContainerHandler(password []byte, username, ip,
 
 func (ghandler *GrpcHandler) CreateContainerHandler(password []byte, username, ip, port string) bool {
 	log.Print("CreateContainerHandler")
-	if w, err := ghandler.loadWallet.OpenWallet(username, password); w == nil {
-		log.Print("not exist account = ", username, "or err = ", err)
-		return false
+	creators := ghandler.genesis.CreatorList()
+	if _, exist := creators[username]; !exist {
+		if w, err := ghandler.loadWallet.OpenWallet(username, password); w == nil {
+			log.Print("not exist account = ", username, " or err = ", err)
+			return false
+		}
 	}
+
 	return ghandler.containers.CreateContainer(password, username, ip, port) != nil
 }
 

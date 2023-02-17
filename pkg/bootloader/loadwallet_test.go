@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +21,7 @@ func TestOpenWallet(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cipherText := grpc.PasswordToSha256(password)
+	cipherText := gcrypto.PasswordToSha256(password)
 	w := wallet.CreateWallet(username, cipherText)
 	wallet.SaveWallet(w, cipherText)
 	new, err := wallet.OpenWallet(username, cipherText)
@@ -37,12 +36,12 @@ func TestOpenWallet(t *testing.T) {
 }
 
 func TestEncryptDecrypt(t *testing.T) {
-	cipherText := grpc.PasswordToSha256(password)
+	cipherText := gcrypto.PasswordToSha256(password)
 	keyPair := gcrypto.GenerateKeyPair()
-	cipherPriv := wallet.Encryption(cipherText, keyPair.PrivateKeySerialize())
-	privateKey := wallet.Decryption(cipherText, cipherPriv)
+	cipherPriv := gcrypto.Encryption(cipherText, keyPair.PrivateKeySerialize())
+	privateKey := gcrypto.Decryption(cipherText, cipherPriv)
 	comp := bytes.Compare(keyPair.PrivateKeySerialize(), privateKey)
-	cipherComp := bytes.Compare(cipherText, grpc.PasswordToSha256(password))
+	cipherComp := bytes.Compare(cipherText, gcrypto.PasswordToSha256(password))
 	assert.Equal(t, 0, comp, "key not equal after decryption")
 	assert.Equal(t, 0, cipherComp, "sha256 not working")
 }

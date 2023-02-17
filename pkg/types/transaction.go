@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"unsafe"
 
@@ -124,4 +125,11 @@ func (tx *GhostTransaction) GetHashKey() []byte {
 	hash := sha256.New()
 	hash.Write(tx.SerializeToByte())
 	return hash.Sum(nil)
+}
+
+func (tx *GhostTransaction) TxCopy() (copy GhostTransaction) {
+	data := tx.SerializeToByte()
+	byteBuf := bytes.NewBuffer(data)
+	copy.Deserialize(byteBuf)
+	return copy
 }

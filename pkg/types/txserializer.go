@@ -47,6 +47,8 @@ func (output *TxOutput) Serialize(stream *mems.MemoryStream) (sErr *SerialiazeEr
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			sErr = &SerialiazeError{result: Exception}
+		} else {
+			sErr = nil
 		}
 	}()
 	bs4 := make([]byte, 4)
@@ -65,7 +67,7 @@ func (output *TxOutput) Serialize(stream *mems.MemoryStream) (sErr *SerialiazeEr
 	stream.Write(bs4)
 	stream.Write(output.ScriptPubKey)
 
-	return nil
+	return sErr
 }
 
 func (output *TxOutput) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeError) {
@@ -74,6 +76,8 @@ func (output *TxOutput) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeErro
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			sErr = &SerialiazeError{result: Exception}
+		} else {
+			sErr = nil
 		}
 	}()
 	output.Addr = make([]byte, gbytes.PubKeySize)
@@ -85,7 +89,7 @@ func (output *TxOutput) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeErro
 	binary.Read(byteBuf, binary.LittleEndian, &output.ScriptSize)
 	output.ScriptPubKey = make([]byte, output.ScriptSize)
 	binary.Read(byteBuf, binary.LittleEndian, output.ScriptPubKey)
-	return nil
+	return sErr
 }
 
 func (input *TxInput) Serialize(stream *mems.MemoryStream) (sErr *SerialiazeError) {
@@ -94,6 +98,8 @@ func (input *TxInput) Serialize(stream *mems.MemoryStream) (sErr *SerialiazeErro
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			sErr = &SerialiazeError{result: Exception}
+		} else {
+			sErr = nil
 		}
 	}()
 	bs := make([]byte, 4)
@@ -106,7 +112,7 @@ func (input *TxInput) Serialize(stream *mems.MemoryStream) (sErr *SerialiazeErro
 	binary.LittleEndian.PutUint32(bs, input.ScriptSize)
 	stream.Write(bs)
 	stream.Write(input.ScriptSig)
-	return nil
+	return sErr
 }
 
 func (input *TxInput) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeError) {
@@ -115,6 +121,8 @@ func (input *TxInput) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeError)
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			sErr = &SerialiazeError{result: Exception}
+		} else {
+			sErr = nil
 		}
 	}()
 	input.PrevOut.TxId = make([]byte, gbytes.HashSize)
@@ -125,7 +133,7 @@ func (input *TxInput) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeError)
 	input.ScriptSig = make([]byte, input.ScriptSize)
 	binary.Read(byteBuf, binary.LittleEndian, input.ScriptSig)
 
-	return nil
+	return sErr
 }
 
 func (body *TxBody) Serialize(stream *mems.MemoryStream) (sErr *SerialiazeError) {
@@ -134,6 +142,8 @@ func (body *TxBody) Serialize(stream *mems.MemoryStream) (sErr *SerialiazeError)
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			sErr = &SerialiazeError{result: Exception}
+		} else {
+			sErr = nil
 		}
 	}()
 	bs := make([]byte, 4)
@@ -152,7 +162,7 @@ func (body *TxBody) Serialize(stream *mems.MemoryStream) (sErr *SerialiazeError)
 	binary.LittleEndian.PutUint32(bs, body.LockTime)
 	stream.Write(bs)
 
-	return nil
+	return sErr
 }
 
 func (body *TxBody) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeError) {
@@ -161,6 +171,8 @@ func (body *TxBody) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeError) {
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			sErr = &SerialiazeError{result: Exception}
+		} else {
+			sErr = nil
 		}
 	}()
 	binary.Read(byteBuf, binary.LittleEndian, &body.InputCounter)
@@ -176,13 +188,13 @@ func (body *TxBody) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeError) {
 	binary.Read(byteBuf, binary.LittleEndian, &body.Nonce)
 	binary.Read(byteBuf, binary.LittleEndian, &body.LockTime)
 
-	return nil
+	return sErr
 }
 
 func (tx *GhostTransaction) SerializeToByte() []byte {
 	size := tx.Size()
 	stream := mems.NewCapacity(int(size))
-	if tx.Serialize(stream).Result() == false {
+	if !tx.Serialize(stream).Result() {
 		return nil
 	}
 	return stream.Bytes()
@@ -194,6 +206,8 @@ func (tx *GhostTransaction) Serialize(stream *mems.MemoryStream) (sErr *Serialia
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			sErr = &SerialiazeError{result: Exception}
+		} else {
+			sErr = nil
 		}
 	}()
 	/*
@@ -201,7 +215,7 @@ func (tx *GhostTransaction) Serialize(stream *mems.MemoryStream) (sErr *Serialia
 		stream := mems.NewCapacity(int(size))*/
 	stream.Write(tx.TxId[:])
 	tx.Body.Serialize(stream)
-	return nil
+	return sErr
 }
 
 func (tx *GhostTransaction) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeError) {
@@ -210,18 +224,20 @@ func (tx *GhostTransaction) Deserialize(byteBuf *bytes.Buffer) (sErr *Serialiaze
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			sErr = &SerialiazeError{result: Exception}
+		} else {
+			sErr = nil
 		}
 	}()
 	tx.TxId = make([]byte, gbytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, tx.TxId)
 	tx.Body.Deserialize(byteBuf)
-	return nil
+	return sErr
 }
 
 func (tx *GhostDataTransaction) SerializeToByte() []byte {
 	size := tx.Size()
 	stream := mems.NewCapacity(int(size))
-	if tx.Serialize(stream).Result() == false {
+	if !tx.Serialize(stream).Result() {
 		return nil
 	}
 	return stream.Bytes()
@@ -233,7 +249,10 @@ func (tx *GhostDataTransaction) Serialize(stream *mems.MemoryStream) (sErr *Seri
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			sErr = &SerialiazeError{result: Exception}
+		} else {
+			sErr = nil
 		}
+
 	}()
 	bs4 := make([]byte, 4)
 	bs8 := make([]byte, 8)
@@ -245,7 +264,7 @@ func (tx *GhostDataTransaction) Serialize(stream *mems.MemoryStream) (sErr *Seri
 	if tx.Data != nil {
 		stream.Write(tx.Data)
 	}
-	return nil
+	return sErr
 }
 
 func (tx *GhostDataTransaction) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeError) {
@@ -254,6 +273,8 @@ func (tx *GhostDataTransaction) Deserialize(byteBuf *bytes.Buffer) (sErr *Serial
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			sErr = &SerialiazeError{result: Exception}
+		} else {
+			sErr = nil
 		}
 	}()
 	tx.TxId = make([]byte, gbytes.HashSize)
@@ -266,5 +287,5 @@ func (tx *GhostDataTransaction) Deserialize(byteBuf *bytes.Buffer) (sErr *Serial
 			log.Fatal("GhostDataTrasaction.Deserialize error: ", err)
 		}
 	}
-	return nil
+	return sErr
 }

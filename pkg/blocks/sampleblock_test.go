@@ -5,14 +5,19 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"testing"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/stretchr/testify/assert"
 	mems "github.com/traherom/memstream"
+	"google.golang.org/protobuf/proto"
 )
+
+var password = "test"
 
 func TestMakeGenesisHeader(t *testing.T) {
 	//todo block sign을 만들어야함
@@ -57,32 +62,50 @@ func TestMakeGenesis(t *testing.T) {
 }
 
 func TestMakeGenesisFileIo(t *testing.T) {
-	if err := os.RemoveAll("./samples"); err != nil {
-		log.Fatal(err)
-	}
-	if err := os.Mkdir("./samples", os.ModePerm); err != nil {
-		log.Fatal(err)
-	}
+
 	accountFile := map[string]*gcrypto.GhostAddress{}
 
 	genesis := blocks.MakeGenesisBlock(func(name string, address *gcrypto.GhostAddress) {
 		accountFile[name+"@"+address.GetPubAddress()+".ghost"] = address
 	})
 
-	blockFilename := "./samples/1@" + base58.Encode(genesis.Block.GetHashKey()) + ".ghost"
+	blockFilename := "1@" + base58.Encode(genesis.Block.GetHashKey()) + ".ghost"
+	blockFilePath := path.Join("./samples/", blockFilename)
 	genesisBuf := genesis.SerializeToByte()
-	if err := ioutil.WriteFile(blockFilename, genesisBuf, 0); err != nil {
+
+	if err := os.RemoveAll("./samples"); err != nil {
+		log.Fatal(err)
+	}
+	if err := os.Mkdir("./samples", os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+	if err := ioutil.WriteFile(blockFilePath, genesisBuf, 0); err != nil {
+		log.Fatal(err)
+	}
+	blockCopyPath := "../store/genesisblock"
+	if err := os.Remove(blockCopyPath); err != nil {
+		log.Fatal(err)
+	}
+	if err := ioutil.WriteFile(blockCopyPath, genesisBuf, 0); err != nil {
 		log.Fatal(err)
 	}
 
-	for name, ghostAddr := range accountFile {
-		filename := name + "@" + ghostAddr.GetPubAddress() + ".ghost"
-		if err := ioutil.WriteFile("./samples/"+filename, ghostAddr.PrivateKeySerialize(), 0); err != nil {
+	for filename, ghostAddr := range accountFile {
+		keyPair := &ptypes.KeyPair{
+			PubKey:     ghostAddr.GetPubAddress(),
+			PrivateKey: ghostAddr.PrivateKeySerialize(),
+		}
+		data, err := proto.Marshal(keyPair)
+		if err != nil {
+			log.Fatal(err)
+		}
+		cipherPivateKey := gcrypto.Encryption(gcrypto.PasswordToSha256(password), data)
+		if err := ioutil.WriteFile("./samples/"+filename, cipherPivateKey, 0); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	loadedGenesis, err := ioutil.ReadFile(blockFilename)
+	loadedGenesis, err := ioutil.ReadFile(blockFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}

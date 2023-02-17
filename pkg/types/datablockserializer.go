@@ -14,8 +14,10 @@ func (header *GhostNetDataBlockHeader) Serialize(stream *mems.MemoryStream) (res
 		// error catch
 		if err := recover(); err != nil {
 			fmt.Println(err)
+			result = false
+		} else {
+			result = true
 		}
-		result = false
 	}()
 	bs4 := make([]byte, 4)
 	binary.LittleEndian.PutUint32(bs4, uint32(header.Id))
@@ -28,7 +30,7 @@ func (header *GhostNetDataBlockHeader) Serialize(stream *mems.MemoryStream) (res
 	stream.Write(bs4)
 	binary.LittleEndian.PutUint32(bs4, uint32(header.TransactionCount))
 	stream.Write(bs4)
-	return false
+	return result
 }
 
 func (header *GhostNetDataBlockHeader) Deserialize(byteBuf *bytes.Buffer) (result bool) {
@@ -36,8 +38,10 @@ func (header *GhostNetDataBlockHeader) Deserialize(byteBuf *bytes.Buffer) (resul
 		// error catch
 		if err := recover(); err != nil {
 			fmt.Println(err)
+			result = false
+		} else {
+			result = true
 		}
-		result = false
 	}()
 	header.PreviousBlockHeaderHash = make([]byte, gbytes.HashSize)
 	header.MerkleRoot = make([]byte, gbytes.HashSize)
@@ -47,7 +51,7 @@ func (header *GhostNetDataBlockHeader) Deserialize(byteBuf *bytes.Buffer) (resul
 	binary.Read(byteBuf, binary.LittleEndian, header.MerkleRoot)
 	binary.Read(byteBuf, binary.LittleEndian, &header.Nonce)
 	binary.Read(byteBuf, binary.LittleEndian, &header.TransactionCount)
-	return false
+	return result
 }
 
 func (dataBlock *GhostNetDataBlock) Serialize(stream *mems.MemoryStream) bool {

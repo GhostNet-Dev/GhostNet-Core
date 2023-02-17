@@ -2,10 +2,10 @@ package grpc
 
 import (
 	"context"
-	"crypto/sha256"
 	"log"
 	"time"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/rpc"
 	"google.golang.org/grpc"
@@ -26,12 +26,6 @@ func NewGrpcClient(grpcIp, grpcPort string, timeout uint32) *GrpcClient {
 		GrpcPort: grpcPort,
 		Timeout:  timeout,
 	}
-}
-
-func PasswordToSha256(password string) []byte {
-	hash := sha256.New()
-	hash.Write([]byte(password))
-	return hash.Sum(nil)
 }
 
 func (client *GrpcClient) ConnectServer() {
@@ -70,7 +64,7 @@ func (client *GrpcClient) GetContainerList(id uint32) *rpc.GetContainerListRespo
 func (client *GrpcClient) CreateAccount(username, password string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(client.Timeout))
 	defer cancel()
-	r, err := client.c.CreateAccount(ctx, &rpc.CreateAccountRequest{Username: username, Password: PasswordToSha256(password)})
+	r, err := client.c.CreateAccount(ctx, &rpc.CreateAccountRequest{Username: username, Password: gcrypto.PasswordToSha256(password)})
 	if err != nil {
 		log.Printf("could not connect: %v", err)
 		return false
@@ -79,7 +73,7 @@ func (client *GrpcClient) CreateAccount(username, password string) bool {
 }
 
 func (client *GrpcClient) CreateGenesisEncrypt(id uint32, password string) bool {
-	return client.CreateGenesis(id, PasswordToSha256(password))
+	return client.CreateGenesis(id, gcrypto.PasswordToSha256(password))
 }
 
 func (client *GrpcClient) CreateGenesis(id uint32, password []byte) bool {
@@ -96,7 +90,7 @@ func (client *GrpcClient) CreateGenesis(id uint32, password []byte) bool {
 func (client *GrpcClient) GetPrivateKey(id uint32, username, password string) ([]byte, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(client.Timeout))
 	defer cancel()
-	r, err := client.c.GetPrivateKey(ctx, &rpc.PrivateKeyRequest{Id: id, Username: username, Password: PasswordToSha256(password)})
+	r, err := client.c.GetPrivateKey(ctx, &rpc.PrivateKeyRequest{Id: id, Username: username, Password: gcrypto.PasswordToSha256(password)})
 	if err != nil {
 		log.Printf("could not connect: %v", err)
 		return nil, false
@@ -108,7 +102,7 @@ func (client *GrpcClient) ForkContainer(username, password, ip, port string) boo
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(client.Timeout))
 	defer cancel()
 	r, err := client.c.ForkContainer(ctx, &rpc.ForkContainerRequest{
-		Username: username, Password: PasswordToSha256(password), Ip: ip, Port: port})
+		Username: username, Password: gcrypto.PasswordToSha256(password), Ip: ip, Port: port})
 	if err != nil {
 		log.Printf("could not connect: %v", err)
 		return false
@@ -120,7 +114,7 @@ func (client *GrpcClient) CreateContainer(username, password, ip, port string) b
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(client.Timeout))
 	defer cancel()
 	r, err := client.c.CreateContainer(ctx, &rpc.CreateContainerRequest{
-		Username: username, Password: PasswordToSha256(password), Ip: ip, Port: port})
+		Username: username, Password: gcrypto.PasswordToSha256(password), Ip: ip, Port: port})
 	if err != nil {
 		log.Printf("could not connect: %v", err)
 		return false
@@ -128,7 +122,7 @@ func (client *GrpcClient) CreateContainer(username, password, ip, port string) b
 	return r.Result
 }
 
-func (client *GrpcClient) LoginContainer(password []byte, username, ip, port string) bool {
+func (client *GrpcClient) LoginContainer(id uint32, password []byte, username, ip, port string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(client.Timeout))
 	defer cancel()
 	r, err := client.c.LoginContainer(ctx, &rpc.LoginRequest{

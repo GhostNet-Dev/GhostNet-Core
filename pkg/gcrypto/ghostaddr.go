@@ -78,6 +78,10 @@ func TranslateSigPubTo160PubKey(sigPubKey []byte) []byte {
 	return RIPEMD160Hasher.Sum(nil)
 }
 
+func Translate160ToBase58Addr(pubKey []byte) string {
+	return base58.CheckEncode(pubKey, 0)
+}
+
 func (ghostAddr *GhostAddress) Get160PubKey() []byte {
 	if ghostAddr.pubKey160 == nil {
 		pubKey := ghostAddr.pubKey

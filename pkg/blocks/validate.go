@@ -40,13 +40,13 @@ func (blocks *Blocks) BlockValidation(pairedBlock *types.PairedBlock, prevPaired
 		return false
 	}
 
-	if blocks.AliceTransactionValidation(alice, txs) == false {
+	if !blocks.AliceTransactionValidation(alice, txs) {
 		return false
 	}
 
 	for _, tx := range txs {
 		txChkResult := blocks.txs.TransactionValidation(&tx, nil, blocks.blockContainer.TxContainer)
-		if txChkResult.Result() == false {
+		if !txChkResult.Result() {
 			return false
 		}
 	}
@@ -78,7 +78,7 @@ func (blocks *Blocks) AliceTransactionValidation(alice []types.GhostTransaction,
 	aliceOutput := alice[0].Body.Vout
 	for _, output := range aliceOutput {
 		broker := string(output.Addr)
-		if _, err := brokerGather[broker]; err == false {
+		if _, err := brokerGather[broker]; !err {
 			return false
 		}
 		if brokerGather[broker] != output.Value {

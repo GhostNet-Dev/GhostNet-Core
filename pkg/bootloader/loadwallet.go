@@ -1,11 +1,7 @@
 package bootloader
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"errors"
-	"io"
 	"log"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
@@ -33,7 +29,7 @@ func (loadWallet *LoadWallet) OpenWallet(nickname string, password []byte) (*gcr
 	if err != nil || cipherPivateKey == nil {
 		return nil, err
 	}
-	der := loadWallet.Decryption(password, cipherPivateKey)
+	der := gcrypto.Decryption(password, cipherPivateKey)
 	if der == nil {
 		return nil, errors.New("password is wrong")
 	}
@@ -62,7 +58,7 @@ func (loadWallet *LoadWallet) SaveWallet(w *gcrypto.Wallet, password []byte) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cipherPivateKey := loadWallet.Encryption(password, data)
+	cipherPivateKey := gcrypto.Encryption(password, data)
 	loadWallet.db.SaveEntry(loadWallet.table, []byte(nickname), cipherPivateKey)
 }
 
@@ -76,55 +72,4 @@ func (loadWallet *LoadWallet) GetWalletList() (nicknames []string) {
 		log.Print(err)
 	}
 	return nil
-}
-
-func (loadWallet *LoadWallet) Encryption(key []byte, privateKey []byte) []byte {
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-	return encrypt(block, privateKey)
-}
-
-func (loadWallet *LoadWallet) Decryption(key []byte, cipherText []byte) []byte {
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-	return decrypt(block, cipherText)
-}
-
-func encrypt(b cipher.Block, plaintext []byte) []byte {
-	gcm, err := cipher.NewGCM(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		log.Fatal(err)
-	}
-	return gcm.Seal(nonce, nonce, plaintext, nil)
-}
-
-func decrypt(b cipher.Block, ciphertext []byte) []byte {
-	gcm, err := cipher.NewGCM(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nonceSize := gcm.NonceSize()
-	if len(ciphertext) < nonceSize {
-		log.Fatal("len(ciphertext) < nonceSize")
-	}
-
-	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-	return plaintext
 }

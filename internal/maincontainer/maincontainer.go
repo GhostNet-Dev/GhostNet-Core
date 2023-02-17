@@ -50,9 +50,12 @@ func (main *MainContainer) StartContainer() {
 	log.Println("Start Grpc Server")
 
 	main.grpcServer.LoginContainerHandler = func(passwdHash []byte, username, ip, port string) bool {
-		if w, _ := main.bootFactory.LoadWallet.OpenWallet(username, passwdHash); w == nil {
-			log.Println("Login fail user = ", username)
-			return false
+		creators := main.bootFactory.Genesis.CreatorList()
+		if _, exist := creators[username]; !exist {
+			if w, _ := main.bootFactory.LoadWallet.OpenWallet(username, passwdHash); w == nil {
+				log.Println("Login fail user = ", username)
+				return false
+			}
 		}
 		main.config.Username = username
 		main.config.Password = passwdHash
@@ -75,7 +78,7 @@ func (main *MainContainer) StartContainer() {
 func (main *MainContainer) StartBootLoading() {
 	booter := bootloader.NewBootLoader(factory.BootTables, main.networkFactory.Udp,
 		main.networkFactory.PacketFactory, main.config, main.bootFactory.Db,
-		main.bootFactory.LoadWallet)
+		main.bootFactory.LoadWallet, main.bootFactory.Genesis)
 	w := booter.BootLoading(main.config)
 	if w == nil {
 		return
@@ -84,8 +87,9 @@ func (main *MainContainer) StartBootLoading() {
 	main.defaultFactory = factory.NewDefaultFactory(main.networkFactory, w, main.config)
 	main.ghostApi = gapi.NewGhostApi(main.grpcServer, main.defaultFactory.Block, main.defaultFactory.BlockContainer,
 		main.bootFactory.LoadWallet, main.config)
-	main.StartServer()
+	go main.StartServer()
 }
 
 func (main *MainContainer) StartServer() {
+	main.defaultFactory.BlockServer.BlockServer()
 }

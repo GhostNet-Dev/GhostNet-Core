@@ -71,7 +71,7 @@ func (containers *Containers) LoginContainer(password []byte, username, host, po
 
 	container.Client.ConnectServer()
 	defer container.Client.CloseServer()
-	if !container.Client.LoginContainer(password, username, host, port) {
+	if !container.Client.LoginContainer(id, password, username, host, port) {
 		log.Println("Login Fail ", username)
 		return nil
 	}
@@ -138,7 +138,7 @@ func (containers *Containers) ForkContainer(password []byte, username, host, por
 	wg.Wait()
 	container.Client.ConnectServer()
 	defer container.Client.CloseServer()
-	if !container.Client.LoginContainer(password, username, host, port) {
+	if !container.Client.LoginContainer(id, password, username, host, port) {
 		log.Println("Login Fail ", username)
 	}
 
@@ -179,7 +179,7 @@ func (containers *Containers) CreateContainer(password []byte, username, host, p
 	wg.Wait()
 	container.Client.ConnectServer()
 	defer container.Client.CloseServer()
-	if !container.Client.LoginContainer(password, username, host, port) {
+	if !container.Client.LoginContainer(id, password, username, host, port) {
 		log.Println("Login Fail ", username)
 	}
 

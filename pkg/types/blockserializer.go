@@ -12,7 +12,7 @@ import (
 func (header *GhostNetBlockHeader) SerializeToByte() []byte {
 	size := header.Size()
 	stream := mems.NewCapacity(int(size))
-	if header.Serialize(stream) == false {
+	if !header.Serialize(stream) {
 		return nil
 	}
 	return stream.Bytes()
@@ -24,6 +24,8 @@ func (header *GhostNetBlockHeader) Serialize(stream *mems.MemoryStream) (result 
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			result = false
+		} else {
+			result = true
 		}
 	}()
 	bs4 := make([]byte, 4)
@@ -48,7 +50,7 @@ func (header *GhostNetBlockHeader) Serialize(stream *mems.MemoryStream) (result 
 	binary.LittleEndian.PutUint32(bs4, uint32(header.SignatureSize))
 	stream.Write(bs4)
 	stream.Write(header.BlockSignature.SerializeToByte())
-	return true
+	return result
 }
 
 func (header *GhostNetBlockHeader) Deserialize(byteBuf *bytes.Buffer) (result bool) {
@@ -57,6 +59,8 @@ func (header *GhostNetBlockHeader) Deserialize(byteBuf *bytes.Buffer) (result bo
 		if err := recover(); err != nil {
 			fmt.Println(err)
 			result = false
+		} else {
+			result = true
 		}
 	}()
 
@@ -75,20 +79,20 @@ func (header *GhostNetBlockHeader) Deserialize(byteBuf *bytes.Buffer) (result bo
 	binary.Read(byteBuf, binary.LittleEndian, &header.TransactionCount)
 	binary.Read(byteBuf, binary.LittleEndian, &header.SignatureSize)
 	header.BlockSignature.DeserializeSigHash(byteBuf)
-	return true
+	return result
 }
 
 func (block *GhostNetBlock) Serialize(stream *mems.MemoryStream) (result bool) {
-	if result = block.Header.Serialize(stream); result == false {
+	if result = block.Header.Serialize(stream); !result {
 		return false
 	}
 	for _, tx := range block.Alice {
-		if tx.Serialize(stream).Result() == false {
+		if !tx.Serialize(stream).Result() {
 			return false
 		}
 	}
 	for _, tx := range block.Transaction {
-		if tx.Serialize(stream).Result() == false {
+		if !tx.Serialize(stream).Result() {
 			return false
 		}
 	}
@@ -98,25 +102,25 @@ func (block *GhostNetBlock) Serialize(stream *mems.MemoryStream) (result bool) {
 func (block *GhostNetBlock) SerializeToByte() []byte {
 	size := block.Size()
 	stream := mems.NewCapacity(int(size))
-	if block.Serialize(stream) == false {
+	if !block.Serialize(stream) {
 		return nil
 	}
 	return stream.Bytes()
 }
 
 func (block *GhostNetBlock) Deserialize(byteBuf *bytes.Buffer) (result bool) {
-	if result = block.Header.Deserialize(byteBuf); result == false {
+	if result = block.Header.Deserialize(byteBuf); !result {
 		return false
 	}
 	block.Alice = make([]GhostTransaction, block.Header.AliceCount)
 	for i := 0; i < int(block.Header.AliceCount); i++ {
-		if block.Alice[i].Deserialize(byteBuf).Result() == false {
+		if !block.Alice[i].Deserialize(byteBuf).Result() {
 			return false
 		}
 	}
 	block.Transaction = make([]GhostTransaction, block.Header.TransactionCount)
 	for i := 0; i < int(block.Header.TransactionCount); i++ {
-		if block.Transaction[i].Deserialize(byteBuf).Result() == false {
+		if !block.Transaction[i].Deserialize(byteBuf).Result() {
 			return false
 		}
 	}
@@ -126,21 +130,21 @@ func (block *GhostNetBlock) Deserialize(byteBuf *bytes.Buffer) (result bool) {
 func (pair *PairedBlock) SerializeToByte() []byte {
 	size := pair.Size()
 	stream := mems.NewCapacity(int(size))
-	if pair.Serialize(stream) == false {
+	if !pair.Serialize(stream) {
 		return nil
 	}
 	return stream.Bytes()
 }
 
 func (pair *PairedBlock) Serialize(stream *mems.MemoryStream) bool {
-	if pair.Block.Serialize(stream) == false || pair.DataBlock.Serialize(stream) == false {
+	if !pair.Block.Serialize(stream) || !pair.DataBlock.Serialize(stream) {
 		return false
 	}
 	return true
 }
 
 func (pair *PairedBlock) Deserialize(byteBuf *bytes.Buffer) bool {
-	if pair.Block.Deserialize(byteBuf) == false || pair.DataBlock.Deserialize(byteBuf) == false {
+	if !pair.Block.Deserialize(byteBuf) || !pair.DataBlock.Deserialize(byteBuf) {
 		return false
 	}
 	return true

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"net"
+	"time"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/cloudservice"
@@ -64,6 +65,12 @@ func NewBlockManager(con *consensus.Consensus,
 	}
 	blockMgr.InitHandler(master)
 	return blockMgr
+}
+
+func (blockMgr *BlockManager) BlockServer() {
+	log.Print("Block Server Start.")
+	for _ = range time.Tick(time.Second * 3) {
+	}
 }
 
 func (blockMgr *BlockManager) BlockSync() bool {
