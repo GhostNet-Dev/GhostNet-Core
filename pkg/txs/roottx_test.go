@@ -25,7 +25,7 @@ func TestRootFsTxExecution(t *testing.T) {
 }
 
 func MakeRootFsTx() *types.GhostTransaction {
-	tx := txs.CreateRootFsTx(TransferCoinInfo{
+	tx := txs.CreateRootFsTx(TransferTxInfo{
 		ToAddr:    Recver.Get160PubKey(),
 		Broker:    Broker.Get160PubKey(),
 		FeeAddr:   Sender.Get160PubKey(),

@@ -12,7 +12,7 @@ func (txs *TXs) MakeSampleRootAccount(nickname string, brokerAddr []byte) (*type
 		brokerAddr = toAddr
 	}
 
-	tx := txs.CreateRootFsTx(TransferCoinInfo{
+	tx := txs.CreateRootFsTx(TransferTxInfo{
 		ToAddr:    toAddr,
 		Broker:    brokerAddr,
 		FeeAddr:   brokerAddr,

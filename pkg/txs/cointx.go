@@ -1,7 +1,6 @@
 package txs
 
 import (
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
@@ -10,17 +9,7 @@ const (
 	FeeRatio = 0.0129
 )
 
-type TransferCoinInfo struct {
-	MyWallet     gcrypto.Wallet
-	ToAddr       []byte
-	Broker       []byte
-	FeeAddr      []byte
-	FeeBroker    []byte
-	Prevs        map[types.TxOutputType][]types.PrevOutputParam
-	TransferCoin uint64
-}
-
-func (txs *TXs) TransferCoin(info TransferCoinInfo) *types.GhostTransaction {
+func (txs *TXs) TransferCoin(info TransferTxInfo) *types.GhostTransaction {
 	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
 		types.TxTypeCoinTransfer: {
 			{

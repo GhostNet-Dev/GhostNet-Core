@@ -1,6 +1,8 @@
 package factory
 
 import (
+	"path"
+
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blockmanager"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
@@ -35,6 +37,7 @@ type DefaultFactory struct {
 	LocalIpAddr    *ptypes.GhostIp
 
 	networkFactory *NetworkFactory
+	config         *gconfig.GConfig
 }
 
 type NetworkFactory struct {
@@ -60,6 +63,7 @@ func NewDefaultFactory(networkFactory *NetworkFactory,
 
 	factory := &DefaultFactory{
 		networkFactory: networkFactory,
+		config:         config,
 	}
 
 	factory.GScript = gvm.NewGScript()
@@ -82,4 +86,10 @@ func NewDefaultFactory(networkFactory *NetworkFactory,
 		factory.Txs, factory.BlockContainer, factory.Master, factory.FileService, factory.Cloud, user.GetGhostAddress(), ghostIp)
 
 	return factory
+}
+
+func (factory *DefaultFactory) FactoryOpen() {
+	schemeFilePath := path.Join(factory.config.DbSchemePath, factory.config.DbSchemeFile)
+	factory.BlockContainer.BlockContainerOpen(schemeFilePath, factory.config.SqlPath)
+	factory.BlockContainer.GenesisBlockChecker(store.GenesisBlock())
 }

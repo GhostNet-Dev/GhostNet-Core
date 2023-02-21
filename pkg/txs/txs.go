@@ -22,6 +22,16 @@ func NewTXs(g *gvm.GScript, b *store.BlockContainer, e *gvm.GVM) *TXs {
 	}
 }
 
+type TransferTxInfo struct {
+	MyWallet     gcrypto.Wallet
+	ToAddr       []byte
+	Broker       []byte
+	FeeAddr      []byte
+	FeeBroker    []byte
+	Prevs        map[types.TxOutputType][]types.PrevOutputParam
+	TransferCoin uint64
+}
+
 func (txs *TXs) InkTheContract(tx *types.GhostTransaction,
 	ghostAddr *gcrypto.GhostAddress) *types.GhostTransaction {
 	txs.gScript.MakeScriptSigExecuteUnlock(tx, ghostAddr)
@@ -76,7 +86,7 @@ func (txs *TXs) MakeContractTx(prev types.PrevOutputParam,
 	}
 }
 
-func (txs *TXs) MakeTransaction(info TransferCoinInfo, prev map[types.TxOutputType][]types.PrevOutputParam,
+func (txs *TXs) MakeTransaction(info TransferTxInfo, prev map[types.TxOutputType][]types.PrevOutputParam,
 	next map[types.TxOutputType][]types.NextOutputParam) *types.GhostTransaction {
 	dummy := make([]byte, gbytes.HashSize)
 	inputs := []types.TxInput{}
@@ -103,7 +113,7 @@ func (txs *TXs) MakeTransaction(info TransferCoinInfo, prev map[types.TxOutputTy
 	return tx
 }
 
-func (txs *TXs) MakeInputOutput(txType types.TxOutputType, info TransferCoinInfo, prev []types.PrevOutputParam,
+func (txs *TXs) MakeInputOutput(txType types.TxOutputType, info TransferTxInfo, prev []types.PrevOutputParam,
 	next []types.NextOutputParam) (inputs []types.TxInput, outputs []types.TxOutput) {
 	var totalCoin uint64 = 0
 	var transferCoin uint64 = 0

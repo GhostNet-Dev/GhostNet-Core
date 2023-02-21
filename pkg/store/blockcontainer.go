@@ -1,6 +1,7 @@
 package store
 
 import (
+	"bytes"
 	"log"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql"
@@ -69,4 +70,18 @@ func (blockContainer *BlockContainer) InsertBlock(pairedBlock *types.PairedBlock
 
 func (blockContainer *BlockContainer) DeleteAfterTargetId(blockId uint32) {
 	blockContainer.gSql.DeleteAfterTargetId(blockId)
+}
+
+func (blockContainer *BlockContainer) GenesisBlockChecker(genesisBlock *types.PairedBlock) {
+	pairedBlock := blockContainer.gSql.SelectBlock(1)
+	if pairedBlock == nil {
+		blockContainer.gSql.InsertBlock(genesisBlock)
+		return
+	}
+	if bytes.Equal(pairedBlock.Block.GetHashKey(), genesisBlock.Block.GetHashKey()) {
+		return
+	}
+	log.Print("conflict genesis block between db and embed block")
+	blockContainer.Reset()
+	blockContainer.gSql.InsertBlock(genesisBlock)
 }

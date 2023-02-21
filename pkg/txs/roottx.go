@@ -8,7 +8,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
-func (txs *TXs) CreateRootFsTx(info TransferCoinInfo, nickname string) *types.GhostTransaction {
+func (txs *TXs) CreateRootFsTx(info TransferTxInfo, nickname string) *types.GhostTransaction {
 	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
 		types.TxTypeFSRoot: {
 			{

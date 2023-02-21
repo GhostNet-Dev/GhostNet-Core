@@ -6,3 +6,4 @@ FilePath: ./
 DbScheme: "db.sqlite3.sql"
 DbSchemePath: ./
 StandaloneMode: false
+Timeout: 8

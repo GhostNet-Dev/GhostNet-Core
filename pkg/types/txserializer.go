@@ -257,6 +257,7 @@ func (tx *GhostDataTransaction) Serialize(stream *mems.MemoryStream) (sErr *Seri
 	bs4 := make([]byte, 4)
 	bs8 := make([]byte, 8)
 	stream.Write(tx.TxId[:])
+	//stream.Write(tx.LogicalAddress[:])
 	binary.LittleEndian.PutUint64(bs8, tx.LogicalAddress)
 	stream.Write(bs8)
 	binary.LittleEndian.PutUint32(bs4, tx.DataSize)

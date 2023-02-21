@@ -69,16 +69,17 @@ func NewBlockManager(con *consensus.Consensus,
 
 func (blockMgr *BlockManager) BlockServer() {
 	log.Print("Block Server Start.")
-	for _ = range time.Tick(time.Second * 3) {
+	for range time.Tick(time.Second * 3) {
+		blockMgr.BlockSync()
 	}
 }
 
 func (blockMgr *BlockManager) BlockSync() bool {
-	if blockMgr.fsm.CheckAcceptNewBlock() == false {
+	if !blockMgr.fsm.CheckAcceptNewBlock() {
 		return true
 	}
 
-	if result, _ := blockMgr.consensus.CheckTriggerNewBlock(); result == true {
+	if result, _ := blockMgr.consensus.CheckTriggerNewBlock(); result {
 		blockMgr.TriggerNewBlock()
 	} else {
 		blockMgr.BroadcastBlockChainNotification()
@@ -88,7 +89,7 @@ func (blockMgr *BlockManager) BlockSync() bool {
 
 func (blockMgr *BlockManager) TriggerNewBlock() {
 	result, triggerTxCount := blockMgr.consensus.CheckTriggerNewBlock()
-	if blockMgr.fsm.CheckAcceptNewBlock() == false || result == false {
+	if !blockMgr.fsm.CheckAcceptNewBlock() || !result {
 		return
 	}
 	// miner와 creator는 동일하게 한다. 즉 creator만 mining을 할 수 있다.

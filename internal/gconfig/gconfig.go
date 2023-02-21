@@ -12,10 +12,11 @@ const (
 	DefaultSqlPath      = "./"
 	DefaultFilePath     = "./"
 	DefaultDbName       = "sqlite3"
-	DefaultDbScheme     = "db.sqlite3.sql"
+	DefaultDbSchemeFile = "db.sqlite3.sql"
 	DefaultDbSchemePath = "./"
 
 	DefaultStandaloneMode = false
+	DefaultTimeout        = 8
 )
 
 type GConfig struct {
@@ -32,7 +33,7 @@ type GConfig struct {
 	SqlPath               string
 	FilePath              string
 	DbName                string
-	DbScheme              string
+	DbSchemeFile          string
 	DbSchemePath          string
 	StandaloneMode        bool
 
@@ -51,8 +52,9 @@ func NewDefaultConfig() *GConfig {
 		SqlPath:               DefaultSqlPath,
 		FilePath:              DefaultFilePath,
 		DbName:                DefaultDbName,
-		DbScheme:              DefaultDbScheme,
+		DbSchemeFile:          DefaultDbSchemeFile,
 		DbSchemePath:          DefaultDbSchemePath,
 		StandaloneMode:        DefaultStandaloneMode,
+		Timeout:               DefaultTimeout,
 	}
 }

@@ -23,19 +23,21 @@ func (gSql *GSqlite3) GetMinPoolId() uint32 {
 }
 
 func (gSql *GSqlite3) GetMaxPoolId() uint32 {
-	var max uint32
+	var max int
 	query, err := gSql.db.Prepare(`select max(TxIndex) from c_transactions`)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
 	defer query.Close()
 
-	if err = query.QueryRow().Scan(&max); err != nil {
+	if err = query.QueryRow().Scan(&max); err == sql.ErrNoRows {
+		return 0
+	} else if err != nil {
 		log.Printf("%s", err)
 		return 0
 	}
 
-	return max
+	return uint32(max)
 }
 
 // InsertTx ..

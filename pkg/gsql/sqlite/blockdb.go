@@ -42,20 +42,8 @@ func (gSql *GSqlite3) CreateTable(schemaFile string) error {
 	}
 	query := string(file)
 	if _, err = gSql.db.Exec(query); err != nil {
-		log.Fatal(err.Error(), ": ", query)
+		log.Fatal(err.Error())
 	}
-	/*
-		// Execute all
-		querys := strings.Split(string(file), ";")
-
-		for _, query := range querys {
-			query = strings.TrimSpace(query)
-			if _, err = gSql.db.Exec(query); err != nil {
-				log.Fatal(err.Error(), ": ", query)
-			}
-		}
-	*/
-
 	return err
 }
 
@@ -220,7 +208,7 @@ func (gSql *GSqlite3) SelectTxs(blockId uint32, txType uint32) []types.GhostTran
 
 // SelectTx 역시나 여긴 인터페이스 역할을하고 아래 쿼리들은 하위 클래스에 할당해야할 것 같음
 func (gSql *GSqlite3) SelectTx(TxId []byte) *types.GhostTransaction {
-	if ok := gSql.CheckExistTxId(TxId); ok == false {
+	if ok := gSql.CheckExistTxId(TxId); !ok {
 		return nil
 	}
 
@@ -341,7 +329,9 @@ func (gSql *GSqlite3) SelectUnusedOutputs(txType types.TxOutputType, toAddr []by
 	for rows.Next() {
 		output := types.PrevOutputParam{}
 		if err = rows.Scan(&output.VOutPoint.TxId, &output.Vout.Addr, &output.Vout.BrokerAddr, &output.Vout.ScriptPubKey,
-			&output.Vout.ScriptSize, &output.Vout.Type, &output.Vout.Value, &output.VOutPoint.TxOutIndex); err != nil {
+			&output.Vout.ScriptSize, &output.Vout.Type, &output.Vout.Value, &output.VOutPoint.TxOutIndex); err == sql.ErrNoRows {
+			return nil
+		} else if err != nil {
 			log.Fatal(err)
 		}
 		output.TxType = txType
@@ -363,7 +353,9 @@ func (gSql *GSqlite3) CheckExistTxId(txId []byte) bool {
 	}
 	defer query.Close()
 
-	if err := query.QueryRow(txId).Scan(&count); err != nil {
+	if err := query.QueryRow(txId).Scan(&count); err == sql.ErrNoRows {
+		return false
+	} else if err != nil {
 		log.Print(err)
 	}
 	return count > 0
@@ -378,7 +370,9 @@ func (gSql *GSqlite3) CheckExistRefOutout(refTxId []byte, outIndex uint32, notTx
 	}
 	defer query.Close()
 
-	if err := query.QueryRow(refTxId, outIndex, notTxId).Scan(&count); err != nil {
+	if err := query.QueryRow(refTxId, outIndex, notTxId).Scan(&count); err == sql.ErrNoRows {
+		return false
+	} else if err != nil {
 		log.Print(err)
 	}
 	return count > 0
@@ -392,7 +386,9 @@ func (gSql *GSqlite3) GetBlockHeight() uint32 {
 	}
 	defer query.Close()
 
-	if err := query.QueryRow().Scan(&id); err != nil {
+	if err := query.QueryRow().Scan(&id); err == sql.ErrNoRows {
+		return 0
+	} else if err != nil {
 		log.Print(err)
 	}
 	return id
