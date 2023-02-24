@@ -13,10 +13,11 @@ import (
 )
 
 type UdpServer struct {
-	UdpConn *net.UDPConn
-	Ip      string
-	Port    string
-	Pf      *PacketFactory
+	UdpConn   *net.UDPConn
+	Ip        string
+	Port      string
+	Pf        *PacketFactory
+	StartFlag bool
 }
 
 type RequestPacketInfo struct {
@@ -41,9 +42,10 @@ type ResponseHeaderInfo struct {
 
 func NewUdpServer(ip, port string, packetFactory *PacketFactory) *UdpServer {
 	return &UdpServer{
-		Ip:   ip,
-		Port: port,
-		Pf:   packetFactory,
+		Ip:        ip,
+		Port:      port,
+		Pf:        packetFactory,
+		StartFlag: false,
 	}
 }
 
@@ -67,6 +69,11 @@ func (udp *UdpServer) loadIp() *ptypes.GhostIp {
 }
 
 func (udp *UdpServer) Start(netChannel chan RequestPacketInfo, ip, port string) {
+	if udp.StartFlag == true {
+		return
+	}
+	udp.StartFlag = true
+
 	if ip != "" {
 		udp.Ip = ip
 	}

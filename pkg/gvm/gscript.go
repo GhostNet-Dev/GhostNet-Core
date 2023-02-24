@@ -91,15 +91,17 @@ func MakeRootAccount(ToAddr []byte, Nickname string) []byte {
 	return scriptBuf.Bytes()
 }
 
-func MakeDataMapping(ToAddr, token, dataTxId []byte) []byte {
+func MakeDataMapping(ToAddr []byte) []byte {
 	scriptBuf := new(bytes.Buffer)
 	lockOutputScript(scriptBuf, ToAddr)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_PUSHTOKEN)
-	binary.Write(scriptBuf, binary.LittleEndian, uint8(len(token)))
-	binary.Write(scriptBuf, binary.LittleEndian, token)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_PUSH)
-	binary.Write(scriptBuf, binary.LittleEndian, uint8(len(dataTxId)))
-	binary.Write(scriptBuf, binary.LittleEndian, dataTxId)
+	/*
+		binary.Write(scriptBuf, binary.LittleEndian, OP_PUSHTOKEN)
+		binary.Write(scriptBuf, binary.LittleEndian, uint8(len(token)))
+		binary.Write(scriptBuf, binary.LittleEndian, token)
+		binary.Write(scriptBuf, binary.LittleEndian, OP_PUSH)
+		binary.Write(scriptBuf, binary.LittleEndian, uint8(len(dataTxId)))
+		binary.Write(scriptBuf, binary.LittleEndian, dataTxId)
+	*/
 	binary.Write(scriptBuf, binary.LittleEndian, OP_MAPPING)
 	binary.Write(scriptBuf, binary.LittleEndian, OP_RETURN)
 	return scriptBuf.Bytes()

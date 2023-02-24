@@ -56,15 +56,9 @@ func (containers *Containers) CheckExistAddr(host, port string) bool {
 	return false
 }
 
-func (containers *Containers) LoginContainer(password []byte, username, host, port string) *Container {
-	if containers.CheckExistAddr(host, port) {
-		log.Printf("already allocated port number = %s", port)
-		return nil
-	}
-
-	id := containers.Id
-	container := NewContainer(id, host, port, containers.config)
-	if container == nil {
+func (containers *Containers) LoginContainer(id uint32, password []byte, username, host, port string) *Container {
+	container, exist := containers.GetContainer(id)
+	if exist == false {
 		return nil
 	}
 	container.Username = username

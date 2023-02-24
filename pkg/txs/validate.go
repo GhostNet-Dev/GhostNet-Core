@@ -85,10 +85,6 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 			if prevOutput.ScriptSize != uint32(len(prevOutput.ScriptPubKey)) {
 				return &TxChkResult{TxChkResult_FormatMismatch}
 			}
-			// Check Coin
-			if prevOutput.Type == types.TxTypeCoinTransfer {
-				getherCoin += prevOutput.Value
-			}
 
 			if txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) == true {
 				return &TxChkResult{TxChkResult_MissingRefTx}
@@ -96,6 +92,11 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 
 			if input.ScriptSig == nil {
 				return &TxChkResult{TxChkResult_FormatMismatch}
+			}
+
+			// check only transfer coin
+			if prevOutput.Type == types.TxTypeCoinTransfer {
+				getherCoin += prevOutput.Value
 			}
 
 			scriptSig := input.ScriptSig

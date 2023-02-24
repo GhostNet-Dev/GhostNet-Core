@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -104,7 +105,7 @@ func (gSql *GSqlite3) SelectBlockHeader(blockId uint32) (*types.GhostNetBlockHea
 	var blockSig []byte
 	header := types.GhostNetBlockHeader{}
 	dataHeader := types.GhostNetDataBlockHeader{}
-	sigHash := types.SigHash{}
+	count := 0
 	for rows.Next() {
 		if err = rows.Scan(&header.Id, &header.Version, &header.PreviousBlockHeaderHash,
 			&header.MerkleRoot, &header.DataBlockHeaderHash, &header.TimeStamp, &header.Bits,
@@ -113,8 +114,13 @@ func (gSql *GSqlite3) SelectBlockHeader(blockId uint32) (*types.GhostNetBlockHea
 			&dataHeader.Nonce, &dataHeader.TransactionCount); err != nil {
 			log.Fatal(err)
 		}
+		count++
 	}
-	sigHash.DeserializeSigHashFromByte(blockSig)
+	if count == 0 {
+		return nil, nil
+	}
+	header.BlockSignature = types.SigHash{}
+	header.BlockSignature.DeserializeSigHashFromByte(blockSig)
 	dataHeader.Id = header.Id
 	dataHeader.Version = header.Version
 	return &header, &dataHeader
@@ -122,6 +128,10 @@ func (gSql *GSqlite3) SelectBlockHeader(blockId uint32) (*types.GhostNetBlockHea
 
 func (gSql *GSqlite3) SelectBlock(blockId uint32) *types.PairedBlock {
 	header, dataHeader := gSql.SelectBlockHeader(blockId)
+	if header == nil || dataHeader == nil {
+		return nil
+	}
+
 	pair := types.PairedBlock{
 		Block: types.GhostNetBlock{
 			Header:      *header,
@@ -149,9 +159,10 @@ func (gSql *GSqlite3) InsertTx(blockId uint32, tx *types.GhostTransaction, txTyp
 	}
 	for i, output := range tx.Body.Vout {
 		gSql.InsertQuery(`INSERT INTO "outputs" 
-			("TxId","BlockId","ToAddr","BrokerAddr", "Type", "Value", "ScriptSize","Script",
-			"OutputIndex") VALUES (?,?,?,? ,?,?,?,?, ?);
-			`, tx.TxId, blockId, output.Addr, output.BrokerAddr, output.Type, output.Value, output.ScriptSize, output.ScriptPubKey, i)
+			("TxId","BlockId","ToAddr","BrokerAddr", "Type", "Value", "ScriptSize","Script", "ScriptExSize", "ScriptEx",
+			"OutputIndex") VALUES (?,?,?,? ,?,?,?,?, ?,?,?);
+			`, tx.TxId, blockId, output.Addr, output.BrokerAddr, output.Type, output.Value, output.ScriptSize, output.ScriptPubKey,
+			output.ScriptExSize, output.ScriptEx, i)
 	}
 }
 
@@ -270,7 +281,7 @@ func (gSql *GSqlite3) SelectInputs(TxId []byte, count uint32) []types.TxInput {
 func (gSql *GSqlite3) SelectOutputs(TxId []byte, count uint32) []types.TxOutput {
 	outputs := make([]types.TxOutput, count)
 
-	rows, err := gSql.db.Query(`select ToAddr, BrokerAddr, Script, ScriptSize, Type, Value from outputs 
+	rows, err := gSql.db.Query(`select ToAddr, BrokerAddr, Script, ScriptSize, ScriptEx, ScriptExSize, Type, Value from outputs 
 		where TxId = ? limit 0, ?`, TxId, count)
 	if err != nil {
 		log.Fatal(err)
@@ -280,7 +291,7 @@ func (gSql *GSqlite3) SelectOutputs(TxId []byte, count uint32) []types.TxOutput 
 	for i, output := range outputs {
 		rows.Next()
 		if err = rows.Scan(&output.Addr, &output.BrokerAddr, &output.ScriptPubKey, &output.ScriptSize,
-			&output.Type, &output.Value); err != nil {
+			&output.ScriptEx, &output.ScriptExSize, &output.Type, &output.Value); err != nil {
 			log.Fatal(err)
 		}
 		outputs[i] = output
@@ -343,6 +354,41 @@ func (gSql *GSqlite3) SelectUnusedOutputs(txType types.TxOutputType, toAddr []by
 	}
 
 	return outputs
+}
+
+func (gSql *GSqlite3) GetNicknameToAddress(nickname []byte) (toAddr []byte) {
+	query, err := gSql.db.Prepare("select outputs.ToAddr from transactions where Type = ? and ScriptEx = ?")
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	if err := query.QueryRow(types.TxTypeFSRoot, nickname).Scan(&toAddr); err == sql.ErrNoRows {
+		return nil
+	} else if err != nil {
+		log.Print(err)
+	}
+	return toAddr
+}
+
+func (gSql *GSqlite3) GetMaxLogicalAddress(toAddr []byte) (maxLogicalAddr uint64, err error) {
+	rows, err := gSql.db.Query(`select LogicalAddress from data_transactions 
+		left outer join outputs  on data_transactions.TxId = outputs.TxId 
+		where outputs.ToAddr = ? and  outputs.Type = ?  and  inputs.Id is NULL
+		order by outputs.BlockId ASC`, toAddr, types.TxTypeDataTransfer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = rows.Scan(&maxLogicalAddr); err == sql.ErrNoRows {
+			return 0, errors.New("there is no data tx")
+		} else if err != nil {
+			log.Fatal(err)
+		}
+	}
+	return maxLogicalAddr, nil
 }
 
 func (gSql *GSqlite3) CheckExistTxId(txId []byte) bool {

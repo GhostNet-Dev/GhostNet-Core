@@ -50,6 +50,9 @@ func (b *BootLoader) BootLoading(config *gconfig.GConfig) *gcrypto.Wallet {
 		if creatorAddr, err := b.genesis.LoadCreatorKeyFile(creator.Nickname,
 			creator.PubKey, config.Password); err == nil {
 			w = gcrypto.NewWallet(creator.Nickname, creatorAddr, &ptypes.GhostIp{Ip: config.Ip, Port: config.Port}, nil)
+		} else {
+			log.Println("Load Creator Key File Fail..")
+			return nil
 		}
 		return w
 	}

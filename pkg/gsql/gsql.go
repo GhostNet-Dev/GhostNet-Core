@@ -28,6 +28,8 @@ type GSql interface {
 	SelectTxsPool(poolId uint32) []types.GhostTransaction
 	SelectDataTxsPool(poolId uint32) []types.GhostDataTransaction
 	DeleteAfterTargetId(blockId uint32)
+	GetMaxLogicalAddress(toAddr []byte) (uint64, error)
+	GetNicknameToAddress(nickname []byte) []byte
 }
 
 type GCandidateSql interface {

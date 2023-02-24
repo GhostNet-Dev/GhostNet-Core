@@ -36,6 +36,8 @@ func (blockContainer *BlockContainer) BlockContainerOpen(schemeSqlFilePath strin
 	if err := blockContainer.gSql.CreateTable(schemeSqlFilePath); err != nil {
 		log.Fatal(err)
 	}
+	blockContainer.dbFilePath = dbFilePath
+	blockContainer.schemeSqlFilePath = schemeSqlFilePath
 	blockContainer.TxContainer.Initialize()
 }
 
@@ -50,6 +52,7 @@ func (blockContainer *BlockContainer) Close() {
 func (blockContainer *BlockContainer) Reset() {
 	blockContainer.gSql.DropTable()
 	blockContainer.CandidateBlk.Reset()
+	blockContainer.BlockContainerOpen(blockContainer.schemeSqlFilePath, blockContainer.dbFilePath)
 }
 
 func (blockContainer *BlockContainer) GetBlock(blockId uint32) *types.PairedBlock {

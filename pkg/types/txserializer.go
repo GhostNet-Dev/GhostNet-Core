@@ -66,6 +66,9 @@ func (output *TxOutput) Serialize(stream *mems.MemoryStream) (sErr *SerialiazeEr
 	binary.LittleEndian.PutUint32(bs4, uint32(output.ScriptSize))
 	stream.Write(bs4)
 	stream.Write(output.ScriptPubKey)
+	binary.LittleEndian.PutUint32(bs4, uint32(output.ScriptExSize))
+	stream.Write(bs4)
+	stream.Write(output.ScriptEx)
 
 	return sErr
 }
@@ -89,6 +92,9 @@ func (output *TxOutput) Deserialize(byteBuf *bytes.Buffer) (sErr *SerialiazeErro
 	binary.Read(byteBuf, binary.LittleEndian, &output.ScriptSize)
 	output.ScriptPubKey = make([]byte, output.ScriptSize)
 	binary.Read(byteBuf, binary.LittleEndian, output.ScriptPubKey)
+	binary.Read(byteBuf, binary.LittleEndian, &output.ScriptExSize)
+	output.ScriptEx = make([]byte, output.ScriptExSize)
+	binary.Read(byteBuf, binary.LittleEndian, output.ScriptEx)
 	return sErr
 }
 

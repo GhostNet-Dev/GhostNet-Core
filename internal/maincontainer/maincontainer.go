@@ -49,11 +49,11 @@ func (main *MainContainer) StartContainer() {
 	main.grpcServer = grpc.NewGrpcServer()
 	log.Println("Start Grpc Server")
 
-	main.grpcServer.LoginContainerHandler = func(passwdHash []byte, username, ip, port string) bool {
+	main.grpcServer.LoginContainerHandler = func(id uint32, passwdHash []byte, username, ip, port string) bool {
 		creators := main.bootFactory.Genesis.CreatorList()
 		if _, exist := creators[username]; !exist {
-			if w, _ := main.bootFactory.LoadWallet.OpenWallet(username, passwdHash); w == nil {
-				log.Println("Login fail user = ", username)
+			if w, err := main.bootFactory.LoadWallet.OpenWallet(username, passwdHash); w == nil {
+				log.Println("Login fail user = ", username, ", err = ", err)
 				return false
 			}
 		}
@@ -88,6 +88,8 @@ func (main *MainContainer) StartBootLoading() {
 	main.defaultFactory.FactoryOpen()
 	main.ghostApi = gapi.NewGhostApi(main.grpcServer, main.defaultFactory.Block, main.defaultFactory.BlockContainer,
 		main.bootFactory.LoadWallet, main.config)
+	log.Println("Initialize complete")
+	log.Println("Start Mainserver")
 	go main.StartServer()
 }
 

@@ -37,11 +37,12 @@ type PrevOutputParam struct {
 }
 
 type NextOutputParam struct {
-	TxType       TxOutputType
-	RecvAddr     gbytes.HashBytes
-	Broker       gbytes.HashBytes
-	OutputScript []byte
-	TransferCoin uint64
+	TxType         TxOutputType
+	RecvAddr       gbytes.HashBytes
+	Broker         gbytes.HashBytes
+	OutputScript   []byte
+	OutputScriptEx []byte
+	TransferCoin   uint64
 }
 
 type TxOutPoint struct {
@@ -63,6 +64,8 @@ type TxOutput struct {
 	Value        uint64
 	ScriptSize   uint32
 	ScriptPubKey []byte
+	ScriptExSize uint32
+	ScriptEx     []byte
 }
 
 type TxBody struct {
@@ -95,7 +98,8 @@ func (output *TxOutput) Size() uint32 {
 		uint32(unsafe.Sizeof(output.Value)) +
 		uint32(unsafe.Sizeof(output.Type)) +
 		uint32(unsafe.Sizeof(output.ScriptSize)) +
-		output.ScriptSize
+		uint32(unsafe.Sizeof(output.ScriptExSize)) +
+		output.ScriptSize + output.ScriptExSize
 }
 
 func (body *TxBody) Size() uint32 {

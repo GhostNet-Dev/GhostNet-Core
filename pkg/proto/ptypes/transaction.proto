@@ -21,6 +21,8 @@ message TxOutput {
 	uint64 Value = 4;
 	uint32 ScriptSize = 5;
 	bytes ScriptPubKey = 6;
+	uint32 ScriptExSize = 7;
+	bytes ScriptEx = 8;
 }
 
 message TxBody {

@@ -54,7 +54,7 @@ func (gApi *GhostApi) CreateGenesisHandler(id uint32, password []byte) bool {
 	return false
 }
 
-func (gApi *GhostApi) LoginContainerHandler(password []byte, username, ip, port string) bool {
+func (gApi *GhostApi) LoginContainerHandler(id uint32, password []byte, username, ip, port string) bool {
 	if w, _ := gApi.loadWallet.OpenWallet(username, password); w == nil {
 		log.Println("Login fail user = ", username)
 		return false

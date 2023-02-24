@@ -18,7 +18,7 @@ type GrpcServer struct {
 	rpc.UnimplementedGApiServer
 	CreateAccountHandler    func(passwdHash []byte, username string) bool
 	CreateGenesisHandler    func(id uint32, passwdHash []byte) bool
-	LoginContainerHandler   func(passwdHash []byte, username, ip, port string) bool
+	LoginContainerHandler   func(id uint32, passwdHash []byte, username, ip, port string) bool
 	ForkContainerHandler    func(passwdHash []byte, username, ip, port string) bool
 	CreateContainerHandler  func(passwdHash []byte, username, ip, port string) bool
 	ControlContainerHandler func(id uint32, control rpc.ContainerControlType) bool
@@ -63,7 +63,7 @@ func (s *GrpcServer) GetInfo(ctx context.Context, in *rpc.GetInfoRequest) (*rpc.
 func (s *GrpcServer) LoginContainer(ctx context.Context, in *rpc.LoginRequest) (*rpc.LoginResponse, error) {
 	result := false
 	if s.LoginContainerHandler != nil {
-		result = s.LoginContainerHandler(in.Password, in.Username, in.Ip, in.Port)
+		result = s.LoginContainerHandler(in.Id, in.Password, in.Username, in.Ip, in.Port)
 	}
 	return &rpc.LoginResponse{Result: result}, nil
 }

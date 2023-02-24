@@ -152,6 +152,8 @@ func (txs *TXs) MakeInputOutput(txType types.TxOutputType, info TransferTxInfo, 
 			Type:         txType,
 			ScriptSize:   uint32(len(newOutput.OutputScript)),
 			ScriptPubKey: newOutput.OutputScript,
+			ScriptExSize: uint32(len(newOutput.OutputScriptEx)),
+			ScriptEx:     newOutput.OutputScriptEx,
 		}
 		outputs = append(outputs, output)
 		transferCoin += newOutput.TransferCoin

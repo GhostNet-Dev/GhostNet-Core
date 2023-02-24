@@ -99,12 +99,23 @@ func (ghandler *GrpcHandler) GetPrivateKeyHandler(id uint32, password []byte, us
 	return cipherKey, true
 }
 
-func (ghandler *GrpcHandler) LoginContainerHandler(password []byte, username, ip, port string) bool {
-	if w, err := ghandler.loadWallet.OpenWallet(username, password); w == nil {
-		log.Print("not exist account = ", username, "or err = ", err)
-		return false
+func (ghandler *GrpcHandler) LoginContainerHandler(id uint32, password []byte, username, ip, port string) bool {
+	creators := ghandler.genesis.CreatorList()
+	if creator, exist := creators[username]; exist {
+		if _, err := ghandler.genesis.LoadCreatorKeyFile(creator.Nickname,
+			creator.PubKey, password); err != nil {
+			log.Println("Load Creator Key File Fail..")
+			return false
+		}
+
+	} else {
+		if w, err := ghandler.loadWallet.OpenWallet(username, password); w == nil {
+			log.Print("not exist account = ", username, " or err = ", err)
+			return false
+		}
 	}
-	return ghandler.containers.LoginContainer(password, username, ip, port) != nil
+
+	return ghandler.containers.LoginContainer(id, password, username, ip, port) != nil
 }
 
 func (ghandler *GrpcHandler) ForkContainerHandler(password []byte, username, ip, port string) bool {

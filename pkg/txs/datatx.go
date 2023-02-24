@@ -6,17 +6,18 @@ import (
 )
 
 func (txs *TXs) CreateDataTx(info TransferTxInfo, logicalAddr uint64,
-	token, data []byte) (*types.GhostTransaction, *types.GhostDataTransaction) {
+	data []byte) (*types.GhostTransaction, *types.GhostDataTransaction) {
 	dataTx := txs.MakeDataTx(logicalAddr, data)
 	dataTxId := dataTx.GetHashKey()
 	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
 		types.TxTypeDataTransfer: {
 			{
-				TxType:       types.TxTypeDataTransfer,
-				RecvAddr:     info.ToAddr,
-				Broker:       info.Broker,
-				OutputScript: gvm.MakeDataMapping(info.ToAddr, token, dataTxId),
-				TransferCoin: 0,
+				TxType:         types.TxTypeDataTransfer,
+				RecvAddr:       info.ToAddr,
+				Broker:         info.Broker,
+				OutputScript:   gvm.MakeDataMapping(info.FeeAddr),
+				OutputScriptEx: dataTxId,
+				TransferCoin:   0,
 			},
 			{
 				TxType:       types.TxTypeCoinTransfer,

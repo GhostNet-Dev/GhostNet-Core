@@ -55,6 +55,8 @@ CREATE TABLE IF NOT EXISTS "outputs" (
 	"Value"	integer,
 	"ScriptSize"	integer,
 	"Script"	blob,
+	"ScriptExSize"	integer,
+	"ScriptEx"	blob,
 	"OutputIndex"	integer,
 	PRIMARY KEY("Id" AUTOINCREMENT)
 );

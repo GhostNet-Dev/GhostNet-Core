@@ -39,7 +39,7 @@ func (load *LoadGenesis) CreatorList() map[string]*ptypes.GhostUser {
 		if verify := load.gVm.ExecuteGFunction(copyTx.SerializeToByte(), gFuncParam); !verify {
 			log.Fatal("wrong script")
 		}
-		nickname := string(load.gVm.Regs.Stack.Pop().([]byte))
+		nickname := string(tx.Body.Vout[0].ScriptEx)
 		load.creator[nickname] = &ptypes.GhostUser{
 			Nickname: nickname, PubKey: gcrypto.Translate160ToBase58Addr(toAddr)}
 	}

@@ -126,7 +126,7 @@ func (client *GrpcClient) LoginContainer(id uint32, password []byte, username, i
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(client.Timeout))
 	defer cancel()
 	r, err := client.c.LoginContainer(ctx, &rpc.LoginRequest{
-		Username: username, Password: password, Ip: ip, Port: port})
+		Id: id, Username: username, Password: password, Ip: ip, Port: port})
 	if err != nil {
 		log.Printf("could not connect: %v", err)
 		return false

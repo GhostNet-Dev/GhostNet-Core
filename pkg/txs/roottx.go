@@ -12,11 +12,12 @@ func (txs *TXs) CreateRootFsTx(info TransferTxInfo, nickname string) *types.Ghos
 	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
 		types.TxTypeFSRoot: {
 			{
-				TxType:       types.TxTypeFSRoot,
-				RecvAddr:     info.ToAddr,
-				Broker:       info.Broker,
-				OutputScript: gvm.MakeRootAccount(info.ToAddr, nickname),
-				TransferCoin: 0,
+				TxType:         types.TxTypeFSRoot,
+				RecvAddr:       info.ToAddr,
+				Broker:         info.Broker,
+				OutputScript:   gvm.MakeRootAccount(info.ToAddr, nickname),
+				OutputScriptEx: []byte(nickname),
+				TransferCoin:   0,
 			},
 		},
 	}

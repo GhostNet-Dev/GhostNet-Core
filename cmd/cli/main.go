@@ -41,6 +41,7 @@ func main() {
 		cmd.GetPrivateKeyCommand(),
 		cmd.GetBlockInfoCommand(),
 		cmd.GetAccountListCommand(),
+		cmd.LoginCommand(),
 	)
 
 	if err := startCmd.Execute(); err != nil {

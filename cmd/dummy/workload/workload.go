@@ -3,21 +3,24 @@ package workload
 import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type Workload struct {
-	workerName string
-	loadWallet *bootloader.LoadWallet
-	wallet     *gcrypto.Wallet
+	workerName     string
+	loadWallet     *bootloader.LoadWallet
+	wallet         *gcrypto.Wallet
+	blockContainer *store.BlockContainer
 }
 
 var password = "worker"
 
-func NewWorkload(workerName string, loadWallet *bootloader.LoadWallet) *Workload {
+func NewWorkload(workerName string, loadWallet *bootloader.LoadWallet, bc *store.BlockContainer) *Workload {
 	return &Workload{
-		workerName: workerName,
-		loadWallet: loadWallet,
+		workerName:     workerName,
+		loadWallet:     loadWallet,
+		blockContainer: bc,
 	}
 }
 

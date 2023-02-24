@@ -54,7 +54,7 @@ func LoginCommand() *cobra.Command {
 			grpcClient.ConnectServer()
 			defer grpcClient.CloseServer()
 			ret := grpcClient.LoginContainer(id, gcrypto.PasswordToSha256(password), username, host, port)
-			fmt.Print("login = ", ret)
+			fmt.Printf("[%d] login = %t", id, ret)
 		},
 	}
 	cmd.Flags().StringVarP(&host, "ip", "i", "", "Host Address")
@@ -64,6 +64,7 @@ func LoginCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&password, "password", "p", "", "Ghost Account Password")
 	cmd.Flags().Uint32VarP(&id, "id", "", 0, "Container Id, if not select, show all container")
 	cmd.Flags().Uint32VarP(&timeout, "timeout", "t", 3, "rpc connection timeout")
+	cmd.MarkFlagRequired("id")
 	cmd.MarkFlagRequired("username")
 	cmd.MarkFlagRequired("password")
 	return cmd

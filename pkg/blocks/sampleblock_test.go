@@ -82,13 +82,15 @@ func TestMakeGenesisFileIo(t *testing.T) {
 	if err := ioutil.WriteFile(blockFilePath, genesisBuf, 0); err != nil {
 		log.Fatal(err)
 	}
-	blockCopyPath := "../store/genesisblock"
-	if err := os.Remove(blockCopyPath); err != nil {
-		log.Fatal(err)
-	}
-	if err := ioutil.WriteFile(blockCopyPath, genesisBuf, 0); err != nil {
-		log.Fatal(err)
-	}
+	/*
+		blockCopyPath := "../store/genesisblock"
+		if err := os.Remove(blockCopyPath); err != nil {
+			log.Fatal(err)
+		}
+		if err := ioutil.WriteFile(blockCopyPath, genesisBuf, 0); err != nil {
+			log.Fatal(err)
+		}
+	*/
 
 	for filename, ghostAddr := range accountFile {
 		keyPair := &ptypes.KeyPair{
