@@ -182,6 +182,7 @@ func (udp *UdpServer) TranslationToHeader(sendInfo *ResponseHeaderInfo) *packets
 		ThirdType:  sendInfo.ThirdType,
 		SqFlag:     sendInfo.SqFlag,
 		PacketData: sendInfo.PacketData,
+		Source:     udp.GetLocalIp(),
 	}
 }
 
@@ -192,6 +193,7 @@ func (udp *UdpServer) SendUdpPacket(sendInfo *ResponseHeaderInfo, to *net.UDPAdd
 		log.Fatal(err)
 	}
 	udp.RawSendPacket(to, sendData)
+	log.Printf("Send to %s", to)
 }
 
 func (udp *UdpServer) SendPacket(sendInfo *ResponseHeaderInfo, ipAddr *ptypes.GhostIp) {
