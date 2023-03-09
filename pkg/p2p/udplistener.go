@@ -144,9 +144,9 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo, ip, port string) 
 		}()
 	}
 
-	buffer := make([]byte, 1024)
 	go func() {
 		for {
+			buffer := make([]byte, 1024)
 			n, addr /*n, addr*/, err := udp.UdpConn.ReadFromUDP(buffer)
 			if err != nil {
 				//doneChan <-err
