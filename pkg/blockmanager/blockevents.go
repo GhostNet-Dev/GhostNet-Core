@@ -68,7 +68,7 @@ func (blockMgr *BlockManager) MergeErrorNotification(pubKey string, result bool)
 func (blockMgr *BlockManager) BlockServerInitStart() {
 	blockMgr.consensus.Clear()
 	blockMgr.MiningStart()
-	blockMgr.glog.DebugOutput(blockMgr, fmt.Sprint("Mining Start"), glogger.BlockConsensus)
+	blockMgr.glog.DebugOutput(blockMgr, "Mining Start", glogger.BlockConsensus)
 	//TODO it needs to more clear!
 
 }
