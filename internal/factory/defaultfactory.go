@@ -58,7 +58,7 @@ func NewNetworkFactory(config *gconfig.GConfig, glog *glogger.GLogger) *NetworkF
 	}
 }
 
-func NewDefaultFactory(networkFactory *NetworkFactory,
+func NewDefaultFactory(networkFactory *NetworkFactory, bootFactory *BootFactory,
 	user *gcrypto.Wallet, config *gconfig.GConfig, glog *glogger.GLogger) *DefaultFactory {
 	ghostIp := &ptypes.GhostIp{
 		Ip:   config.Ip,
@@ -75,7 +75,7 @@ func NewDefaultFactory(networkFactory *NetworkFactory,
 	factory.Gvm = gvm.NewGVM()
 	factory.BlockContainer = store.NewBlockContainer(config.DbName)
 
-	factory.Account = gnetwork.NewGhostAccount()
+	factory.Account = gnetwork.NewGhostAccount(bootFactory.Db)
 	factory.TTreeMap = gnetwork.NewTrieTreeMap(user.GetPubAddress(), factory.Account)
 	factory.Master = gnetwork.NewMasterNode(user, ghostIp, config, networkFactory.PacketFactory,
 		networkFactory.Udp, factory.BlockContainer, factory.Account, factory.TTreeMap)

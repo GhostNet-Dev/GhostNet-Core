@@ -6,10 +6,19 @@ import (
 	"testing"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
+	TestTables  = []string{"nodes", "wallet"}
+	db          = store.NewLiteStore("./", TestTables)
+	testAddress = gcrypto.GenerateKeyPair()
+	ghostIp     = &ptypes.GhostIp{
+		Ip:   "127.0.0.1",
+		Port: "8888",
+	}
 	wallet   = NewLoadWallet(TestTables[1], db, ghostIp)
 	username = "User"
 	password = "pass"

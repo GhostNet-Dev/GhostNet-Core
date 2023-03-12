@@ -6,16 +6,17 @@ import (
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"google.golang.org/protobuf/proto"
 )
 
 type LoadWallet struct {
-	db      *LiteStore
+	db      *store.LiteStore
 	ghostIp *ptypes.GhostIp
 	table   string
 }
 
-func NewLoadWallet(table string, db *LiteStore, ghostIp *ptypes.GhostIp) *LoadWallet {
+func NewLoadWallet(table string, db *store.LiteStore, ghostIp *ptypes.GhostIp) *LoadWallet {
 	return &LoadWallet{db: db, ghostIp: ghostIp, table: table}
 }
 

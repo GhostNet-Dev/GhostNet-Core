@@ -7,13 +7,14 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 )
 
 type BootLoader struct {
 	udp           *p2p.UdpServer
 	packetFactory *p2p.PacketFactory
 	config        *gconfig.GConfig
-	db            *LiteStore
+	db            *store.LiteStore
 	wallet        *LoadWallet
 	conn          *ConnectMaster
 	genesis       *LoadGenesis
@@ -22,7 +23,7 @@ type BootLoader struct {
 var Tables []string
 
 func NewBootLoader(tables []string, udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig,
-	db *LiteStore, wallet *LoadWallet, gen *LoadGenesis) *BootLoader {
+	db *store.LiteStore, wallet *LoadWallet, gen *LoadGenesis) *BootLoader {
 	Tables = tables
 
 	return &BootLoader{

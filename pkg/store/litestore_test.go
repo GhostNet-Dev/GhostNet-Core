@@ -1,4 +1,4 @@
-package bootloader
+package store
 
 import (
 	"bytes"

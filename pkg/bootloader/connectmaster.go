@@ -23,7 +23,7 @@ connect to master node
 */
 
 type ConnectMaster struct {
-	db              *LiteStore
+	db              *store.LiteStore
 	udp             *p2p.UdpServer
 	wallet          *gcrypto.Wallet
 	masterNode      *ptypes.GhostUser
@@ -36,7 +36,7 @@ type ConnectMaster struct {
 
 const RootUrl = "www.ghostnetroot.com"
 
-func NewConnectMaster(table string, db *LiteStore, packetFactory *p2p.PacketFactory,
+func NewConnectMaster(table string, db *store.LiteStore, packetFactory *p2p.PacketFactory,
 	udp *p2p.UdpServer, w *gcrypto.Wallet) *ConnectMaster {
 
 	conn := &ConnectMaster{

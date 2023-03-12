@@ -17,11 +17,13 @@ import (
 )
 
 var (
-	ghostIp = &ptypes.GhostIp{
+	ghostIp    = &ptypes.GhostIp{
 		Ip:   "127.0.0.1",
 		Port: "8888",
 	}
-	gAccount       = NewGhostAccount()
+	TestTables = []string{"nodes", "wallet"}
+	liteStore      = store.NewLiteStore("./", TestTables)
+	gAccount       = NewGhostAccount(liteStore)
 	packetFactory  = p2p.NewPacketFactory()
 	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glogger.NewGLogger(0))
 	blockContainer = store.NewBlockContainer("sqlite3")

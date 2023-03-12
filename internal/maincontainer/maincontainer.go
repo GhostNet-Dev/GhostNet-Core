@@ -89,7 +89,7 @@ func (main *MainContainer) StartBootLoading() {
 		return
 	}
 
-	main.defaultFactory = factory.NewDefaultFactory(main.networkFactory, w, main.config, main.glog)
+	main.defaultFactory = factory.NewDefaultFactory(main.networkFactory, main.bootFactory, w, main.config, main.glog)
 	main.defaultFactory.FactoryOpen()
 	main.ghostApi = gapi.NewGhostApi(main.grpcServer, main.defaultFactory.Block, main.defaultFactory.BlockContainer,
 		main.bootFactory.LoadWallet, main.config)

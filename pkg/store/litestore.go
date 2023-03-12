@@ -1,5 +1,5 @@
 // reference https://github.com/zupzup/boltdb-example/blob/main/main.go
-package bootloader
+package store
 
 import (
 	"fmt"

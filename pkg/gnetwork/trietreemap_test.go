@@ -14,7 +14,7 @@ var (
 )
 
 func TestMakeTrieTree(t *testing.T) {
-	account := NewGhostAccount()
+	account := NewGhostAccount(liteStore)
 	tTreeMap := NewTrieTreeMap(owner.GetPubAddress(), account)
 	MakePatternNode(tTreeMap, account)
 	tTreeMap.LoadTrieTree()
@@ -30,7 +30,7 @@ func TestMakeTrieTree(t *testing.T) {
 }
 
 func TestAddRemove(t *testing.T) {
-	account := NewGhostAccount()
+	account := NewGhostAccount(liteStore)
 	tTreeMap := NewTrieTreeMap(owner.GetPubAddress(), account)
 	MakePatternNode(tTreeMap, account)
 	tTreeMap.LoadTrieTree()

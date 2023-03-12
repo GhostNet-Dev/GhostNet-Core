@@ -7,12 +7,14 @@ import (
 	"strings"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 )
 
 type GhostAccount struct {
 	nodeList         map[string]*GhostNode
 	masterNodeList   map[string]*GhostNode
 	nicknameToPubKey map[string]*GhostNode
+	liteStore        *store.LiteStore
 }
 
 type GhostNode struct {
@@ -22,11 +24,12 @@ type GhostNode struct {
 
 const MaxGetherNodeList = 10
 
-func NewGhostAccount() *GhostAccount {
+func NewGhostAccount(liteStore *store.LiteStore) *GhostAccount {
 	return &GhostAccount{
 		nodeList:         make(map[string]*GhostNode),
 		masterNodeList:   make(map[string]*GhostNode),
 		nicknameToPubKey: make(map[string]*GhostNode),
+		liteStore:        liteStore,
 	}
 }
 

@@ -29,6 +29,9 @@ var (
 	nickname = "test"
 	w        = gcrypto.NewWallet(nickname, Miner, ghostIp, nil)
 
+	TestTables = []string{"nodes", "wallet"}
+	liteStore  = store.NewLiteStore("./", TestTables)
+
 	glog           = glogger.NewGLogger(0)
 	config         = gconfig.NewDefaultConfig()
 	gScript        = gvm.NewGScript()
@@ -37,7 +40,7 @@ var (
 	packetFactory  = p2p.NewPacketFactory()
 	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glog)
 
-	account  = gnetwork.NewGhostAccount()
+	account  = gnetwork.NewGhostAccount(liteStore)
 	tTreeMap = gnetwork.NewTrieTreeMap(Miner.GetPubAddress(), account)
 	master   = gnetwork.NewMasterNode(w, ghostIp, config, packetFactory, udp, blockContainer, account, tTreeMap)
 

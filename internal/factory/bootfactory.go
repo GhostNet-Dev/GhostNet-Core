@@ -9,10 +9,11 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 )
 
 type BootFactory struct {
-	Db         *bootloader.LiteStore
+	Db         *store.LiteStore
 	LoadWallet *bootloader.LoadWallet
 	Genesis    *bootloader.LoadGenesis
 	glog       *glogger.GLogger
@@ -21,7 +22,7 @@ type BootFactory struct {
 var BootTables = []string{"nodes", "wallet"}
 
 func NewBootFactory(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig, glog *glogger.GLogger) *BootFactory {
-	db := bootloader.NewLiteStore(config.SqlPath, BootTables)
+	db := store.NewLiteStore(config.SqlPath, BootTables)
 	if err := db.OpenStore(); err != nil {
 		log.Fatal(err)
 	}
