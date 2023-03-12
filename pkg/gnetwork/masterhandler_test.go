@@ -7,6 +7,7 @@ import (
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -22,7 +23,7 @@ var (
 	}
 	gAccount       = NewGhostAccount()
 	packetFactory  = p2p.NewPacketFactory()
-	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory)
+	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glogger.NewGLogger(0))
 	blockContainer = store.NewBlockContainer("sqlite3")
 	config         = gconfig.NewDefaultConfig()
 	from, _        = net.ResolveUDPAddr("udp", ghostIp.Ip+":"+ghostIp.Port)

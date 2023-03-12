@@ -12,7 +12,7 @@ import (
 )
 
 func (blockMgr *BlockManager) BroadcastBlockChainNotification() {
-	sq := packets.NewBlockSq{
+	sq := packets.GetHeightestBlockSq{
 		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
 	}
 	sendData, err := proto.Marshal(&sq)
@@ -62,13 +62,13 @@ func (blockMgr *BlockManager) RequestGetBlockHash(pubKey string, blockIdx uint32
 }
 
 func (blockMgr *BlockManager) MergeErrorNotification(pubKey string, result bool) {
-	glogger.DebugOutput(blockMgr, fmt.Sprint("Merge Error = ", pubKey), glogger.BlockConsensus)
+	blockMgr.glog.DebugOutput(blockMgr, fmt.Sprint("Merge Error = ", pubKey), glogger.BlockConsensus)
 }
 
 func (blockMgr *BlockManager) BlockServerInitStart() {
 	blockMgr.consensus.Clear()
 	blockMgr.MiningStart()
-	glogger.DebugOutput(blockMgr, fmt.Sprint("Mining Start"), glogger.BlockConsensus)
+	blockMgr.glog.DebugOutput(blockMgr, fmt.Sprint("Mining Start"), glogger.BlockConsensus)
 	//TODO it needs to more clear!
 
 }
@@ -76,8 +76,5 @@ func (blockMgr *BlockManager) BlockServerInitStart() {
 func (blockMgr *BlockManager) CheckHeightForRebuild(neighborHeight uint32) bool {
 	currHeight := blockMgr.blockContainer.BlockHeight()
 
-	if currHeight < neighborHeight {
-		return true
-	}
-	return false
+	return currHeight < neighborHeight
 }

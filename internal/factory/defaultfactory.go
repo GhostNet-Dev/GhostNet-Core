@@ -11,6 +11,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus/states"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileservice"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gnetwork"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
@@ -38,24 +39,27 @@ type DefaultFactory struct {
 
 	networkFactory *NetworkFactory
 	config         *gconfig.GConfig
+	glog           *glogger.GLogger
 }
 
 type NetworkFactory struct {
 	PacketFactory *p2p.PacketFactory
 	Udp           *p2p.UdpServer
+	glog          *glogger.GLogger
 }
 
-func NewNetworkFactory(config *gconfig.GConfig) *NetworkFactory {
+func NewNetworkFactory(config *gconfig.GConfig, glog *glogger.GLogger) *NetworkFactory {
 	packetFactory := p2p.NewPacketFactory()
 
 	return &NetworkFactory{
 		PacketFactory: packetFactory,
-		Udp:           p2p.NewUdpServer(config.Ip, config.Port, packetFactory),
+		Udp:           p2p.NewUdpServer(config.Ip, config.Port, packetFactory, glog),
+		glog:          glog,
 	}
 }
 
 func NewDefaultFactory(networkFactory *NetworkFactory,
-	user *gcrypto.Wallet, config *gconfig.GConfig) *DefaultFactory {
+	user *gcrypto.Wallet, config *gconfig.GConfig, glog *glogger.GLogger) *DefaultFactory {
 	ghostIp := &ptypes.GhostIp{
 		Ip:   config.Ip,
 		Port: config.Port,
@@ -66,6 +70,7 @@ func NewDefaultFactory(networkFactory *NetworkFactory,
 		config:         config,
 	}
 
+	factory.glog = glog
 	factory.GScript = gvm.NewGScript()
 	factory.Gvm = gvm.NewGVM()
 	factory.BlockContainer = store.NewBlockContainer(config.DbName)
@@ -80,10 +85,10 @@ func NewDefaultFactory(networkFactory *NetworkFactory,
 	factory.Cloud = cloudservice.NewCloudService(factory.FileService, factory.TTreeMap)
 	factory.Txs = txs.NewTXs(factory.GScript, factory.BlockContainer, factory.Gvm)
 	factory.Block = blocks.NewBlocks(factory.BlockContainer, factory.Txs, 1)
-	factory.Con = consensus.NewConsensus(factory.BlockContainer, factory.Block)
-	factory.Fsm = states.NewBlockMachine(factory.BlockContainer, factory.Con)
+	factory.Con = consensus.NewConsensus(factory.BlockContainer, factory.Block, factory.glog)
+	factory.Fsm = states.NewBlockMachine(factory.BlockContainer, factory.Con, factory.glog)
 	factory.BlockServer = blockmanager.NewBlockManager(factory.Con, factory.Fsm, factory.Block,
-		factory.Txs, factory.BlockContainer, factory.Master, factory.FileService, factory.Cloud, user.GetGhostAddress(), ghostIp)
+		factory.Txs, factory.BlockContainer, factory.Master, factory.FileService, factory.Cloud, user.GetGhostAddress(), ghostIp, factory.glog)
 
 	return factory
 }

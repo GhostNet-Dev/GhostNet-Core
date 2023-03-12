@@ -41,7 +41,7 @@ func coreCalculator(currTime uint64, prevTime uint64, prevTxCount uint32) uint32
 func calculateMaxTransactionCount(blockContainer *store.BlockContainer,
 	height uint32) uint32 {
 	slot := height / CREATE_BLOCK_INTERVAL
-	startBlock := (slot - 1) * CREATE_BLOCK_INTERVAL
+	startBlock := slot * CREATE_BLOCK_INTERVAL
 	endBlock := startBlock + CREATE_BLOCK_INTERVAL - 1
 
 	if startBlock == 0 {
@@ -51,7 +51,7 @@ func calculateMaxTransactionCount(blockContainer *store.BlockContainer,
 	prevPairedBlock := blockContainer.GetBlock(startBlock)
 	pairedBlock := blockContainer.GetBlock(endBlock)
 	if prevPairedBlock == nil || pairedBlock == nil {
-		return 0
+		return INIT_MAX_TRANSACTION_COUNT
 	}
 
 	currTimestamp := pairedBlock.Block.Header.TimeStamp
@@ -65,9 +65,6 @@ func (con *Consensus) GetMaxTransactionCount(height uint32) uint32 {
 
 	if _, ok := maxTxCountDic[slot]; ok {
 		maxTransactionCnt = calculateMaxTransactionCount(con.blockContainer, height)
-		if maxTransactionCnt == 0 {
-			return 0
-		}
 		maxTxCountDic[slot] = maxTransactionCnt
 	} else {
 		maxTransactionCnt = maxTxCountDic[slot]

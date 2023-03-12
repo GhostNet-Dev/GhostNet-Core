@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"google.golang.org/protobuf/proto"
@@ -14,9 +15,10 @@ import (
 
 type UdpServer struct {
 	UdpConn   *net.UDPConn
+	Pf        *PacketFactory
+	glog      *glogger.GLogger
 	Ip        string
 	Port      string
-	Pf        *PacketFactory
 	StartFlag bool
 }
 
@@ -40,11 +42,12 @@ type ResponseHeaderInfo struct {
 	SqFlag     bool
 }
 
-func NewUdpServer(ip, port string, packetFactory *PacketFactory) *UdpServer {
+func NewUdpServer(ip, port string, packetFactory *PacketFactory, glog *glogger.GLogger) *UdpServer {
 	return &UdpServer{
 		Ip:        ip,
 		Port:      port,
 		Pf:        packetFactory,
+		glog:      glog,
 		StartFlag: false,
 	}
 }
@@ -69,7 +72,7 @@ func (udp *UdpServer) loadIp() *ptypes.GhostIp {
 }
 
 func (udp *UdpServer) Start(netChannel chan RequestPacketInfo, ip, port string) {
-	if udp.StartFlag == true {
+	if udp.StartFlag {
 		return
 	}
 	udp.StartFlag = true
@@ -110,6 +113,11 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo, ip, port string) 
 				if !exist {
 					return
 				}
+				udp.glog.DebugOutput(udp,
+					fmt.Sprint(packets.PacketSecondType_name[int32(recvPacket.SecondType)],
+						" => ", packets.PacketThirdType_name[int32(recvPacket.ThirdType)], " SQ: ",
+						recvPacket.SqFlag), glogger.PacketLog)
+
 				// TODO: it need to refac
 				// sq
 				if recvPacket.SqFlag {

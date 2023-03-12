@@ -1,12 +1,14 @@
 package states
 
 import (
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type BlockMergeState struct {
 	blockMachine *BlockMachine
 	blockServer  IBlockServer
+	glog         *glogger.GLogger
 }
 
 func (s *BlockMergeState) Initialize() {

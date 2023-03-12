@@ -23,3 +23,6 @@ vscode/
 vscode/*
 samples/*
 tags
+bin/ghost
+bin/ghostd
+bin/ghostnet

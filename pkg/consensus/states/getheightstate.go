@@ -11,6 +11,7 @@ import (
 type GetHeigtestState struct {
 	blockMachine  *BlockMachine
 	lock          *sync.Mutex
+	glog          *glogger.GLogger
 	maxHeight     uint32
 	selectNode    string
 	candidatePool map[uint32][]string
@@ -40,7 +41,7 @@ func (s *GetHeigtestState) RecvBlockHeight(height uint32, pubKey string) {
 		}
 	}
 	s.lock.Unlock()
-	glogger.DebugOutput(s, fmt.Sprint(height), glogger.BlockConsensus)
+	s.glog.DebugOutput(s, fmt.Sprint(height), glogger.BlockConsensus)
 }
 
 func (s *GetHeigtestState) RecvBlockHash(from string, masterHash []byte, blockIdx uint32) {
@@ -59,11 +60,11 @@ func (s *GetHeigtestState) TimerExpired(context interface{}) bool {
 		s.blockMachine.SetTargetHeight(s.maxHeight)
 		s.blockMachine.setState(s.blockMachine.verificationState)
 		s.blockMachine.blockServer.RequestGetBlockHash(candiList[0], curBlockHeight)
-		glogger.DebugOutput(s, fmt.Sprint("-> GetBlockState maxHeight = ", s.maxHeight, " / Request to ", s.selectNode), glogger.BlockConsensus)
+		s.glog.DebugOutput(s, fmt.Sprint("-> GetBlockState maxHeight = ", s.maxHeight, " / Request to ", s.selectNode), glogger.BlockConsensus)
 	} else {
 		s.blockMachine.blockServer.BlockServerInitStart()
 		s.blockMachine.setState(s.blockMachine.miningState)
-		glogger.DebugOutput(s, fmt.Sprint("-> MiningState maxHeight = ", s.maxHeight), glogger.BlockConsensus)
+		s.glog.DebugOutput(s, fmt.Sprint("-> MiningState maxHeight = ", s.maxHeight), glogger.BlockConsensus)
 	}
 	return false
 }

@@ -36,6 +36,7 @@ type GConfig struct {
 	DbSchemeFile          string
 	DbSchemePath          string
 	StandaloneMode        bool
+	Id                    uint32
 
 	Timeout uint32
 }

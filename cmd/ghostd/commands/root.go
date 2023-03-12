@@ -7,6 +7,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/factory"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 	"github.com/spf13/cobra"
 )
@@ -44,14 +45,15 @@ func RootCommand() *cobra.Command {
 
 func ExecuteContainer() {
 	log.Println("Initialize Component")
+	glog := glogger.NewGLogger(0)
 	// for encrypt passwd
 	cfg.Password = gcrypto.PasswordToSha256(password)
 
 	// network factory initialize
-	netFactory := factory.NewNetworkFactory(cfg)
+	netFactory := factory.NewNetworkFactory(cfg, glog)
 
 	// boot factory initialize
-	bootFactory := factory.NewBootFactory(netFactory.Udp, netFactory.PacketFactory, cfg)
+	bootFactory := factory.NewBootFactory(netFactory.Udp, netFactory.PacketFactory, cfg, glog)
 
 	// container management initialize
 	containers := manager.NewContainers(netFactory, bootFactory, cfg)

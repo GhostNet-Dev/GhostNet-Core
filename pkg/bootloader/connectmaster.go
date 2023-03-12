@@ -10,6 +10,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -61,6 +62,17 @@ func GetRootIpAddress() *net.UDPAddr {
 	return to
 }
 
+func GetGhostRootIpAddress() *ptypes.GhostIp {
+	ips, err := net.LookupIP(RootUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &ptypes.GhostIp{
+		Ip:   ips[0].String(),
+		Port: "50029",
+	}
+}
+
 func (conn *ConnectMaster) SaveMasterNodeList(nodes []*ptypes.GhostUser) {
 	for _, node := range nodes {
 		nodeByte, err := proto.Marshal(node)
@@ -82,7 +94,7 @@ func (conn *ConnectMaster) LoadMasterNode() *ptypes.GhostUser {
 		//need to request from adam
 		return nil
 	}
-	randPick := rand.Uint32() / uint32(len(nodes))
+	randPick := rand.Uint32() % uint32(len(nodes))
 	node := nodes[randPick]
 	ghostUser := &ptypes.GhostUser{}
 	if err := proto.Unmarshal(node, ghostUser); err != nil {
@@ -199,6 +211,14 @@ func (conn *ConnectMaster) ResponseMasterNodeListSq(requestHeaderInfo *p2p.Reque
 	sq := &packets.ResponseMasterNodeListSq{}
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
+	}
+
+	if len(sq.User) == 0 {
+		sq.User = append(sq.User, &ptypes.GhostUser{
+			PubKey:   gcrypto.Translate160ToBase58Addr(store.AdamsAddress()),
+			Nickname: "Adam",
+			Ip:       GetGhostRootIpAddress(),
+		})
 	}
 
 	conn.SaveMasterNodeList(sq.User)

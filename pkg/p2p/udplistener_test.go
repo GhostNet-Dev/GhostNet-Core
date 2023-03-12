@@ -5,22 +5,18 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
 
-var srv *UdpServer
-
-func init() {
-}
-
 func TestUdpDefault(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	netChannel := make(chan RequestPacketInfo)
-	srv := NewUdpServer("127.0.0.1", "8888", NewPacketFactory())
+	srv := NewUdpServer("127.0.0.1", "8888", NewPacketFactory(), glogger.NewGLogger(0))
 	srv.Start(netChannel, "", "")
 
 	go func() {
@@ -72,7 +68,7 @@ func TestPacketHandler(t *testing.T) {
 	GlobalWg.Add(1)
 	TestResult = false
 
-	srv := NewUdpServer("127.0.0.1", "8889", NewPacketFactory())
+	srv := NewUdpServer("127.0.0.1", "8889", NewPacketFactory(), glogger.NewGLogger(0))
 	srv.Start(nil, "", "")
 	srv.Pf.SingleRegisterPacketHandler(packets.PacketType_MasterNetwork,
 		packets.PacketSecondType_NotificationMasterNode,

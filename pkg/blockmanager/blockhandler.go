@@ -87,7 +87,7 @@ func (blockMgr *BlockManager) NewBlockSq(header *packets.Header, from *net.UDPAd
 		log.Fatal(err)
 	}
 
-	if blockMgr.fsm.CheckAcceptNewBlock() == true {
+	if blockMgr.fsm.CheckAcceptNewBlock() {
 		fileObj := <-blockMgr.cloud.DownloadASync(sq.BlockFilename, from)
 		//blockMgr.RequestBlockChainFile(sq.BlockFilename, from, blockMgr.DownloadNewBlock, nil)
 		blockMgr.DownloadNewBlock(fileObj, nil)
@@ -138,7 +138,7 @@ func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAd
 		SqFlag:     false,
 	}}
 
-	if exist == true {
+	if exist {
 		newSq := &packets.SendBlockSq{
 			Master:        p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
 			BlockFilename: blockFilename,
@@ -167,7 +167,7 @@ func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPA
 		log.Fatal(err)
 	}
 
-	if blockMgr.fsm.CheckAcceptNewBlock() == true {
+	if blockMgr.fsm.CheckAcceptNewBlock() {
 		fileObj := <-blockMgr.cloud.DownloadASync(sq.BlockFilename, from)
 		blockMgr.DownloadBlock(fileObj, sq.GetMaster().Common.FromPubKeyAddress)
 	}

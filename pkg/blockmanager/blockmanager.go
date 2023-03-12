@@ -12,6 +12,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus/states"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileservice"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gnetwork"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
@@ -33,6 +34,7 @@ type BlockManager struct {
 	cloud          *cloudservice.CloudService
 	owner          *gcrypto.GhostAddress
 	localIpAddr    *ptypes.GhostIp
+	glog           *glogger.GLogger
 
 	packetSqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo
 	packetCqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)
@@ -47,7 +49,7 @@ func NewBlockManager(con *consensus.Consensus,
 	fileService *fileservice.FileService,
 	cloud *cloudservice.CloudService,
 	user *gcrypto.GhostAddress,
-	myIpAddr *ptypes.GhostIp) *BlockManager {
+	myIpAddr *ptypes.GhostIp, glog *glogger.GLogger) *BlockManager {
 
 	blockMgr := &BlockManager{
 		consensus:       con,
@@ -60,6 +62,7 @@ func NewBlockManager(con *consensus.Consensus,
 		cloud:           cloud,
 		owner:           user,
 		localIpAddr:     myIpAddr,
+		glog:            glog,
 		packetSqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo),
 		packetCqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)),
 	}
@@ -133,14 +136,14 @@ func (blockMgr *BlockManager) PrepareSendBlock(blockId uint32) (string, bool) {
 
 func (blockMgr *BlockManager) DownloadDataTransaction(txByte []byte, dataTxByte []byte) bool {
 	tx := &types.GhostTransaction{}
-	if tx.Deserialize(bytes.NewBuffer(txByte)).Result() == false {
+	if !tx.Deserialize(bytes.NewBuffer(txByte)).Result() {
 		return false
 	}
 	dataTx := &types.GhostDataTransaction{}
-	if dataTx.Deserialize(bytes.NewBuffer(dataTxByte)).Result() == false {
+	if !dataTx.Deserialize(bytes.NewBuffer(dataTxByte)).Result() {
 		return false
 	}
-	if blockMgr.tXs.TransactionValidation(tx, dataTx, blockMgr.blockContainer.TxContainer).Result() == false {
+	if !blockMgr.tXs.TransactionValidation(tx, dataTx, blockMgr.blockContainer.TxContainer).Result() {
 		return false
 	}
 	blockMgr.blockContainer.TxContainer.SaveCandidateTx(tx)
@@ -151,10 +154,10 @@ func (blockMgr *BlockManager) DownloadDataTransaction(txByte []byte, dataTxByte 
 
 func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, context interface{}) bool {
 	tx := &types.GhostTransaction{}
-	if tx.Deserialize(bytes.NewBuffer(obj.Buffer)).Result() == false {
+	if !tx.Deserialize(bytes.NewBuffer(obj.Buffer)).Result() {
 		return false
 	}
-	if blockMgr.tXs.TransactionValidation(tx, nil, blockMgr.blockContainer.TxContainer).Result() == false {
+	if !blockMgr.tXs.TransactionValidation(tx, nil, blockMgr.blockContainer.TxContainer).Result() {
 		return false
 	}
 	blockMgr.blockContainer.TxContainer.SaveCandidateTx(tx)
@@ -164,7 +167,7 @@ func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, c
 
 func (blockMgr *BlockManager) DownloadBlock(obj *fileservice.FileObject, pubKey string) bool {
 	pair := &types.PairedBlock{}
-	if pair.Deserialize(bytes.NewBuffer(obj.Buffer)) == false {
+	if !pair.Deserialize(bytes.NewBuffer(obj.Buffer)) {
 		blockMgr.fileService.DeleteFile(obj.Filename)
 		return false
 	}
@@ -176,7 +179,7 @@ func (blockMgr *BlockManager) DownloadBlock(obj *fileservice.FileObject, pubKey 
 func (blockMgr *BlockManager) DownloadNewBlock(obj *fileservice.FileObject, context interface{}) {
 	byteBuf := bytes.NewBuffer(obj.Buffer)
 	newPair := types.PairedBlock{}
-	if newPair.Deserialize(byteBuf) == false {
+	if !newPair.Deserialize(byteBuf) {
 		blockMgr.fileService.DeleteFile(obj.Filename)
 		return
 	}
@@ -187,8 +190,8 @@ func (blockMgr *BlockManager) DownloadNewBlock(obj *fileservice.FileObject, cont
 func (blockMgr *BlockManager) TryAddMyBlockChain(pairedBlock *types.PairedBlock) bool {
 	localHeight := blockMgr.GetHeightestBlock()
 	if localHeight+1 == pairedBlock.BlockId() {
-		if blockMgr.block.BlockValidation(pairedBlock, nil) == true &&
-			blockMgr.consensus.CheckMinimumTxCount(pairedBlock) == true {
+		if blockMgr.block.BlockValidation(pairedBlock, nil) &&
+			blockMgr.consensus.CheckMinimumTxCount(pairedBlock) {
 			blockMgr.blockContainer.InsertBlock(pairedBlock)
 			return true
 		}

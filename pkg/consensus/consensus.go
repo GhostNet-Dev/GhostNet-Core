@@ -13,13 +13,15 @@ import (
 type Consensus struct {
 	blockContainer *store.BlockContainer
 	block          *blocks.Blocks
+	glog           *glogger.GLogger
 }
 
-func NewConsensus(bc *store.BlockContainer, block *blocks.Blocks) *Consensus {
+func NewConsensus(bc *store.BlockContainer, block *blocks.Blocks, glog *glogger.GLogger) *Consensus {
 	InitInterval()
 	return &Consensus{
 		blockContainer: bc,
 		block:          block,
+		glog:           glog,
 	}
 }
 
@@ -126,7 +128,7 @@ func (con *Consensus) MergeExecute(startBlockId uint32, endBlockId uint32) {
 			break
 		}
 		con.blockContainer.InsertBlock(pairedBlock)
-		glogger.DebugOutput(con, fmt.Sprint("mergeBlockId = ", blockId), glogger.BlockConsensus)
+		con.glog.DebugOutput(con, fmt.Sprint("mergeBlockId = ", blockId), glogger.BlockConsensus)
 	}
 }
 
@@ -152,7 +154,7 @@ func (con *Consensus) LocalBlockChainValidation() bool {
 	height := con.blockContainer.BlockHeight()
 	startBlockId := con.CheckIntegrityBlockChainList(2, height)
 	if startBlockId != height {
-		glogger.DebugOutput(con, fmt.Sprint("Delete After BlockId = ", startBlockId), glogger.BlockConsensus)
+		con.glog.DebugOutput(con, fmt.Sprint("Delete After BlockId = ", startBlockId), glogger.BlockConsensus)
 		con.blockContainer.DeleteAfterTargetId(startBlockId)
 		return false
 	}

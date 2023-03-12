@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -24,7 +25,7 @@ var (
 	}
 	from, _       = net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
 	packetFactory = p2p.NewPacketFactory()
-	udp           = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port, packetFactory)
+	udp           = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port, packetFactory, glogger.NewGLogger(0))
 	owner         = gcrypto.GenerateKeyPair()
 	fileService   = NewFileServer(udp, packetFactory, owner, ipAddr, "./")
 )

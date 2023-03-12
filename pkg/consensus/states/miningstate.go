@@ -7,6 +7,7 @@ import (
 
 type MiningState struct {
 	blockMachine *BlockMachine
+	glog         *glogger.GLogger
 }
 
 func (s *MiningState) Initialize() {
@@ -16,7 +17,7 @@ func (s *MiningState) Rebuild() {
 	s.blockMachine.blockServer.MiningStop()
 	s.blockMachine.setState(s.blockMachine.getHeightestState)
 	s.blockMachine.blockServer.BroadcastBlockChainNotification()
-	glogger.DebugOutput(s, "MiningState: Rebuild", glogger.BlockConsensus)
+	s.glog.DebugOutput(s, "MiningState: Rebuild", glogger.BlockConsensus)
 }
 
 func (s *MiningState) StartMining() {

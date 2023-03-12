@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"fmt"
 	"log"
 	"os/exec"
 	"sync"
@@ -100,6 +101,7 @@ func (containers *Containers) ForkContainer(password []byte, username, host, por
 		args := []string{
 			"--port=" + port,
 			"-u=" + username,
+			fmt.Sprint("--id=", id),
 		}
 		if host != "" {
 			args = append(args, host)
@@ -165,6 +167,7 @@ func (containers *Containers) CreateContainer(password []byte, username, host, p
 		cfg.Password = password
 		cfg.Ip = host
 		cfg.Port = port
+		cfg.Id = id
 		main := maincontainer.NewMainContainer(containers.networkFactory, containers.bootFactory, cfg)
 		wg.Done()
 		main.StartContainer()

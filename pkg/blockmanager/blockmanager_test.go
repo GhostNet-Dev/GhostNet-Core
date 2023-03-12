@@ -11,6 +11,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus/states"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileservice"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gnetwork"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
@@ -28,12 +29,13 @@ var (
 	nickname = "test"
 	w        = gcrypto.NewWallet(nickname, Miner, ghostIp, nil)
 
+	glog           = glogger.NewGLogger(0)
 	config         = gconfig.NewDefaultConfig()
 	gScript        = gvm.NewGScript()
 	gVm            = gvm.NewGVM()
 	blockContainer = store.NewBlockContainer("sqlite3")
 	packetFactory  = p2p.NewPacketFactory()
-	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory)
+	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glog)
 
 	account  = gnetwork.NewGhostAccount()
 	tTreeMap = gnetwork.NewTrieTreeMap(Miner.GetPubAddress(), account)
@@ -43,9 +45,9 @@ var (
 	cloud       = cloudservice.NewCloudService(fileService, tTreeMap)
 	tXs         = txs.NewTXs(gScript, blockContainer, gVm)
 	block       = blocks.NewBlocks(blockContainer, tXs, 1)
-	con         = consensus.NewConsensus(blockContainer, block)
-	fsm         = states.NewBlockMachine(blockContainer, con)
-	blockServer = NewBlockManager(con, fsm, block, tXs, blockContainer, master, fileService, cloud, Miner, ghostIp)
+	con         = consensus.NewConsensus(blockContainer, block, glog)
+	fsm         = states.NewBlockMachine(blockContainer, con, glog)
+	blockServer = NewBlockManager(con, fsm, block, tXs, blockContainer, master, fileService, cloud, Miner, ghostIp, glog)
 )
 
 func init() {

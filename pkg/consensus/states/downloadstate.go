@@ -12,6 +12,7 @@ import (
 type DownloadCheckState struct {
 	blockMachine  *BlockMachine
 	lock          *sync.Mutex
+	glog          *glogger.GLogger
 	reqBlockId    uint32
 	startBlockId  uint32
 	targetBlockId uint32
@@ -42,7 +43,7 @@ func (s *DownloadCheckState) RecvBlockHash(from string, masterHash []byte, block
 	} else {
 		return
 	}
-	glogger.DebugOutput(s, fmt.Sprint("- recv verification Hash ", blockIdx), glogger.BlockConsensus)
+	s.glog.DebugOutput(s, fmt.Sprint("- recv verification Hash ", blockIdx), glogger.BlockConsensus)
 	if s.startBlockId == 0 {
 		s.startBlockId = blockIdx
 	}
@@ -58,12 +59,12 @@ func (s *DownloadCheckState) RecvBlockHash(from string, masterHash []byte, block
 
 func (s *DownloadCheckState) RecvBlock(pairedBlock *types.PairedBlock, pubKey string) {
 	s.lock.Lock()
-	glogger.DebugOutput(s, fmt.Sprint("- recv GetBlock ", pairedBlock.BlockId()), glogger.BlockConsensus)
+	s.glog.DebugOutput(s, fmt.Sprint("- recv GetBlock ", pairedBlock.BlockId()), glogger.BlockConsensus)
 
 	result := s.blockMachine.CheckAndSave(pairedBlock)
 	if result == false {
 		s.blockMachine.blockServer.MergeErrorNotification(pubKey, result)
-		glogger.DebugOutput(s, fmt.Sprint("-- Merge Error", result), glogger.BlockConsensus)
+		s.glog.DebugOutput(s, fmt.Sprint("-- Merge Error", result), glogger.BlockConsensus)
 		s.blockMachine.setState(s.blockMachine.getHeightestState)
 		s.blockMachine.blockServer.BroadcastBlockChainNotification()
 	} else if pairedBlock.BlockId() == s.targetBlockId {

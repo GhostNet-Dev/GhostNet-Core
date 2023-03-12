@@ -12,6 +12,7 @@ import (
 type VerificationState struct {
 	blockMachine      *BlockMachine
 	lock              *sync.Mutex
+	glog              *glogger.GLogger
 	lastestReqBlockId uint32
 }
 
@@ -47,11 +48,11 @@ func (s *VerificationState) RecvBlockHash(from string, masterHash []byte, blockI
 		return
 	}
 	if bytes.Compare(header.GetHashKey(), masterHash) != 0 {
-		glogger.DebugOutput(s, fmt.Sprint("- recv verification Hash ", blockIdx), glogger.BlockConsensus)
+		s.glog.DebugOutput(s, fmt.Sprint("- recv verification Hash ", blockIdx), glogger.BlockConsensus)
 		s.lastestReqBlockId = blockIdx - 1
 		s.blockMachine.blockServer.RequestGetBlockHash(from, s.lastestReqBlockId)
 	} else {
-		glogger.DebugOutput(s, fmt.Sprint("- recv verification Find ", blockIdx), glogger.BlockConsensus)
+		s.glog.DebugOutput(s, fmt.Sprint("- recv verification Find ", blockIdx), glogger.BlockConsensus)
 		s.blockMachine.setState(s.blockMachine.downloadCheckState)
 		s.blockMachine.blockServer.RequestGetBlockHash(from, blockIdx+1)
 	}

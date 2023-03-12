@@ -2,6 +2,7 @@ package states
 
 import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
@@ -30,25 +31,27 @@ type BlockMachine struct {
 	blockContainer *store.BlockContainer
 	blockServer    IBlockServer
 	con            *consensus.Consensus
+	glog           *glogger.GLogger
 
 	heightestCandidataPool []string
 	startBlockId           uint32
 	targetHeight           uint32
 }
 
-func NewBlockMachine(b *store.BlockContainer, con *consensus.Consensus) *BlockMachine {
+func NewBlockMachine(b *store.BlockContainer, con *consensus.Consensus, glog *glogger.GLogger) *BlockMachine {
 	fsm := &BlockMachine{
 		blockContainer: b,
 		con:            con,
+		glog:           glog,
 	}
 
-	idleState := &IdleState{blockMachine: fsm}
-	miningState := &MiningState{blockMachine: fsm}
-	getHeightestState := &GetHeigtestState{blockMachine: fsm}
-	verificationState := &VerificationState{blockMachine: fsm}
-	downloadCheckState := &DownloadCheckState{blockMachine: fsm}
-	blockMergeState := &BlockMergeState{blockMachine: fsm}
-	recheckState := &RecheckState{blockMachine: fsm}
+	idleState := &IdleState{blockMachine: fsm, glog: glog}
+	miningState := &MiningState{blockMachine: fsm, glog: glog}
+	getHeightestState := &GetHeigtestState{blockMachine: fsm, glog: glog}
+	verificationState := &VerificationState{blockMachine: fsm, glog: glog}
+	downloadCheckState := &DownloadCheckState{blockMachine: fsm, glog: glog}
+	blockMergeState := &BlockMergeState{blockMachine: fsm, glog: glog}
+	recheckState := &RecheckState{blockMachine: fsm, glog: glog}
 
 	fsm.setState(idleState)
 	fsm.idle = idleState

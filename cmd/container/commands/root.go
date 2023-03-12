@@ -47,6 +47,7 @@ func RootCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&cfg.DbSchemeFile, "dbscheme", "", "", "Db Scheme File Name")
 	cmd.Flags().StringVarP(&cfg.DbSchemePath, "dbschemepath", "", "", "Db Scheme File Path")
 	cmd.Flags().BoolVarP(&cfg.StandaloneMode, "standalonemode", "", false, "Single Node Mode")
+	cmd.Flags().Uint32VarP(&cfg.Id, "id", "", 0, "Container Id")
 
 	cmd.MarkFlagRequired("username")
 	return cmd
