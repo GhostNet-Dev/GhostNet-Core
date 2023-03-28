@@ -27,7 +27,7 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
 	txInfo := TransferTxInfo{
-		MyWallet:     *MyWallet,
+		MyWallet:     MyWallet,
 		ToAddr:       Recver.Get160PubKey(),
 		Broker:       Broker.Get160PubKey(),
 		FeeAddr:      Broker.Get160PubKey(),
@@ -42,7 +42,7 @@ func init() {
 
 func TestSaveCoinTx(t *testing.T) {
 	txInfo := TransferTxInfo{
-		MyWallet:     *MyWallet,
+		MyWallet:     MyWallet,
 		ToAddr:       Recver.Get160PubKey(),
 		Broker:       Broker.Get160PubKey(),
 		FeeAddr:      Broker.Get160PubKey(),
@@ -65,7 +65,7 @@ func TestMakeCoinTx(t *testing.T) {
 	prevMap[types.TxTypeCoinTransfer] = outputParams
 
 	txInfo := TransferTxInfo{
-		MyWallet:     *MyWallet,
+		MyWallet:     MyWallet,
 		ToAddr:       Recver.Get160PubKey(),
 		Broker:       Broker.Get160PubKey(),
 		FeeAddr:      Broker.Get160PubKey(),

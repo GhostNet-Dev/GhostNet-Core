@@ -81,7 +81,7 @@ func (main *MainContainer) StartContainer() {
 }
 
 func (main *MainContainer) StartBootLoading() {
-	booter := bootloader.NewBootLoader(factory.BootTables, main.networkFactory.Udp,
+	booter := bootloader.NewBootLoader(main.networkFactory.Udp,
 		main.networkFactory.PacketFactory, main.config, main.bootFactory.Db,
 		main.bootFactory.LoadWallet, main.bootFactory.Genesis)
 	w := booter.BootLoading(main.config)

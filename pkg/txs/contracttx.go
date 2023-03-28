@@ -24,7 +24,7 @@ func (txs *TXs) CompleteContractTx(info TransferTxInfo, dataTxId, token, dataOwn
 	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
 		types.TxTypeCoinTransfer: {
 			{
-				TxType:         types.TxTypeDataTransfer,
+				TxType:         types.TxTypeDataStore,
 				RecvAddr:       info.ToAddr,
 				Broker:         info.Broker,
 				OutputScript:   gvm.MakeDataMapping(info.ToAddr),

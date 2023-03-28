@@ -32,13 +32,14 @@ var (
 	TestTables = []string{"nodes", "wallet"}
 	liteStore  = store.NewLiteStore("./", TestTables)
 
-	glog           = glogger.NewGLogger(0)
-	config         = gconfig.NewDefaultConfig()
-	gScript        = gvm.NewGScript()
-	gVm            = gvm.NewGVM()
-	blockContainer = store.NewBlockContainer("sqlite3")
-	packetFactory  = p2p.NewPacketFactory()
-	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glog)
+	glog             = glogger.NewGLogger(0)
+	config           = gconfig.NewDefaultConfig()
+	gScript          = gvm.NewGScript()
+	gVm              = gvm.NewGVM()
+	blockContainer   = store.NewBlockContainer("sqlite3")
+	accountContainer = store.NewAccountContainer(liteStore)
+	packetFactory    = p2p.NewPacketFactory()
+	udp              = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glog)
 
 	account  = gnetwork.NewGhostAccount(liteStore)
 	tTreeMap = gnetwork.NewTrieTreeMap(Miner.GetPubAddress(), account)
@@ -50,7 +51,7 @@ var (
 	block       = blocks.NewBlocks(blockContainer, tXs, 1)
 	con         = consensus.NewConsensus(blockContainer, block, glog)
 	fsm         = states.NewBlockMachine(blockContainer, con, glog)
-	blockServer = NewBlockManager(con, fsm, block, tXs, blockContainer, master, fileService, cloud, Miner, ghostIp, glog)
+	blockServer = NewBlockManager(con, fsm, block, tXs, blockContainer, accountContainer, master, fileService, cloud, Miner, ghostIp, glog)
 )
 
 func init() {

@@ -21,21 +21,23 @@ import (
 )
 
 type DefaultFactory struct {
-	Con            *consensus.Consensus
-	Fsm            *states.BlockMachine
-	Block          *blocks.Blocks
-	Txs            *txs.TXs
-	BlockContainer *store.BlockContainer
-	Master         *gnetwork.MasterNetwork
-	Account        *gnetwork.GhostAccount
-	TTreeMap       *gnetwork.TrieTreeMap
-	FileService    *fileservice.FileService
-	Cloud          *cloudservice.CloudService
-	BlockServer    *blockmanager.BlockManager
-	GScript        *gvm.GScript
-	Gvm            *gvm.GVM
-	Owner          *gcrypto.GhostAddress
-	LocalIpAddr    *ptypes.GhostIp
+	Con              *consensus.Consensus
+	Fsm              *states.BlockMachine
+	Block            *blocks.Blocks
+	Txs              *txs.TXs
+	BlockContainer   *store.BlockContainer
+	AccountContainer *store.AccountContainer
+	Master           *gnetwork.MasterNetwork
+	Account          *gnetwork.GhostAccount
+	TTreeMap         *gnetwork.TrieTreeMap
+	FileService      *fileservice.FileService
+	Cloud            *cloudservice.CloudService
+	BlockServer      *blockmanager.BlockManager
+	GScript          *gvm.GScript
+	Gvm              *gvm.GVM
+	UserWallet       *gcrypto.Wallet
+	Owner            *gcrypto.GhostAddress
+	LocalIpAddr      *ptypes.GhostIp
 
 	networkFactory *NetworkFactory
 	config         *gconfig.GConfig
@@ -68,12 +70,14 @@ func NewDefaultFactory(networkFactory *NetworkFactory, bootFactory *BootFactory,
 	factory := &DefaultFactory{
 		networkFactory: networkFactory,
 		config:         config,
+		UserWallet:     user,
 	}
 
 	factory.glog = glog
 	factory.GScript = gvm.NewGScript()
 	factory.Gvm = gvm.NewGVM()
 	factory.BlockContainer = store.NewBlockContainer(config.DbName)
+	factory.AccountContainer = store.NewAccountContainer(bootFactory.Db)
 
 	factory.Account = gnetwork.NewGhostAccount(bootFactory.Db)
 	factory.TTreeMap = gnetwork.NewTrieTreeMap(user.GetPubAddress(), factory.Account)
@@ -88,7 +92,7 @@ func NewDefaultFactory(networkFactory *NetworkFactory, bootFactory *BootFactory,
 	factory.Con = consensus.NewConsensus(factory.BlockContainer, factory.Block, factory.glog)
 	factory.Fsm = states.NewBlockMachine(factory.BlockContainer, factory.Con, factory.glog)
 	factory.BlockServer = blockmanager.NewBlockManager(factory.Con, factory.Fsm, factory.Block,
-		factory.Txs, factory.BlockContainer, factory.Master, factory.FileService, factory.Cloud, user.GetGhostAddress(), ghostIp, factory.glog)
+		factory.Txs, factory.BlockContainer, factory.AccountContainer, factory.Master, factory.FileService, factory.Cloud, user.GetGhostAddress(), ghostIp, factory.glog)
 
 	return factory
 }

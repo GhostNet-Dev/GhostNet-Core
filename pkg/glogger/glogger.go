@@ -46,6 +46,17 @@ func NewGLogger(id uint32) *GLogger {
 	}
 }
 
+func GetType(myvar interface{}) string {
+	if myvar == nil {
+		return "{nil}"
+	}
+	if t := reflect.TypeOf(myvar); t.Kind() == reflect.Ptr {
+		return "*" + t.Elem().Name()
+	} else {
+		return t.Name()
+	}
+}
+
 func GlobalDebugOutput(obj interface{}, s string, level LogLevel) error {
 	return globalGlog.Output(obj, s, level, 2)
 }
@@ -68,7 +79,11 @@ func (l *GLogger) Output(obj interface{}, s string, level LogLevel, depth int) e
 	}
 	l.buf = l.buf[:0]
 	formatTimeHeader(&l.buf, now, file, line)
+	if level == PacketLog {
+		l.buf = append(l.buf, Purple...)
+	}
 	l.buf = append(l.buf, s...)
+	l.buf = append(l.buf, Reset...)
 
 	if len(s) == 0 || s[len(s)-1] != '\n' {
 		l.buf = append(l.buf, '\n')

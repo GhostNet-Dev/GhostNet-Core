@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	TestTables  = []string{"nodes", "wallet"}
+	TestTables  = []string{DefaultNodeTable, DefaultWalletTable}
 	db          = NewLiteStore("./", TestTables)
 	testAddress = gcrypto.GenerateKeyPair()
 	ghostIp     = &ptypes.GhostIp{

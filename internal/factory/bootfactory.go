@@ -19,15 +19,13 @@ type BootFactory struct {
 	glog       *glogger.GLogger
 }
 
-var BootTables = []string{"nodes", "wallet"}
-
 func NewBootFactory(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig, glog *glogger.GLogger) *BootFactory {
-	db := store.NewLiteStore(config.SqlPath, BootTables)
+	db := store.NewLiteStore(config.SqlPath, store.DefaultLiteTable[:])
 	if err := db.OpenStore(); err != nil {
 		log.Fatal(err)
 	}
 
-	wallet := bootloader.NewLoadWallet(BootTables[1], db, &ptypes.GhostIp{Ip: config.Ip, Port: config.Port})
+	wallet := bootloader.NewLoadWallet(store.DefaultWalletTable, db, &ptypes.GhostIp{Ip: config.Ip, Port: config.Port})
 	genesis := bootloader.NewLoadGenesis(gvm.NewGVM(), "./")
 
 	return &BootFactory{

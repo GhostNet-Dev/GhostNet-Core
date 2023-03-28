@@ -24,17 +24,18 @@ import (
 )
 
 type BlockManager struct {
-	consensus      *consensus.Consensus
-	fsm            *states.BlockMachine
-	block          *blocks.Blocks
-	tXs            *txs.TXs
-	blockContainer *store.BlockContainer
-	master         *gnetwork.MasterNetwork
-	fileService    *fileservice.FileService
-	cloud          *cloudservice.CloudService
-	owner          *gcrypto.GhostAddress
-	localIpAddr    *ptypes.GhostIp
-	glog           *glogger.GLogger
+	consensus        *consensus.Consensus
+	fsm              *states.BlockMachine
+	block            *blocks.Blocks
+	tXs              *txs.TXs
+	blockContainer   *store.BlockContainer
+	accountContainer *store.AccountContainer
+	master           *gnetwork.MasterNetwork
+	fileService      *fileservice.FileService
+	cloud            *cloudservice.CloudService
+	owner            *gcrypto.GhostAddress
+	localIpAddr      *ptypes.GhostIp
+	glog             *glogger.GLogger
 
 	packetSqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo
 	packetCqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)
@@ -45,6 +46,7 @@ func NewBlockManager(con *consensus.Consensus,
 	block *blocks.Blocks,
 	tXs *txs.TXs,
 	blockContainer *store.BlockContainer,
+	accountContainer *store.AccountContainer,
 	master *gnetwork.MasterNetwork,
 	fileService *fileservice.FileService,
 	cloud *cloudservice.CloudService,
@@ -52,27 +54,29 @@ func NewBlockManager(con *consensus.Consensus,
 	myIpAddr *ptypes.GhostIp, glog *glogger.GLogger) *BlockManager {
 
 	blockMgr := &BlockManager{
-		consensus:       con,
-		fsm:             fsm,
-		block:           block,
-		tXs:             tXs,
-		blockContainer:  blockContainer,
-		master:          master,
-		fileService:     fileService,
-		cloud:           cloud,
-		owner:           user,
-		localIpAddr:     myIpAddr,
-		glog:            glog,
-		packetSqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo),
-		packetCqHandler: make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)),
+		consensus:        con,
+		fsm:              fsm,
+		block:            block,
+		tXs:              tXs,
+		blockContainer:   blockContainer,
+		accountContainer: accountContainer,
+		master:           master,
+		fileService:      fileService,
+		cloud:            cloud,
+		owner:            user,
+		localIpAddr:      myIpAddr,
+		glog:             glog,
+		packetSqHandler:  make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo),
+		packetCqHandler:  make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)),
 	}
 	blockMgr.InitHandler(master)
 	return blockMgr
 }
 
 func (blockMgr *BlockManager) BlockServer() {
-	log.Print("Block Server Start.")
-	for range time.Tick(time.Second * 3) {
+	blockMgr.glog.DebugOutput(blockMgr, "Block Server Start.", glogger.Default)
+	blockMgr.BlockSync()
+	for range time.Tick(time.Second * 8) {
 		blockMgr.BlockSync()
 	}
 }
@@ -160,8 +164,23 @@ func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, c
 	if !blockMgr.tXs.TransactionValidation(tx, nil, blockMgr.blockContainer.TxContainer).Result() {
 		return false
 	}
+	if !blockMgr.SaveExtraInformation(tx) {
+		return false
+	}
 	blockMgr.blockContainer.TxContainer.SaveCandidateTx(tx)
 	blockMgr.TriggerNewBlock()
+	return true
+}
+
+func (blockMgr *BlockManager) SaveExtraInformation(tx *types.GhostTransaction) bool {
+	for _, output := range tx.Body.Vout {
+		if output.Type == types.TxTypeFSRoot {
+			nick := output.ScriptEx
+			if !blockMgr.accountContainer.AddAccount(nick, tx.TxId) {
+				return false
+			}
+		}
+	}
 	return true
 }
 

@@ -3,11 +3,11 @@ package gnetwork
 import (
 	"log"
 	"net"
-	"strconv"
 	"strings"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
+	"google.golang.org/protobuf/proto"
 )
 
 type GhostAccount struct {
@@ -25,35 +25,76 @@ type GhostNode struct {
 const MaxGetherNodeList = 10
 
 func NewGhostAccount(liteStore *store.LiteStore) *GhostAccount {
-	return &GhostAccount{
+	account := &GhostAccount{
 		nodeList:         make(map[string]*GhostNode),
 		masterNodeList:   make(map[string]*GhostNode),
 		nicknameToPubKey: make(map[string]*GhostNode),
 		liteStore:        liteStore,
+	}
+
+	account.LoadNodeList(store.DefaultNickTable)
+	account.LoadNodeList(store.DefaultMastersTable)
+
+	return account
+}
+
+func (account *GhostAccount) LoadNodeList(table string) {
+	if _, v, err := account.liteStore.LoadEntry(table); err == nil {
+		for _, nodeByte := range v {
+			masterNode := &ptypes.GhostUser{}
+			if err := proto.Unmarshal(nodeByte, masterNode); err != nil {
+				log.Fatal(err)
+			}
+			if table == store.DefaultMastersTable {
+				account.AddMasterNode(&GhostNode{User: masterNode, NetAddr: masterNode.Ip.GetUdpAddr()})
+			}
+		}
 	}
 }
 
 func (account *GhostAccount) AddUserNode(node *GhostNode) {
 	account.nodeList[node.User.PubKey] = node
 	account.nicknameToPubKey[node.User.Nickname] = node
+	account.SaveToDb(store.DefaultNickTable, node.User)
 }
 
 func (account *GhostAccount) AddMasterNode(node *GhostNode) {
 	account.masterNodeList[node.User.PubKey] = node
 	account.nicknameToPubKey[node.User.Nickname] = node
+	account.SaveToDb(store.DefaultNickTable, node.User)
+	account.SaveToDb(store.DefaultMastersTable, node.User)
 }
 
 func (account *GhostAccount) AddMasterUserList(userList []*ptypes.GhostUser) {
 	for _, user := range userList {
-		portInt, _ := strconv.Atoi(user.Ip.Port)
 		account.masterNodeList[user.PubKey] = &GhostNode{
-			User: user,
-			NetAddr: &net.UDPAddr{
-				Port: portInt,
-				IP:   net.ParseIP(user.Ip.Ip),
-			},
+			User:    user,
+			NetAddr: user.Ip.GetUdpAddr(),
 		}
+		account.SaveToDb(store.DefaultMastersTable, user)
 	}
+}
+
+func (account *GhostAccount) SaveToDb(table string, masterNode *ptypes.GhostUser) {
+	// Save To Db
+	nodeByte, err := proto.Marshal(masterNode)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := account.liteStore.SaveEntry(table, []byte(masterNode.Nickname), nodeByte); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (account *GhostAccount) LoadFromDb(nickname string) (masterNode *ptypes.GhostUser, err error) {
+	nodeByte, err := account.liteStore.SelectEntry(store.DefaultNodeTable, []byte(nickname))
+	if err != nil || nodeByte == nil {
+		return nil, err
+	}
+	if err := proto.Unmarshal(nodeByte, masterNode); err != nil {
+		log.Fatal(err)
+	}
+	return masterNode, nil
 }
 
 func (account *GhostAccount) GetUserNode(pubKey string) *GhostNode {
@@ -77,6 +118,14 @@ func (account *GhostAccount) GetNodeInfo(pubKey string) *GhostNode {
 func (account *GhostAccount) GetNodeByNickname(nickname string) *GhostNode {
 	find, exist := account.nicknameToPubKey[nickname]
 	if !exist {
+		if node, err := account.LoadFromDb(nickname); err == nil {
+			ghostNode := &GhostNode{
+				User:    node,
+				NetAddr: node.Ip.GetUdpAddr(),
+			}
+			account.AddUserNode(ghostNode)
+			return ghostNode
+		}
 		log.Fatal("nickname not found")
 	}
 	return find

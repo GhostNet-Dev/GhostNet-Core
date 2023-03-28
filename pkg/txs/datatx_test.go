@@ -11,7 +11,7 @@ func TestSaveDataTx(t *testing.T) {
 	rootTx := MakeRootFsTx()
 	blockContainer.TxContainer.SaveTransaction(0, rootTx, 0)
 	prev := map[types.TxOutputType][]types.PrevOutputParam{
-		types.TxTypeDataTransfer: {
+		types.TxTypeDataStore: {
 			{
 				TxType: types.TxTypeFSRoot,
 				VOutPoint: types.TxOutPoint{
@@ -23,7 +23,7 @@ func TestSaveDataTx(t *testing.T) {
 		},
 	}
 	txInfo := TransferTxInfo{
-		MyWallet:     *MyWallet,
+		MyWallet:     MyWallet,
 		ToAddr:       Recver.Get160PubKey(),
 		Broker:       Broker.Get160PubKey(),
 		FeeAddr:      Broker.Get160PubKey(),

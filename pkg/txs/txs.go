@@ -23,7 +23,7 @@ func NewTXs(g *gvm.GScript, b *store.BlockContainer, e *gvm.GVM) *TXs {
 }
 
 type TransferTxInfo struct {
-	MyWallet     gcrypto.Wallet
+	MyWallet     *gcrypto.Wallet
 	ToAddr       []byte
 	Broker       []byte
 	FeeAddr      []byte

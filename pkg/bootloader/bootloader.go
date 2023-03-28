@@ -20,11 +20,8 @@ type BootLoader struct {
 	genesis       *LoadGenesis
 }
 
-var Tables []string
-
-func NewBootLoader(tables []string, udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig,
+func NewBootLoader(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig,
 	db *store.LiteStore, wallet *LoadWallet, gen *LoadGenesis) *BootLoader {
-	Tables = tables
 
 	return &BootLoader{
 		udp:           udp,
@@ -59,7 +56,7 @@ func (b *BootLoader) BootLoading(config *gconfig.GConfig) *gcrypto.Wallet {
 	}
 
 	// connect to master Node
-	b.conn = NewConnectMaster(Tables[0], b.db, b.packetFactory, b.udp, w)
+	b.conn = NewConnectMaster(store.DefaultNodeTable, b.db, b.packetFactory, b.udp, w)
 	masterNode := b.conn.LoadMasterNode()
 
 	if masterNode == nil {

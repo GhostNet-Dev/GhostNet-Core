@@ -1,6 +1,8 @@
 package states
 
 import (
+	"fmt"
+
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
@@ -74,6 +76,8 @@ func (fsm *BlockMachine) CheckAcceptNewBlock() bool {
 }
 
 func (fsm *BlockMachine) setState(s IBlockState) {
+	fsm.glog.DebugOutput(fsm, fmt.Sprintf("Change State %s -> %s",
+		glogger.GetType(fsm.currentState), glogger.GetType(s)), glogger.BlockConsensus)
 	s.Initialize()
 	fsm.currentState = s
 }

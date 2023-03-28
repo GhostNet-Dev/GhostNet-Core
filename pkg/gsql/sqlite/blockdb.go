@@ -375,7 +375,7 @@ func (gSql *GSqlite3) GetMaxLogicalAddress(toAddr []byte) (maxLogicalAddr uint64
 	rows, err := gSql.db.Query(`select LogicalAddress from data_transactions 
 		left outer join outputs  on data_transactions.TxId = outputs.TxId 
 		where outputs.ToAddr = ? and  outputs.Type = ?  and  inputs.Id is NULL
-		order by outputs.BlockId ASC`, toAddr, types.TxTypeDataTransfer)
+		order by outputs.BlockId ASC`, toAddr, types.TxTypeDataStore)
 	if err != nil {
 		log.Fatal(err)
 	}

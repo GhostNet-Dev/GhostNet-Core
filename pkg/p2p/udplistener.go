@@ -202,6 +202,11 @@ func (udp *UdpServer) SendUdpPacket(sendInfo *ResponseHeaderInfo, to *net.UDPAdd
 	}
 	udp.RawSendPacket(to, sendData)
 	log.Printf("Send to %s", to)
+	udp.glog.DebugOutput(udp,
+		fmt.Sprint("Send to ", to, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
+			" => ", packets.PacketThirdType_name[int32(sendInfo.ThirdType)], " SQ: ",
+			sendInfo.SqFlag), glogger.PacketLog)
+
 }
 
 func (udp *UdpServer) SendPacket(sendInfo *ResponseHeaderInfo, ipAddr *ptypes.GhostIp) {

@@ -13,7 +13,7 @@ type TxOutputType uint32
 const ( // tx output type
 	None               TxOutputType = 0
 	TxTypeCoinTransfer TxOutputType = 1
-	TxTypeDataTransfer TxOutputType = 2
+	TxTypeDataStore    TxOutputType = 2
 	TxTypeFSRoot       TxOutputType = 3
 	TxTypeContract     TxOutputType = 4
 )

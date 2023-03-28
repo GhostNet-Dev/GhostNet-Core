@@ -10,12 +10,12 @@ func (txs *TXs) CreateDataTx(info TransferTxInfo, logicalAddr uint64,
 	dataTx := txs.MakeDataTx(logicalAddr, data)
 	dataTxId := dataTx.GetHashKey()
 	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
-		types.TxTypeDataTransfer: {
+		types.TxTypeDataStore: {
 			{
-				TxType:         types.TxTypeDataTransfer,
+				TxType:         types.TxTypeDataStore,
 				RecvAddr:       info.ToAddr,
 				Broker:         info.Broker,
-				OutputScript:   gvm.MakeDataMapping(info.FeeAddr),
+				OutputScript:   gvm.MakeDataMapping(info.ToAddr),
 				OutputScriptEx: dataTxId,
 				TransferCoin:   0,
 			},

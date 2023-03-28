@@ -7,6 +7,20 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+const (
+	DefaultNodeTable    = "nodes"
+	DefaultMastersTable = "masters"
+	DefaultWalletTable  = "wallet"
+	DefaultNickTable    = "nick"
+)
+
+var DefaultLiteTable = [...]string{
+	DefaultMastersTable,
+	DefaultNodeTable,
+	DefaultWalletTable,
+	DefaultNickTable,
+}
+
 type LiteStore struct {
 	db     *bolt.DB
 	tables []string

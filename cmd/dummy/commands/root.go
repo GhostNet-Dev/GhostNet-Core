@@ -3,25 +3,28 @@ package commands
 import (
 	"log"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/cmd/ghostd/manager"
+	"github.com/GhostNet-Dev/GhostNet-Core/cmd/dummy/dummyfactory"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/factory"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/spf13/cobra"
 )
 
 var (
-	cfg      = gconfig.NewDefaultConfig()
-	password string
+	cfg        = gconfig.NewDefaultConfig()
+	password   string
+	masterIp   string
+	masterPort string
 )
 
 // RootCmd root command binding
 func RootCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "ghostd",
-		Short: "GhostNet Deamon",
+		Use:   "test",
+		Short: "GhostNet Dummy Test",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// You can bind cobra and viper in a few locations, but PersistencePreRunE on the root command works well
 			return nil
@@ -40,11 +43,18 @@ func RootCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&cfg.RootPath, "rootpath", "", "", "Home Directory Path")
 	cmd.Flags().StringVarP(&cfg.SqlPath, "sqlpath", "", "", "Sql Db File Directory Path")
 	cmd.Flags().Uint32VarP(&cfg.Timeout, "timeout", "t", 3, "rpc connection timeout")
+
+	cmd.Flags().StringVarP(&masterIp, "mip", "", "", "Master Node Ip")
+	cmd.Flags().StringVarP(&masterPort, "mport", "", "", "Master Node Port")
 	return cmd
 }
 
 func ExecuteContainer() {
 	log.Println("Initialize Component")
+	masterAddr := &ptypes.GhostIp{
+		Ip:   masterIp,
+		Port: masterPort,
+	}
 	glog := glogger.NewGLogger(0)
 	// for encrypt passwd
 	cfg.Password = gcrypto.PasswordToSha256(password)
@@ -54,16 +64,30 @@ func ExecuteContainer() {
 
 	// boot factory initialize
 	bootFactory := factory.NewBootFactory(netFactory.Udp, netFactory.PacketFactory, cfg, glog)
+	booter := bootloader.NewBootLoader(netFactory.Udp,
+		netFactory.PacketFactory, cfg, bootFactory.Db,
+		bootFactory.LoadWallet, bootFactory.Genesis)
+	w := booter.BootLoading(cfg)
 
-	// container management initialize
-	containers := manager.NewContainers(netFactory, bootFactory, cfg)
+	defaultFactory := factory.NewDefaultFactory(netFactory, bootFactory, w, cfg, glog)
+	defaultFactory.FactoryOpen()
 
-	// grpc initiaize
-	server := grpc.NewGrpcServer()
-	manager.NewGrpcHandler(bootFactory.LoadWallet, bootFactory.Genesis, containers, server, cfg)
+	dummyFactory := dummyfactory.NewDummyFactory(1, masterAddr, bootFactory, netFactory, defaultFactory)
 
-	log.Println("Start Grpc Server")
-	if err := server.ServeGRPC(cfg); err != nil {
-		log.Fatal(err)
+	for _, worker := range dummyFactory.Worker {
+		worker.PrepareRun()
+	}
+
+	for {
+		checkRunning := 0
+		for _, worker := range dummyFactory.Worker {
+			if worker.Running {
+				checkRunning ++
+			}
+			worker.Run()
+		}
+		if checkRunning == 0 {
+			break;
+		}
 	}
 }

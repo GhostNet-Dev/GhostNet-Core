@@ -1,6 +1,11 @@
 package gcrypto
 
-import "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+import (
+	"log"
+
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"github.com/btcsuite/btcutil/base58"
+)
 
 type Wallet struct {
 	masterNode *ptypes.GhostUser
@@ -20,6 +25,15 @@ func NewWallet(nickname string, myAddr *GhostAddress, ghostIp *ptypes.GhostIp, m
 
 func (w *Wallet) SetMasterNode(master *ptypes.GhostUser) {
 	w.masterNode = master
+}
+
+func (w *Wallet) GetMasterNodeAddr() []byte {
+	if addr, _, err := base58.CheckDecode(w.masterNode.MasterPubKey); err != nil {
+		log.Fatal(err)
+	} else {
+		return addr
+	}
+	return nil
 }
 
 func (w *Wallet) GetGhostUser() *ptypes.GhostUser {
