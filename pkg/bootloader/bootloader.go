@@ -62,7 +62,7 @@ func (b *BootLoader) BootLoading(config *gconfig.GConfig) *gcrypto.Wallet {
 	if masterNode == nil {
 		b.conn.RequestMasterNodesToAdam()
 		if timeout := b.conn.WaitEvent(); timeout {
-			log.Println("could not connect to adam node")
+			log.Fatal("could not connect to adam node")
 			return nil
 		}
 		masterNode = b.conn.LoadMasterNode()

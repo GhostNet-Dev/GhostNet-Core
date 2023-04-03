@@ -27,6 +27,10 @@ func (w *Wallet) SetMasterNode(master *ptypes.GhostUser) {
 	w.masterNode = master
 }
 
+func (w *Wallet) GetMasterNode() *ptypes.GhostUser {
+	return w.masterNode
+}
+
 func (w *Wallet) GetMasterNodeAddr() []byte {
 	if addr, _, err := base58.CheckDecode(w.masterNode.MasterPubKey); err != nil {
 		log.Fatal(err)

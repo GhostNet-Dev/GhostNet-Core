@@ -25,13 +25,14 @@ type Workload struct {
 var password = "worker"
 
 func NewWorkload(workerName string, loadWallet *bootloader.LoadWallet,
-	bc *store.BlockContainer, tXs *txs.TXs, conn *common.ConnectMaster) *Workload {
+	bc *store.BlockContainer, tXs *txs.TXs, conn *common.ConnectMaster, user *gcrypto.Wallet) *Workload {
 	return &Workload{
 		workerName:     workerName,
 		loadWallet:     loadWallet,
 		blockContainer: bc,
 		tXs:            tXs,
 		conn:           conn,
+		wallet:         user,
 		Running:        false,
 	}
 }

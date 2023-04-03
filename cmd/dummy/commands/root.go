@@ -62,11 +62,15 @@ func ExecuteContainer() {
 	// network factory initialize
 	netFactory := factory.NewNetworkFactory(cfg, glog)
 
+	log.Println("Network Listen Start")
+	netFactory.Udp.Start(nil, cfg.Ip, cfg.Port)
+
 	// boot factory initialize
 	bootFactory := factory.NewBootFactory(netFactory.Udp, netFactory.PacketFactory, cfg, glog)
 	booter := bootloader.NewBootLoader(netFactory.Udp,
 		netFactory.PacketFactory, cfg, bootFactory.Db,
 		bootFactory.LoadWallet, bootFactory.Genesis)
+
 	w := booter.BootLoading(cfg)
 
 	defaultFactory := factory.NewDefaultFactory(netFactory, bootFactory, w, cfg, glog)
@@ -74,20 +78,22 @@ func ExecuteContainer() {
 
 	dummyFactory := dummyfactory.NewDummyFactory(1, masterAddr, bootFactory, netFactory, defaultFactory)
 
+	log.Println("Worker Prepare Run")
 	for _, worker := range dummyFactory.Worker {
 		worker.PrepareRun()
 	}
 
+	log.Println("Worker Run")
 	for {
 		checkRunning := 0
 		for _, worker := range dummyFactory.Worker {
 			if worker.Running {
-				checkRunning ++
+				checkRunning++
 			}
 			worker.Run()
 		}
 		if checkRunning == 0 {
-			break;
+			break
 		}
 	}
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 	"google.golang.org/protobuf/proto"
@@ -18,7 +17,6 @@ type ConnectMaster struct {
 	db              *store.LiteStore
 	udp             *p2p.UdpServer
 	wallet          *gcrypto.Wallet
-	masterNode      *ptypes.GhostUser
 	table           string
 	eventChannel    chan bool
 	eventWait       bool
@@ -55,7 +53,7 @@ func (conn *ConnectMaster) CheckNickname(nickname string) (result bool, err erro
 		log.Fatal(err)
 	}
 	headerInfo := &p2p.ResponseHeaderInfo{
-		ToAddr:     conn.masterNode.Ip.GetUdpAddr(),
+		ToAddr:     conn.wallet.GetMasterNode().Ip.GetUdpAddr(),
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_SearchGhostPubKey,
 		PacketData: sendData,
@@ -82,7 +80,7 @@ func (conn *ConnectMaster) SendTx(tx *types.GhostTransaction) (result bool, err 
 		log.Fatal(err)
 	}
 	headerInfo := &p2p.ResponseHeaderInfo{
-		ToAddr:     conn.masterNode.Ip.GetUdpAddr(),
+		ToAddr:     conn.wallet.GetMasterNode().Ip.GetUdpAddr(),
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_BlockChain,
 		ThirdType:  packets.PacketThirdType_SendTransaction,

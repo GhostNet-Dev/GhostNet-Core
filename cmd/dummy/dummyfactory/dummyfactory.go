@@ -34,7 +34,7 @@ func NewDummyFactory(maxWorker int, masterIp *ptypes.GhostIp, bootFactory *facto
 
 	for i := 0; i < maxWorker; i++ {
 		factory.Worker = append(factory.Worker, workload.NewWorkload(fmt.Sprintf("worker%d", i), bootFactory.LoadWallet,
-			defaultFactory.BlockContainer, defaultFactory.Txs, factory.conn))
+			defaultFactory.BlockContainer, defaultFactory.Txs, factory.conn, defaultFactory.UserWallet))
 	}
 
 	return factory
