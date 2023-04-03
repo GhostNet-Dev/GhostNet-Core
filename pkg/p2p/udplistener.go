@@ -215,6 +215,11 @@ func (udp *UdpServer) SendPacket(sendInfo *ResponseHeaderInfo, ipAddr *ptypes.Gh
 }
 
 func (udp *UdpServer) SendResponse(sendInfo *ResponseHeaderInfo) {
+	udp.glog.DebugOutput(udp,
+		fmt.Sprint("Response to ", sendInfo.ToAddr, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
+			" => ", packets.PacketThirdType_name[int32(sendInfo.ThirdType)], " SQ: ",
+			sendInfo.SqFlag), glogger.PacketLog)
+
 	anyData := udp.TranslationToHeader(sendInfo)
 	sendData, err := proto.Marshal(anyData)
 	if err != nil {

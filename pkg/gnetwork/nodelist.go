@@ -118,7 +118,7 @@ func (account *GhostAccount) GetNodeInfo(pubKey string) *GhostNode {
 func (account *GhostAccount) GetNodeByNickname(nickname string) *GhostNode {
 	find, exist := account.nicknameToPubKey[nickname]
 	if !exist {
-		if node, err := account.LoadFromDb(nickname); err == nil {
+		if node, err := account.LoadFromDb(nickname); err == nil && node != nil {
 			ghostNode := &GhostNode{
 				User:    node,
 				NetAddr: node.Ip.GetUdpAddr(),
@@ -126,7 +126,7 @@ func (account *GhostAccount) GetNodeByNickname(nickname string) *GhostNode {
 			account.AddUserNode(ghostNode)
 			return ghostNode
 		}
-		log.Fatal("nickname not found")
+		log.Print("nickname not found")
 	}
 	return find
 }

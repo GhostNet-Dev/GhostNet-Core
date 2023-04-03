@@ -63,7 +63,7 @@ func (node *MasterNetwork) RegisterHandler(packetFactory *p2p.PacketFactory) {
 	node.packetSqHandler[packets.PacketSecondType_RequestMasterNodeList] = node.RequestMasterNodeListSq
 	node.packetSqHandler[packets.PacketSecondType_ResponseMasterNodeList] = node.ResponseMasterNodeListSq
 	node.packetSqHandler[packets.PacketSecondType_SearchUserInfoByPubKey] = node.SearchMasterPubKeySq
-	node.packetSqHandler[packets.PacketSecondType_BlockChain] = node.SearchMasterPubKeySq
+	node.packetSqHandler[packets.PacketSecondType_BlockChain] = node.BlockChainSq
 	node.packetSqHandler[packets.PacketSecondType_Forwarding] = node.ForwardingSq
 
 	node.packetCqHandler[packets.PacketSecondType_GetGhostNetVersion] = node.GetGhostNetVersionCq
@@ -73,7 +73,7 @@ func (node *MasterNetwork) RegisterHandler(packetFactory *p2p.PacketFactory) {
 	node.packetCqHandler[packets.PacketSecondType_RequestMasterNodeList] = node.RequestMasterNodeListCq
 	node.packetCqHandler[packets.PacketSecondType_ResponseMasterNodeList] = node.ResponseMasterNodeListCq
 	node.packetCqHandler[packets.PacketSecondType_SearchUserInfoByPubKey] = node.SearchMasterPubKeyCq
-	node.packetCqHandler[packets.PacketSecondType_BlockChain] = node.SearchMasterPubKeyCq
+	node.packetCqHandler[packets.PacketSecondType_BlockChain] = node.BlockChainCq
 	node.packetCqHandler[packets.PacketSecondType_Forwarding] = node.ForwardingCq
 
 	packetFactory.RegisterPacketHandler(packets.PacketType_MasterNetwork, node.packetSqHandler, node.packetCqHandler)
