@@ -209,7 +209,10 @@ func (master *MasterNetwork) SearchGhostPubKeySq(requestHeaderInfo *p2p.RequestH
 
 	cq := packets.SearchGhostPubKeyCq{
 		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
-		User:   []*ptypes.GhostUser{node.User},
+	}
+
+	if node != nil {
+		cq.User = []*ptypes.GhostUser{node.User}
 	}
 
 	sendData, err := proto.Marshal(&cq)
