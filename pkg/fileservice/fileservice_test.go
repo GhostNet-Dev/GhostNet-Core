@@ -23,11 +23,12 @@ var (
 		Ip:   "127.0.0.1",
 		Port: "8888",
 	}
+	glog          = glogger.NewGLogger(0)
 	from, _       = net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
 	packetFactory = p2p.NewPacketFactory()
 	udp           = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port, packetFactory, glogger.NewGLogger(0))
 	owner         = gcrypto.GenerateKeyPair()
-	fileService   = NewFileServer(udp, packetFactory, owner, ipAddr, "./")
+	fileService   = NewFileServer(udp, packetFactory, owner, ipAddr, "./", glog)
 )
 
 func testFileInit(filename string) {

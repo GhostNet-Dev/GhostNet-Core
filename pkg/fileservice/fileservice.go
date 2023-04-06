@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -22,18 +23,20 @@ type FileService struct {
 	localAddr      *ptypes.GhostIp
 	localFilePath  string
 	fileObjManager *FileObjManager
+	glog           *glogger.GLogger
 
 	packetSqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
 	packetCqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
 }
 
 func NewFileServer(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory,
-	owner *gcrypto.GhostAddress, ipAddr *ptypes.GhostIp, filePath string) *FileService {
+	owner *gcrypto.GhostAddress, ipAddr *ptypes.GhostIp, filePath string, glog *glogger.GLogger) *FileService {
 	fileService := &FileService{
 		udp:            udp,
 		owner:          owner,
 		localAddr:      ipAddr,
 		localFilePath:  filePath,
+		glog:           glog,
 		fileObjManager: NewFileObjManager(),
 	}
 	fileService.RegisterHandler(packetFactory)

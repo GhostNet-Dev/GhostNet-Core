@@ -1,23 +1,27 @@
 package cloudservice
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileservice"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gnetwork"
 )
 
 type CloudService struct {
 	fileService *fileservice.FileService
 	tTree       *gnetwork.TrieTreeMap
+	glog        *glogger.GLogger
 	streamId    map[string](chan *fileservice.FileObject)
 }
 
 func NewCloudService(fileService *fileservice.FileService,
-	tTree *gnetwork.TrieTreeMap) *CloudService {
+	tTree *gnetwork.TrieTreeMap, glog *glogger.GLogger) *CloudService {
 	return &CloudService{
 		fileService: fileService,
 		tTree:       tTree,
+		glog:        glog,
 		streamId:    make(map[string]chan *fileservice.FileObject),
 	}
 }
@@ -28,7 +32,8 @@ func (cloud *CloudService) ReleaseChannel(filename string) {
 }
 
 func (cloud *CloudService) DownloadASync(filename string, ipAddr *net.UDPAddr) <-chan *fileservice.FileObject {
-	if _, exist := cloud.streamId[filename]; exist == true {
+	cloud.glog.DebugOutput(cloud, fmt.Sprint("cloud download = ", filename), glogger.Default)
+	if _, exist := cloud.streamId[filename]; exist {
 		return nil
 	} else {
 		cloud.streamId[filename] = nil

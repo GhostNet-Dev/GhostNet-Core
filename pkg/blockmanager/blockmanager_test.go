@@ -45,8 +45,8 @@ var (
 	tTreeMap = gnetwork.NewTrieTreeMap(Miner.GetPubAddress(), account)
 	master   = gnetwork.NewMasterNode(w, ghostIp, config, packetFactory, udp, blockContainer, account, tTreeMap)
 
-	fileService = fileservice.NewFileServer(udp, packetFactory, Miner, ghostIp, "./")
-	cloud       = cloudservice.NewCloudService(fileService, tTreeMap)
+	fileService = fileservice.NewFileServer(udp, packetFactory, Miner, ghostIp, "./", glog)
+	cloud       = cloudservice.NewCloudService(fileService, tTreeMap, glog)
 	tXs         = txs.NewTXs(gScript, blockContainer, gVm)
 	block       = blocks.NewBlocks(blockContainer, tXs, 1)
 	con         = consensus.NewConsensus(blockContainer, block, glog)

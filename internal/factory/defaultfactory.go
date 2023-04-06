@@ -85,8 +85,8 @@ func NewDefaultFactory(networkFactory *NetworkFactory, bootFactory *BootFactory,
 		networkFactory.Udp, factory.BlockContainer, factory.Account, factory.TTreeMap)
 
 	factory.FileService = fileservice.NewFileServer(networkFactory.Udp, networkFactory.PacketFactory,
-		user.GetGhostAddress(), ghostIp, config.FilePath)
-	factory.Cloud = cloudservice.NewCloudService(factory.FileService, factory.TTreeMap)
+		user.GetGhostAddress(), ghostIp, config.FilePath, factory.glog)
+	factory.Cloud = cloudservice.NewCloudService(factory.FileService, factory.TTreeMap, factory.glog)
 	factory.Txs = txs.NewTXs(factory.GScript, factory.BlockContainer, factory.Gvm)
 	factory.Block = blocks.NewBlocks(factory.BlockContainer, factory.Txs, 1)
 	factory.Con = consensus.NewConsensus(factory.BlockContainer, factory.Block, factory.glog)
