@@ -6,6 +6,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/cmd/dummy/common"
 	"github.com/GhostNet-Dev/GhostNet-Core/cmd/dummy/workload"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/factory"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 )
@@ -20,7 +21,8 @@ type DummyFactory struct {
 }
 
 func NewDummyFactory(maxWorker int, masterIp *ptypes.GhostIp, bootFactory *factory.BootFactory,
-	networkFactory *factory.NetworkFactory, defaultFactory *factory.DefaultFactory) *DummyFactory {
+	networkFactory *factory.NetworkFactory, defaultFactory *factory.DefaultFactory,
+	glog *glogger.GLogger) *DummyFactory {
 	master := &ptypes.GhostUser{
 		Ip: masterIp,
 	}
@@ -34,7 +36,8 @@ func NewDummyFactory(maxWorker int, masterIp *ptypes.GhostIp, bootFactory *facto
 
 	for i := 0; i < maxWorker; i++ {
 		factory.Worker = append(factory.Worker, workload.NewWorkload(fmt.Sprintf("worker%d", i), bootFactory.LoadWallet,
-			defaultFactory.BlockContainer, defaultFactory.Txs, factory.conn, defaultFactory.UserWallet))
+			defaultFactory.BlockServer, defaultFactory.BlockContainer, defaultFactory.Txs,
+			factory.conn, defaultFactory.UserWallet, glog))
 	}
 
 	return factory

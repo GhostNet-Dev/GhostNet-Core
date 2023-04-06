@@ -101,4 +101,5 @@ func (factory *DefaultFactory) FactoryOpen() {
 	schemeFilePath := path.Join(factory.config.DbSchemePath, factory.config.DbSchemeFile)
 	factory.BlockContainer.BlockContainerOpen(schemeFilePath, factory.config.SqlPath)
 	factory.BlockContainer.GenesisBlockChecker(store.GenesisBlock())
+	factory.Master.RegisterMyMasterNode(factory.UserWallet.GetMasterNode())
 }

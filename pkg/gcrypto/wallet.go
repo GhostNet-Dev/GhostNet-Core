@@ -32,7 +32,7 @@ func (w *Wallet) GetMasterNode() *ptypes.GhostUser {
 }
 
 func (w *Wallet) GetMasterNodeAddr() []byte {
-	if addr, _, err := base58.CheckDecode(w.masterNode.MasterPubKey); err != nil {
+	if addr, _, err := base58.CheckDecode(w.masterNode.PubKey); err != nil {
 		log.Fatal(err)
 	} else {
 		return addr

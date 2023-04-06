@@ -72,11 +72,13 @@ func ExecuteContainer() {
 		bootFactory.LoadWallet, bootFactory.Genesis)
 
 	w := booter.BootLoading(cfg)
+	log.Print("User: ", w.GetGhostUser())
+	log.Print("Master: ", w.GetMasterNode())
 
 	defaultFactory := factory.NewDefaultFactory(netFactory, bootFactory, w, cfg, glog)
 	defaultFactory.FactoryOpen()
 
-	dummyFactory := dummyfactory.NewDummyFactory(1, masterAddr, bootFactory, netFactory, defaultFactory)
+	dummyFactory := dummyfactory.NewDummyFactory(1, masterAddr, bootFactory, netFactory, defaultFactory, glog)
 
 	log.Println("Worker Prepare Run")
 	for _, worker := range dummyFactory.Worker {

@@ -54,7 +54,7 @@ func (master *MasterNetwork) NotificationMasterNodeSq(requestHeaderInfo *p2p.Req
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
 	}
-	master.account.AddMasterNode(&GhostNode{User: sq.User, NetAddr: header.Source.GetUdpAddr()})
+	master.RegisterMasterNode(sq.User)
 
 	cq := packets.MasterNodeUserInfoCq{
 		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
@@ -113,7 +113,7 @@ func (master *MasterNetwork) ConnectToMasterNodeCq(requestHeaderInfo *p2p.Reques
 	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
-	master.masterInfo = &GhostNode{User: cq.User, NetAddr: header.Source.GetUdpAddr()}
+	master.RegisterMyMasterNode(cq.User)
 	return nil
 }
 

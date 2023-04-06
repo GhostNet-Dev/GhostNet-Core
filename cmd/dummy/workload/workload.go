@@ -1,11 +1,13 @@
 package workload
 
 import (
-	"log"
+	"time"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/cmd/dummy/common"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blockmanager"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/txs"
@@ -18,21 +20,26 @@ type Workload struct {
 	wallet         *gcrypto.Wallet
 	blockContainer *store.BlockContainer
 	tXs            *txs.TXs
+	blockMgr       *blockmanager.BlockManager
 	conn           *common.ConnectMaster
+	glog           *glogger.GLogger
 	Running        bool
 }
 
 var password = "worker"
 
-func NewWorkload(workerName string, loadWallet *bootloader.LoadWallet,
-	bc *store.BlockContainer, tXs *txs.TXs, conn *common.ConnectMaster, user *gcrypto.Wallet) *Workload {
+func NewWorkload(workerName string, loadWallet *bootloader.LoadWallet, blkMgr *blockmanager.BlockManager,
+	bc *store.BlockContainer, tXs *txs.TXs, conn *common.ConnectMaster, user *gcrypto.Wallet,
+	glog *glogger.GLogger) *Workload {
 	return &Workload{
 		workerName:     workerName,
 		loadWallet:     loadWallet,
 		blockContainer: bc,
 		tXs:            tXs,
+		blockMgr:       blkMgr,
 		conn:           conn,
 		wallet:         user,
+		glog:           glog,
 		Running:        false,
 	}
 }
@@ -52,20 +59,26 @@ func (worker *Workload) LoadWorker(masterNode *ptypes.GhostUser) {
 
 func (w *Workload) PrepareRun() {
 	w.Running = true
-	if exist := w.CheckAccountTx(); !exist {
+	if exist, err := w.CheckAccountTx(); !exist && err == nil {
 		w.MakeAccountTx()
+	} else {
+		w.glog.DebugOutput(w, err.Error(), glogger.Default)
 	}
 }
 
 func (w *Workload) Run() {
-	w.Running = false
+	//w.Running = false
+	time.Sleep(time.Second)
 }
 
-func (w *Workload) CheckAccountTx() bool {
-	if exist, _ := w.conn.CheckNickname(w.workerName); exist {
-		return true
+func (w *Workload) CheckAccountTx() (bool, error) {
+	if exist, err := w.conn.CheckNickname(w.workerName); exist && err == nil {
+		return true, nil
+	} else if !exist && err == nil {
+		return false, nil
+	} else {
+		return false, err
 	}
-	return false
 }
 
 func (w *Workload) MakeAccountTx() {
@@ -77,10 +90,9 @@ func (w *Workload) MakeAccountTx() {
 		FeeBroker: w.wallet.GetMasterNodeAddr(),
 	}
 	tx := w.tXs.CreateRootFsTx(*txInfo, w.workerName)
+	tx = w.tXs.InkTheContract(tx, w.wallet.GetGhostAddress())
 
-	if _, err := w.conn.SendTx(tx); err != nil {
-		log.Fatal(err)
-	}
+	w.blockMgr.SendTx(tx)
 }
 
 func (w *Workload) MakeDummyTransaction(wallet *gcrypto.Wallet, to []byte, broker []byte) (*types.GhostTransaction, *types.GhostDataTransaction) {

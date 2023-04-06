@@ -114,7 +114,8 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo, ip, port string) 
 					return
 				}
 				udp.glog.DebugOutput(udp,
-					fmt.Sprint(packets.PacketSecondType_name[int32(recvPacket.SecondType)],
+					fmt.Sprint("Recv from ", packetInfo.Addr, ", ",
+						packets.PacketSecondType_name[int32(recvPacket.SecondType)],
 						" => ", packets.PacketThirdType_name[int32(recvPacket.ThirdType)], " SQ: ",
 						recvPacket.SqFlag), glogger.PacketLog)
 

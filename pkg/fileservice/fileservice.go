@@ -10,6 +10,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"github.com/btcsuite/btcutil/base58"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -51,6 +52,10 @@ func (fileService *FileService) RegisterHandler(packetFactory *p2p.PacketFactory
 	fileService.packetCqHandler[packets.PacketSecondType_ResponseFile] = fileService.ResponseFileCq
 
 	packetFactory.RegisterPacketHandler(packets.PacketType_FileTransfer, fileService.packetSqHandler, fileService.packetCqHandler)
+}
+
+func ByteToFilename(filename []byte) string {
+	return base58.CheckEncode(filename, 0)
 }
 
 func (fileService *FileService) CheckFileExist(filename string) bool {

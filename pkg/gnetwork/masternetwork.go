@@ -79,11 +79,21 @@ func (node *MasterNetwork) RegisterHandler(packetFactory *p2p.PacketFactory) {
 	packetFactory.RegisterPacketHandler(packets.PacketType_MasterNetwork, node.packetSqHandler, node.packetCqHandler)
 }
 
-func (master *MasterNetwork) RegisterMyMasterNode(user *ptypes.GhostUser, ipAddr *net.UDPAddr) {
+func (master *MasterNetwork) RegisterMyMasterNode(user *ptypes.GhostUser) {
 	master.masterInfo = &GhostNode{
 		User:    user,
-		NetAddr: ipAddr,
+		NetAddr: user.Ip.GetUdpAddr(),
 	}
+	master.account.AddMasterNode(master.masterInfo)
+	master.tTreeMap.AddNode(user.GetPubKey())
+}
+
+func (master *MasterNetwork) RegisterMasterNode(user *ptypes.GhostUser) {
+	master.account.AddMasterNode(&GhostNode{
+		User:    user,
+		NetAddr: user.Ip.GetUdpAddr(),
+	})
+	master.tTreeMap.AddNode(user.GetPubKey())
 }
 
 func (master *MasterNetwork) getGhostUser() *ptypes.GhostUser {
@@ -91,6 +101,7 @@ func (master *MasterNetwork) getGhostUser() *ptypes.GhostUser {
 		Nickname:     master.nickname,
 		PubKey:       master.owner.GetPubAddress(),
 		MasterPubKey: master.masterInfo.User.PubKey,
+		Ip:           master.localGhostIp,
 	}
 }
 
