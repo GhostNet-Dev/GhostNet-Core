@@ -52,6 +52,7 @@ func (b *BootLoader) BootLoading(config *gconfig.GConfig) *gcrypto.Wallet {
 			log.Println("Load Creator Key File Fail..")
 			return nil
 		}
+		w.SetMasterNode(w.GetGhostUser())
 		return w
 	}
 

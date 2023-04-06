@@ -204,6 +204,9 @@ func (master *MasterNetwork) SendToMasterNodeGrpSq(routingType packets.RoutingTy
 	header := master.udp.TranslationToHeader(headerInfo)
 	packetList := master.makeForwadingPacket(routingType, level, header)
 	for _, packet := range packetList {
+		if packet.ToAddr.String() == master.localGhostIp.GetUdpAddr().String() {
+			continue
+		}
 		master.udp.SendUdpPacket(&packet, packet.ToAddr)
 	}
 }
