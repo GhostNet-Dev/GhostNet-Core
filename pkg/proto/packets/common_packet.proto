@@ -12,7 +12,7 @@ enum PacketType {
 }
 
 enum PacketSecondType {
-    option allow_alias = true;
+    //option allow_alias = true;
     GetGhostNetVersion = 0;
     NotificationMasterNode = 1;
     ConnectToMasterNode = 2;
@@ -24,8 +24,8 @@ enum PacketSecondType {
     BlockChain = 8;
     Forwarding = 9;
 
-    RequestFile = 1;
-    ResponseFile = 2;
+    RequestFile = 10;
+    ResponseFile = 11;
 }
 
 enum PacketThirdType {

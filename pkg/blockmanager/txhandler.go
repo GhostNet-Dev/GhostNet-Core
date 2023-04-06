@@ -4,9 +4,9 @@ import (
 	"log"
 	"net"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileservice"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
-	"github.com/btcsuite/btcutil/base58"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -16,7 +16,7 @@ func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *ne
 		log.Fatal(err)
 	}
 
-	filename := base58.Encode(sq.TxId)
+	filename := fileservice.ByteToFilename(sq.TxId)
 	fileObj := <-blockMgr.cloud.DownloadASync(filename, from)
 	blockMgr.DownloadTransaction(fileObj, nil)
 
@@ -75,8 +75,8 @@ func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from
 		log.Fatal(err)
 	}
 
-	txFilename := base58.Encode(sq.TxId)
-	dataTxFilename := base58.Encode(sq.DataTxId)
+	txFilename := fileservice.ByteToFilename(sq.TxId)
+	dataTxFilename := fileservice.ByteToFilename(sq.DataTxId)
 	txFileObj := <-blockMgr.cloud.DownloadASync(txFilename, from)
 	dataTxFileObj := <-blockMgr.cloud.DownloadASync(dataTxFilename, from)
 	blockMgr.DownloadDataTransaction(txFileObj.Buffer, dataTxFileObj.Buffer)
