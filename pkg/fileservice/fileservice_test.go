@@ -23,8 +23,13 @@ var (
 		Ip:   "127.0.0.1",
 		Port: "8888",
 	}
+	toIpAddr = &ptypes.GhostIp{
+		Ip:   "127.0.0.2",
+		Port: "8888",
+	}
 	glog          = glogger.NewGLogger(0)
 	from, _       = net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
+	to, _         = net.ResolveUDPAddr("udp", toIpAddr.Ip+":"+toIpAddr.Port)
 	packetFactory = p2p.NewPacketFactory()
 	udp           = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port, packetFactory, glogger.NewGLogger(0))
 	owner         = gcrypto.GenerateKeyPair()
@@ -57,7 +62,7 @@ func TestFileInfoCq(t *testing.T) {
 	info, _ := os.Stat(fileService.localFilePath + testfile)
 	assert.Equal(t, true, info.Size() > 0, "get file stat error")
 	fileService.LoadFileToMemory(testfile)
-	header := fileService.makeFileInfo(testfile)
+	header := fileService.makeFileInfo(testfile, toIpAddr.GetUdpAddr())
 	assert.Equal(t, packets.PacketSecondType_RequestFile, header.SecondType, "wrong second type")
 	assert.Equal(t, false, header.SqFlag, "wrong SqFlag")
 
@@ -74,7 +79,7 @@ func TestSendFileData(t *testing.T) {
 	fileObj := fileService.LoadFileToMemory(testfile)
 
 	for offset := uint64(0); offset < fileObj.FileLength; offset += 1024 {
-		header := fileService.sendFileData(testfile, offset, 0, 0)
+		header := fileService.sendFileData(testfile, offset, 0, 0, toIpAddr.GetUdpAddr())
 		sq := &packets.ResponseFilePacketSq{}
 		if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 			log.Fatal(err)

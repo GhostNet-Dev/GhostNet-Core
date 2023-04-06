@@ -17,7 +17,7 @@ func (fileService *FileService) RequestFileSq(requestHeaderInfo *p2p.RequestHead
 
 	switch sq.RequestType {
 	case packets.FileRequestType_GetFileInfo:
-		return []p2p.ResponseHeaderInfo{*fileService.makeFileInfo(sq.Filename)}
+		return []p2p.ResponseHeaderInfo{*fileService.makeFileInfo(sq.Filename, header.Source.GetUdpAddr())}
 	case packets.FileRequestType_GetFileData:
 		fileObj, exist := fileService.fileObjManager.GetFileObject(sq.Filename)
 		if exist == false {
@@ -45,7 +45,7 @@ func (fileService *FileService) RequestFileSq(requestHeaderInfo *p2p.RequestHead
 				PacketData: sendData,
 				SqFlag:     false,
 			},
-			*fileService.sendFileData(sq.Filename, sq.StartOffset, 0, sq.Master.Common.TimeId),
+			*fileService.sendFileData(sq.Filename, sq.StartOffset, 0, sq.Master.Common.TimeId, header.Source.GetUdpAddr()),
 		}
 	}
 	return nil
