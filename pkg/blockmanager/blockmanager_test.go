@@ -37,7 +37,7 @@ var (
 	gScript          = gvm.NewGScript()
 	gVm              = gvm.NewGVM()
 	blockContainer   = store.NewBlockContainer("sqlite3")
-	accountContainer = store.NewAccountContainer(liteStore)
+	accountContainer = store.NewBcAccountContainer(liteStore)
 	packetFactory    = p2p.NewPacketFactory()
 	udp              = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glog)
 

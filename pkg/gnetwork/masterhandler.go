@@ -289,9 +289,9 @@ func (master *MasterNetwork) BlockChainSq(requestHeaderInfo *p2p.RequestHeaderIn
 	header := requestHeaderInfo.Header
 	if master.blockHandlerSq != nil {
 		infos := master.blockHandlerSq(header, header.Source.GetUdpAddr())
-		for _, info := range infos {
-			info.PacketType = packets.PacketType_MasterNetwork
-			info.SecondType = packets.PacketSecondType_BlockChain
+		for idx, _ := range infos {
+			infos[idx].PacketType = packets.PacketType_MasterNetwork
+			infos[idx].SecondType = packets.PacketSecondType_BlockChain
 		}
 		return infos
 	}

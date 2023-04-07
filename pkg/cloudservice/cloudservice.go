@@ -31,29 +31,21 @@ func (cloud *CloudService) ReleaseChannel(filename string) {
 	delete(cloud.streamId, filename)
 }
 
-func (cloud *CloudService) DownloadASync(filename string, ipAddr *net.UDPAddr) <-chan *fileservice.FileObject {
+func (cloud *CloudService) DownloadSync(filename string, ipAddr *net.UDPAddr) *fileservice.FileObject {
+	defer cloud.ReleaseChannel(filename)
 	cloud.glog.DebugOutput(cloud, fmt.Sprint("cloud download = ", filename), glogger.Default)
-	if _, exist := cloud.streamId[filename]; exist {
-		return nil
-	} else {
-		cloud.streamId[filename] = nil
+	if _, exist := cloud.streamId[filename]; !exist {
+		cloud.streamId[filename] = make(chan *fileservice.FileObject)
 	}
 
 	if ipAddr == nil {
 		ipAddr = cloud.tTree.GetTreeClusterPick(filename)
 	}
+
 	cloud.fileService.SendGetFile(filename, ipAddr, cloud.DownloadDone, nil)
 
-	go func() {
-		defer cloud.ReleaseChannel(filename)
-		select {
-		case ret := <-cloud.streamId[filename]:
-			if ret != nil {
-				return
-			}
-		}
-	}()
-	return cloud.streamId[filename]
+	fileObj := <-cloud.streamId[filename]
+	return fileObj
 }
 
 func (cloud *CloudService) DownloadDone(fileObj *fileservice.FileObject, context interface{}) {

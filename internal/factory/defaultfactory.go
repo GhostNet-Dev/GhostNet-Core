@@ -77,7 +77,7 @@ func NewDefaultFactory(networkFactory *NetworkFactory, bootFactory *BootFactory,
 	factory.GScript = gvm.NewGScript()
 	factory.Gvm = gvm.NewGVM()
 	factory.BlockContainer = store.NewBlockContainer(config.DbName)
-	factory.AccountContainer = store.NewAccountContainer(bootFactory.Db)
+	factory.AccountContainer = store.NewBcAccountContainer(bootFactory.Db)
 
 	factory.Account = gnetwork.NewGhostAccount(bootFactory.Db)
 	factory.TTreeMap = gnetwork.NewTrieTreeMap(user.GetPubAddress(), factory.Account)
