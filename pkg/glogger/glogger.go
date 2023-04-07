@@ -79,8 +79,11 @@ func (l *GLogger) Output(obj interface{}, s string, level LogLevel, depth int) e
 	}
 	l.buf = l.buf[:0]
 	formatTimeHeader(&l.buf, now, file, line)
-	if level == PacketLog {
+	switch level {
+	case PacketLog:
 		l.buf = append(l.buf, Purple...)
+	case BlockConsensus:
+		l.buf = append(l.buf, Blue...)
 	}
 	l.buf = append(l.buf, s...)
 	l.buf = append(l.buf, Reset...)

@@ -99,6 +99,7 @@ func (blockMgr *BlockManager) TriggerNewBlock() {
 	if !blockMgr.fsm.CheckAcceptNewBlock() || !result {
 		return
 	}
+	blockMgr.glog.DebugOutput(blockMgr, "Trigger New Block", glogger.BlockConsensus)
 	// miner와 creator는 동일하게 한다. 즉 creator만 mining을 할 수 있다.
 	newPairBlock := blockMgr.block.MakeNewBlock(blockMgr.owner, blockMgr.owner.Get160PubKey(), triggerTxCount)
 	if newPairBlock == nil {
