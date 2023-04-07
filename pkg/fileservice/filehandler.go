@@ -78,7 +78,7 @@ func (fileService *FileService) RequestFileCq(requestHeaderInfo *p2p.RequestHead
 				PacketType: packets.PacketType_FileTransfer,
 				SecondType: packets.PacketSecondType_RequestFile,
 				PacketData: sendData,
-				SqFlag:     false,
+				SqFlag:     true,
 			},
 		}
 	}
