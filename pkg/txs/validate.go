@@ -86,7 +86,7 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 				return &TxChkResult{TxChkResult_FormatMismatch}
 			}
 
-			if txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) == true {
+			if txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) {
 				return &TxChkResult{TxChkResult_MissingRefTx}
 			}
 
@@ -116,11 +116,14 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 	}
 
 	dummy := make([]byte, gbytes.HashSize)
+	txId := tx.TxId
 	tx.TxId = dummy
 
-	if txs.gVmExe.ExecuteGFunction(tx.SerializeToByte(), gFuncParam) == false {
+	if !txs.gVmExe.ExecuteGFunction(tx.SerializeToByte(), gFuncParam) {
 		return &TxChkResult{TxChkResult_ScriptError}
 	}
+
+	tx.TxId = txId
 
 	return &TxChkResult{TxChkResult_Success}
 }

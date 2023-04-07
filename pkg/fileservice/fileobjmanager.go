@@ -56,6 +56,15 @@ func (fileManager *FileObjManager) CreateFileObj(filename string, buffer []byte,
 	return fileObj
 }
 
+func (fileManager *FileObjManager) AllocBuffer(filename string, fileLength uint64) *FileObject {
+	if fileObj, exist := fileManager.GetFileObject(filename); exist {
+		fileObj.FileLength = fileLength
+		fileObj.Buffer = make([]byte, fileLength)
+		return fileObj
+	}
+	return nil
+}
+
 func (fileManager *FileObjManager) GetFileObject(filename string) (*FileObject, bool) {
 	obj, ok := fileManager.FileObjs[filename]
 	return obj, ok

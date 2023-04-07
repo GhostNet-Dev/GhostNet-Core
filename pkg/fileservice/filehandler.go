@@ -3,6 +3,7 @@ package fileservice
 import (
 	"log"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"google.golang.org/protobuf/proto"
@@ -59,7 +60,10 @@ func (fileService *FileService) RequestFileCq(requestHeaderInfo *p2p.RequestHead
 	}
 
 	if cq.Result == true && cq.RequestType == packets.FileRequestType_GetFileInfo {
-		fileService.fileObjManager.CreateFileObj(cq.Filename, nil, cq.FileLength, nil, nil)
+		if fileObj := fileService.fileObjManager.AllocBuffer(cq.Filename, cq.FileLength); fileObj == nil {
+			fileService.glog.DebugOutput(fileService, "wrong filename", glogger.Default)
+			return nil
+		}
 		sq := &packets.RequestFilePacketSq{
 			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
 			RequestType: packets.FileRequestType_GetFileData,

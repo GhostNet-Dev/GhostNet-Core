@@ -157,6 +157,7 @@ func (blockMgr *BlockManager) DownloadDataTransaction(txByte []byte, dataTxByte 
 }
 
 func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, context interface{}) bool {
+	blockMgr.glog.DebugOutput(blockMgr, "Tx Download Complete", glogger.Default)
 	tx := &types.GhostTransaction{}
 	if !tx.Deserialize(bytes.NewBuffer(obj.Buffer)).Result() {
 		return false
@@ -176,7 +177,7 @@ func (blockMgr *BlockManager) SaveExtraInformation(tx *types.GhostTransaction) b
 	for _, output := range tx.Body.Vout {
 		if output.Type == types.TxTypeFSRoot {
 			nick := output.ScriptEx
-			if !blockMgr.accountContainer.AddAccount(nick, tx.TxId) {
+			if !blockMgr.accountContainer.AddBcAccount(nick, tx.TxId) {
 				return false
 			}
 		}

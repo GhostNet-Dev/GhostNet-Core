@@ -42,10 +42,10 @@ func (gSql *GSqlite3) GetMaxPoolId() uint32 {
 
 // InsertTx ..
 func (gSql *GSqlite3) InsertCandidateTx(tx *types.GhostTransaction, poolId uint32) {
-	blockId, txIndexInBlock := poolId, poolId
-	gSql.InsertQuery(`INSERT INTO "c_transactions" ("TxId", "InputCounter",
-	"OutputCounter","Nonce","LockTime","TxIndex") VALUES (?,?,?,?, ?,?,?,?);
-		`, tx.TxId, blockId, tx.Body.InputCounter, tx.Body.OutputCounter, tx.Body.Nonce, tx.Body.LockTime, txIndexInBlock)
+	blockId := poolId
+	gSql.InsertQuery(`INSERT INTO "c_transactions" ("TxId", "BlockId", "InputCounter",
+	"OutputCounter","Nonce","LockTime") VALUES (?,?,?,?, ?,?);
+		`, tx.TxId, blockId, tx.Body.InputCounter, tx.Body.OutputCounter, tx.Body.Nonce, tx.Body.LockTime)
 	for i, input := range tx.Body.Vin {
 		gSql.InsertQuery(`INSERT INTO "inputs" 
 			("TxId","BlockId","prev_TxId","prev_OutIndex","Sequence","ScriptSize", "Script", 

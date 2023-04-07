@@ -59,6 +59,7 @@ func (account *GhostAccount) AddUserNode(node *GhostNode) {
 }
 
 func (account *GhostAccount) AddMasterNode(node *GhostNode) {
+	log.Print("Add Master = ", node.User.Nickname)
 	account.masterNodeList[node.User.PubKey] = node
 	account.nicknameToPubKey[node.User.Nickname] = node
 	account.SaveToDb(store.DefaultNickTable, node.User)
@@ -71,6 +72,7 @@ func (account *GhostAccount) AddMasterUserList(userList []*ptypes.GhostUser) {
 			User:    user,
 			NetAddr: user.Ip.GetUdpAddr(),
 		}
+	log.Print("Add Master = ", user.Nickname)
 		account.SaveToDb(store.DefaultMastersTable, user)
 	}
 }

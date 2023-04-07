@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	DefaultNodeTable    = "nodes"
-	DefaultMastersTable = "masters"
-	DefaultWalletTable  = "wallet"
-	DefaultNickTable    = "nick"
+	DefaultNodeTable           = "nodes"
+	DefaultMastersTable        = "masters"
+	DefaultWalletTable         = "wallet"
+	DefaultNickTable           = "nick"
+	DefaultNickInBlockChainTable = "nickinchain"
 )
 
 var DefaultLiteTable = [...]string{
@@ -19,6 +20,7 @@ var DefaultLiteTable = [...]string{
 	DefaultNodeTable,
 	DefaultWalletTable,
 	DefaultNickTable,
+	DefaultNickInBlockChainTable,
 }
 
 type LiteStore struct {
