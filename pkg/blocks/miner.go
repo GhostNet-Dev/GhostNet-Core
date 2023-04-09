@@ -25,7 +25,7 @@ func (blocks *Blocks) MinerStop() {
 func (blocks *Blocks) MakeNewBlock(miner *gcrypto.GhostAddress, creator []byte,
 	minimumRequiredTxCount uint32) *types.PairedBlock {
 	height := blocks.blockContainer.BlockHeight()
-	if height < 2 {
+	if height < 1 {
 		return nil
 	}
 
@@ -46,10 +46,18 @@ func (blocks *Blocks) MakeNewBlock(miner *gcrypto.GhostAddress, creator []byte,
 	block := blocks.CreateGhostNetBlock(newId, prevHash, dataBlock.GetHashKey(), miner, creator,
 		newUsedTxPool.TxCandidate)
 
-	return &types.PairedBlock{
+	newPairedBlock := &types.PairedBlock{
 		Block:     *block,
 		DataBlock: *dataBlock,
 	}
+
+	if blocks.BlockValidation(newPairedBlock, pairedBlock) {
+		blocks.blockContainer.InsertBlock(newPairedBlock)
+		blocks.blockContainer.TxContainer.DeleteCandidatePool(newUsedTxPool.PoolId)
+		return newPairedBlock
+	}
+
+	return nil
 }
 
 func (blocks *Blocks) CreateGhostNetBlock(newBlockId uint32, prevBlockHash []byte, dataBlockhash []byte,

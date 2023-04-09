@@ -21,7 +21,7 @@ func (blocks *Blocks) BlockValidation(pairedBlock *types.PairedBlock, prevPaired
 	if prevBlockId > 0 && prevPairedBlock == nil { // for genesis block
 		prevPairedBlock = blocks.blockContainer.GetBlock(prevBlockId)
 		prevHash := prevPairedBlock.Block.GetHashKey()
-		if bytes.Compare(header.PreviousBlockHeaderHash, prevHash) != 0 {
+		if !bytes.Equal(header.PreviousBlockHeaderHash, prevHash) {
 			return false
 		}
 	}
@@ -32,7 +32,7 @@ func (blocks *Blocks) BlockValidation(pairedBlock *types.PairedBlock, prevPaired
 		hashs[i] = tx.GetHashKey()
 	}
 	merkleRoot := CreateMerkleRoot(hashs)
-	if bytes.Compare(header.MerkleRoot, merkleRoot) != 0 {
+	if !bytes.Equal(header.MerkleRoot, merkleRoot) {
 		return false
 	}
 

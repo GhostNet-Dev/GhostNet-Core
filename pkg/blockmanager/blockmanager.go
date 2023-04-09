@@ -2,6 +2,7 @@ package blockmanager
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"net"
 	"time"
@@ -105,6 +106,7 @@ func (blockMgr *BlockManager) TriggerNewBlock() {
 	if newPairBlock == nil {
 		return
 	}
+	blockMgr.glog.DebugOutput(blockMgr, fmt.Sprint("Create Block Id = ", newPairBlock.BlockId()), glogger.BlockConsensus)
 	sq := packets.NewBlockSq{
 		Master:        p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
 		BlockFilename: newPairBlock.GetBlockFilename(),

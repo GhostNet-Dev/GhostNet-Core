@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
@@ -42,30 +43,38 @@ func (gSql *GSqlite3) GetMaxPoolId() uint32 {
 
 // InsertTx ..
 func (gSql *GSqlite3) InsertCandidateTx(tx *types.GhostTransaction, poolId uint32) {
-	blockId := poolId
 	gSql.InsertQuery(`INSERT INTO "c_transactions" ("TxId", "BlockId", "InputCounter",
-	"OutputCounter","Nonce","LockTime") VALUES (?,?,?,?, ?,?);
-		`, tx.TxId, blockId, tx.Body.InputCounter, tx.Body.OutputCounter, tx.Body.Nonce, tx.Body.LockTime)
+	"OutputCounter","Nonce","LockTime", "TxIndex") VALUES (?,?,?,?, ?,?,?);
+		`, tx.TxId, poolId, tx.Body.InputCounter, tx.Body.OutputCounter, tx.Body.Nonce, tx.Body.LockTime, poolId)
 	for i, input := range tx.Body.Vin {
-		gSql.InsertQuery(`INSERT INTO "inputs" 
+		gSql.InsertQuery(`INSERT INTO "c_inputs" 
 			("TxId","BlockId","prev_TxId","prev_OutIndex","Sequence","ScriptSize", "Script", 
 			"Index") VALUES (?,?,?,?, ?,?,?,?);
-			`, tx.TxId, blockId, input.PrevOut.TxId, input.PrevOut.TxOutIndex, input.Sequence, input.ScriptSize, input.ScriptSig, i)
+			`, tx.TxId, poolId, input.PrevOut.TxId, input.PrevOut.TxOutIndex, input.Sequence, input.ScriptSize, input.ScriptSig, i)
 	}
 	for i, output := range tx.Body.Vout {
-		gSql.InsertQuery(`INSERT INTO "outputs" 
+		gSql.InsertQuery(`INSERT INTO "c_outputs" 
 			("TxId","BlockId","ToAddr","BrokerAddr", "Type", "Value", "ScriptSize","Script",
 			"OutputIndex") VALUES (?,?,?,? ,?,?,?,?, ?);
-			`, tx.TxId, blockId, output.Addr, output.BrokerAddr, output.Type, output.Value, output.ScriptSize, output.ScriptPubKey, i)
+			`, tx.TxId, poolId, output.Addr, output.BrokerAddr, output.Type, output.Value, output.ScriptSize, output.ScriptPubKey, i)
+	}
+}
+
+func (gSql *GSqlite3) DeleteCandidatePool(poolId uint32) {
+	tables := []string{"c_transactions", "c_data_transactions", "c_inputs", "c_outputs"}
+	for _, table := range tables {
+		_, err := gSql.db.Exec(fmt.Sprint("delete from ", table, " where BlockId ==", poolId))
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
 // InsertDataTx ..
 func (gSql *GSqlite3) InsertCandidateDataTx(dataTx *types.GhostDataTransaction, poolId uint32) {
-	blockId, txIndexInBlock := poolId, poolId
 	gSql.InsertQuery(`INSERT INTO "c_data_transactions" ("TxId","BlockId","LogicalAddress","Data",
 		"DataSize","TxIndex") VALUES (?,?,?,?, ?,?);`,
-		dataTx.TxId, blockId, dataTx.LogicalAddress, dataTx.Data, dataTx.DataSize, txIndexInBlock)
+		dataTx.TxId, poolId, dataTx.LogicalAddress, dataTx.Data, dataTx.DataSize, poolId)
 }
 
 func (gSql *GSqlite3) UpdatePoolId(oldPoolId uint32, newPoolId uint32) {

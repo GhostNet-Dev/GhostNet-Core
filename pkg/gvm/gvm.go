@@ -3,6 +3,7 @@ package gvm
 import (
 	"bytes"
 	"encoding/binary"
+	"log"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/libs/container"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
@@ -96,12 +97,13 @@ func (gvm *GVM) ExecuteScript(scriptPubKey []byte, param []byte) bool {
 	byteBuf := bytes.NewBuffer(scriptPubKey)
 	for result {
 		if err := binary.Read(byteBuf, binary.LittleEndian, &op); err != nil {
-			break
+			log.Fatal(err)
+			return false
 		}
 
 		exec, ok := gvm.exec[op]
-		if ok == false {
-			break
+		if !ok {
+			return false
 		}
 
 		if op == OP_PUSH || op == OP_PUSHTOKEN {
@@ -116,7 +118,7 @@ func (gvm *GVM) ExecuteScript(scriptPubKey []byte, param []byte) bool {
 			result = exec.ExcuteOp(nil)
 		}
 	}
-	return result
+	return true
 }
 
 func (gvm *GVM) Clear() {

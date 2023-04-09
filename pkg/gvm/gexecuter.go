@@ -159,5 +159,5 @@ type OpReturn struct {
 }
 
 func (exec *OpReturn) ExcuteOp(param interface{}) bool {
-	return true
+	return false
 }

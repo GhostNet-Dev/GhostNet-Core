@@ -3,7 +3,7 @@ package consensus
 import "github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 
 const (
-	INIT_MAX_TRANSACTION_COUNT = 2
+	INIT_MAX_TRANSACTION_COUNT = 1
 	CREATE_BLOCK_INTERVAL      = 60
 )
 

@@ -17,6 +17,10 @@ func (txContainer *TxContainer) SaveCandidateDataTx(tx *types.GhostDataTransacti
 	txContainer.gCandidateSql.InsertCandidateDataTx(tx, txContainer.CurrentPoolId)
 }
 
+func (txContainer *TxContainer) DeleteCandidatePool(poolId uint32) {
+	txContainer.gCandidateSql.DeleteCandidatePool(poolId)
+}
+
 func (txContainer *TxContainer) GetCandidateTxCount() uint32 {
 	return txContainer.gCandidateSql.SelectCandidateTxCount()
 }
@@ -37,13 +41,15 @@ func (txContainer *TxContainer) MakeCandidateTrPool(blockId uint32, minTxCount u
 	txList := txContainer.gSql.SelectTxsPool(txContainer.CurrentPoolId)
 	dataTxList := txContainer.gSql.SelectDataTxsPool(txContainer.CurrentPoolId)
 	// validation은 여기서 하지 않는다. 밖에서 하고 들어온다.
-	if minTxCount < 2 || len(txList) == 0 || len(txList)+len(dataTxList) < int(minTxCount) {
+	if len(txList) == 0 || len(txList)+len(dataTxList) < int(minTxCount) {
 		return nil
 	}
+	poolId := txContainer.CurrentPoolId
 	txContainer.CurrentPoolId++
 	return &CandidateTxPool{
 		BlockId:         blockId,
 		TxCandidate:     txList,
+		PoolId:          poolId,
 		DataTxCandidate: dataTxList,
 	}
 }

@@ -12,7 +12,7 @@ func NewBcAccountContainer(liteStore *LiteStore) *AccountContainer {
 
 func (account *AccountContainer) AddBcAccount(nickname []byte, txId []byte) bool {
 	if v, err := account.liteStore.SelectEntry(DefaultNickInBlockChainTable, nickname); v == nil && err == nil {
-		account.liteStore.SaveEntry(DefaultNickTable, nickname, txId)
+		account.liteStore.SaveEntry(DefaultNickInBlockChainTable, nickname, txId)
 		return true
 	}
 	return false
