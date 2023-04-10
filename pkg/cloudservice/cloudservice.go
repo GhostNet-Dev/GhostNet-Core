@@ -35,7 +35,7 @@ func (cloud *CloudService) DownloadSync(filename string, ipAddr *net.UDPAddr) *f
 	defer cloud.ReleaseChannel(filename)
 	cloud.glog.DebugOutput(cloud, fmt.Sprint("cloud download = ", filename), glogger.Default)
 	if _, exist := cloud.streamId[filename]; !exist {
-		cloud.streamId[filename] = make(chan *fileservice.FileObject)
+		cloud.streamId[filename] = make(chan *fileservice.FileObject, 1)
 	}
 
 	if ipAddr == nil {

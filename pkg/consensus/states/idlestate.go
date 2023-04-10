@@ -14,21 +14,21 @@ func (s *IdleState) Initialize() {
 }
 
 func (s *IdleState) Rebuild() {
-	s.blockMachine.blockServer.MiningStop()
+	s.blockMachine.BlockServer.MiningStop()
 	s.blockMachine.setState(s.blockMachine.getHeightestState)
-	s.blockMachine.blockServer.BroadcastBlockChainNotification()
+	s.blockMachine.BlockServer.BroadcastBlockChainNotification()
 	s.glog.DebugOutput(s, "Rebuild", glogger.BlockConsensus)
 }
 
 func (s *IdleState) StartMining() {
-	s.blockMachine.blockServer.BlockServerInitStart()
+	s.blockMachine.BlockServer.BlockServerInitStart()
 	s.blockMachine.setState(s.blockMachine.getHeightestState)
-	s.blockMachine.blockServer.BroadcastBlockChainNotification()
+	s.blockMachine.BlockServer.BroadcastBlockChainNotification()
 	s.glog.DebugOutput(s, "StartMining", glogger.BlockConsensus)
 }
 
 func (s *IdleState) RecvBlockHeight(height uint32, pubKey string) {
-	if s.blockMachine.blockServer.CheckHeightForRebuild(height) == true {
+	if s.blockMachine.BlockServer.CheckHeightForRebuild(height) {
 		s.Rebuild()
 	}
 }

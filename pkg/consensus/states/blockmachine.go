@@ -31,7 +31,7 @@ type BlockMachine struct {
 
 	currentState   IBlockState
 	blockContainer *store.BlockContainer
-	blockServer    IBlockServer
+	BlockServer    IBlockServer
 	con            *consensus.Consensus
 	glog           *glogger.GLogger
 
@@ -68,11 +68,16 @@ func NewBlockMachine(b *store.BlockContainer, con *consensus.Consensus, glog *gl
 }
 
 func (fsm *BlockMachine) SetServer(blockServer IBlockServer) {
-	fsm.blockServer = blockServer
+	fsm.BlockServer = blockServer
 }
 
 func (fsm *BlockMachine) CheckAcceptNewBlock() bool {
-	return fsm.currentState == fsm.idle || fsm.currentState == fsm.miningState
+	return fsm.currentState == fsm.idle ||
+		fsm.currentState == fsm.miningState
+}
+
+func (fsm *BlockMachine) CheckAcceptDownloadBlock() bool {
+	return fsm.currentState == fsm.downloadCheckState
 }
 
 func (fsm *BlockMachine) setState(s IBlockState) {

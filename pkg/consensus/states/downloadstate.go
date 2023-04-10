@@ -11,17 +11,17 @@ import (
 
 type DownloadCheckState struct {
 	blockMachine  *BlockMachine
-	lock          *sync.Mutex
 	glog          *glogger.GLogger
 	reqBlockId    uint32
 	startBlockId  uint32
+	// Set from Verification State
 	targetBlockId uint32
 }
 
 func (s *DownloadCheckState) Initialize() {
 	s.reqBlockId = 0
 	s.startBlockId = 0
-	s.targetBlockId = 0
+	s.targetBlockId = s.blockMachine.GetTargetHeight()
 }
 
 func (s *DownloadCheckState) Rebuild() {
@@ -37,7 +37,10 @@ func (s *DownloadCheckState) RecvBlockHeight(height uint32, pubKey string) {
 }
 
 func (s *DownloadCheckState) RecvBlockHash(from string, masterHash []byte, blockIdx uint32) {
-	s.lock.Lock()
+	mutex := sync.Mutex{}
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	if s.reqBlockId == 0 {
 		s.reqBlockId = blockIdx
 	} else {
@@ -48,35 +51,36 @@ func (s *DownloadCheckState) RecvBlockHash(from string, masterHash []byte, block
 		s.startBlockId = blockIdx
 	}
 	hash := s.blockMachine.LoadHashFromTempDb(blockIdx)
-	if hash == nil || bytes.Compare(hash, masterHash) != 0 {
-		s.blockMachine.blockServer.RequestGetBlock(from, blockIdx)
+	if hash == nil || !bytes.Equal(hash, masterHash) {
+		s.blockMachine.BlockServer.RequestGetBlock(from, blockIdx)
 	} else {
 		s.reqBlockId = blockIdx + 1
-		s.blockMachine.blockServer.RequestGetBlockHash(from, s.reqBlockId)
+		s.blockMachine.BlockServer.RequestGetBlockHash(from, s.reqBlockId)
 	}
-	s.lock.Unlock()
 }
 
 func (s *DownloadCheckState) RecvBlock(pairedBlock *types.PairedBlock, pubKey string) {
-	s.lock.Lock()
-	s.glog.DebugOutput(s, fmt.Sprint("- recv GetBlock ", pairedBlock.BlockId()), glogger.BlockConsensus)
+	mutex := sync.Mutex{}
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	s.glog.DebugOutput(s, fmt.Sprint("- recv GetBlock ", pairedBlock.BlockId(),
+		" target block id = ", s.targetBlockId), glogger.BlockConsensus)
 
 	result := s.blockMachine.CheckAndSave(pairedBlock)
-	if result == false {
-		s.blockMachine.blockServer.MergeErrorNotification(pubKey, result)
+	if !result {
+		s.blockMachine.BlockServer.MergeErrorNotification(pubKey, result)
 		s.glog.DebugOutput(s, fmt.Sprint("-- Merge Error", result), glogger.BlockConsensus)
 		s.blockMachine.setState(s.blockMachine.getHeightestState)
-		s.blockMachine.blockServer.BroadcastBlockChainNotification()
+		s.blockMachine.BlockServer.BroadcastBlockChainNotification()
 	} else if pairedBlock.BlockId() == s.targetBlockId {
 		s.blockMachine.SetTargetHeight(s.targetBlockId)
 		s.blockMachine.SetStartBlockId(s.startBlockId)
 		s.blockMachine.setState(s.blockMachine.blockMergeState)
 	} else {
 		s.reqBlockId = pairedBlock.BlockId() + 1
-		s.blockMachine.blockServer.RequestGetBlockHash(pubKey, s.reqBlockId)
+		s.blockMachine.BlockServer.RequestGetBlockHash(pubKey, s.reqBlockId)
 	}
-
-	s.lock.Unlock()
 }
 
 func (s *DownloadCheckState) TimerExpired(context interface{}) bool {

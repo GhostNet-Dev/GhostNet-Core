@@ -17,7 +17,7 @@ func (s *BlockMergeState) Initialize() {
 
 func (s *BlockMergeState) MergeTask() {
 	s.blockMachine.MergeExecute()
-	s.blockMachine.blockServer.BlockServerInitStart()
+	s.blockMachine.BlockServer.BlockServerInitStart()
 	s.blockMachine.setState(s.blockMachine.miningState)
 }
 

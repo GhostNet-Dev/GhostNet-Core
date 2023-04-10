@@ -56,10 +56,19 @@ func (gSql *GSqlite3) DropTable() {
 	}
 }
 
+func (gSql *GSqlite3) deletePairedBlockAfterTargetId(blockId uint32) {
+	_, err := gSql.db.Exec(fmt.Sprint("delete from paired_block where Id >=", blockId))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func (gSql *GSqlite3) DeleteAfterTargetId(blockId uint32) {
-	tables := []string{"paired_block", "transactions", "data_transactions", "inputs", "outputs"}
+	gSql.deletePairedBlockAfterTargetId(blockId)
+
+	tables := []string{"transactions", "data_transactions", "inputs", "outputs"}
 	for _, table := range tables {
-		_, err := gSql.db.Exec(fmt.Sprint("delete from ", table, " where blockId >=", blockId))
+		_, err := gSql.db.Exec(fmt.Sprint("delete from ", table, " where BlockId >=", blockId))
 		if err != nil {
 			log.Fatal(err)
 		}

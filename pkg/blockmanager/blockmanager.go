@@ -70,7 +70,10 @@ func NewBlockManager(con *consensus.Consensus,
 		packetSqHandler:  make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo),
 		packetCqHandler:  make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)),
 	}
+
+	fsm.BlockServer = blockMgr
 	blockMgr.InitHandler(master)
+
 	return blockMgr
 }
 

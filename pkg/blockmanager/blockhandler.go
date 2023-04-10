@@ -167,7 +167,7 @@ func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPA
 		log.Fatal(err)
 	}
 
-	if blockMgr.fsm.CheckAcceptNewBlock() {
+	if blockMgr.fsm.CheckAcceptDownloadBlock() {
 		fileObj := blockMgr.cloud.DownloadSync(sq.BlockFilename, from)
 		blockMgr.DownloadBlock(fileObj, sq.GetMaster().Common.FromPubKeyAddress)
 	}

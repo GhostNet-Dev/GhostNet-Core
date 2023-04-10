@@ -17,13 +17,13 @@ func (s *RecheckState) Initialize() {
 }
 
 func (s *RecheckState) BlockCheckTask() {
-	if s.blockMachine.LocalBlockCheckProcess() == true {
-		s.blockMachine.blockServer.BlockServerInitStart()
+	if s.blockMachine.LocalBlockCheckProcess() {
+		s.blockMachine.BlockServer.BlockServerInitStart()
 		s.blockMachine.setState(s.blockMachine.miningState)
 		s.glog.DebugOutput(s, fmt.Sprint("-- "), glogger.BlockConsensus)
 	} else {
 		s.blockMachine.setState(s.blockMachine.getHeightestState)
-		s.blockMachine.blockServer.BroadcastBlockChainNotification()
+		s.blockMachine.BlockServer.BroadcastBlockChainNotification()
 	}
 }
 

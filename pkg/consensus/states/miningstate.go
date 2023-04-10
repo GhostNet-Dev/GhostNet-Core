@@ -14,9 +14,9 @@ func (s *MiningState) Initialize() {
 }
 
 func (s *MiningState) Rebuild() {
-	s.blockMachine.blockServer.MiningStop()
+	s.blockMachine.BlockServer.MiningStop()
 	s.blockMachine.setState(s.blockMachine.getHeightestState)
-	s.blockMachine.blockServer.BroadcastBlockChainNotification()
+	s.blockMachine.BlockServer.BroadcastBlockChainNotification()
 	s.glog.DebugOutput(s, "MiningState: Rebuild", glogger.BlockConsensus)
 }
 
@@ -25,7 +25,7 @@ func (s *MiningState) StartMining() {
 }
 
 func (s *MiningState) RecvBlockHeight(height uint32, pubKey string) {
-	if s.blockMachine.blockServer.CheckHeightForRebuild(height) == true {
+	if s.blockMachine.BlockServer.CheckHeightForRebuild(height) {
 		s.Rebuild()
 	}
 }
