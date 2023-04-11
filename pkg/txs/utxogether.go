@@ -20,3 +20,11 @@ func (txs *TXs) CandidateUTXO(withDrawCoin uint64, account []byte) ([]types.Prev
 
 	return outputParams, checkBalance
 }
+
+func (txs *TXs) GetRootFsTx(account []byte) ([]types.PrevOutputParam, bool) {
+	outputParams := txs.blockContainer.TxContainer.GetUnusedOutputList(types.TxTypeFSRoot, account)
+	if len(outputParams) != 0 {
+		return outputParams, true
+	}
+	return nil, false
+}

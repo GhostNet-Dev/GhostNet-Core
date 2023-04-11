@@ -100,7 +100,16 @@ func (w *Workload) MakeAccountTx() {
 }
 
 func (w *Workload) MakeDataTx() {
+	outputParams, ok := w.tXs.GetRootFsTx(w.wallet.MyPubKey())
+	if !ok {
+		return
+	}
+
+	prevMap := map[types.TxOutputType][]types.PrevOutputParam{}
+	prevMap[types.TxTypeDataStore] = outputParams // for mapping
+
 	txInfo := &txs.TransferTxInfo{
+		Prevs:     prevMap,
 		MyWallet:  w.wallet,
 		ToAddr:    w.wallet.MyPubKey(),
 		Broker:    w.wallet.GetMasterNodeAddr(),
