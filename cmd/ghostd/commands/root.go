@@ -60,7 +60,7 @@ func ExecuteContainer() {
 
 	// grpc initiaize
 	server := grpc.NewGrpcServer()
-	manager.NewGrpcHandler(bootFactory.LoadWallet, bootFactory.Genesis, containers, server, cfg)
+	manager.NewGrpcDeamonHandler(bootFactory.LoadWallet, bootFactory.Genesis, containers, server, cfg)
 
 	log.Println("Start Grpc Server")
 	if err := server.ServeGRPC(cfg); err != nil {

@@ -40,6 +40,7 @@ func main() {
 		cmd.ForkContainerCommand(),
 		cmd.GetPrivateKeyCommand(),
 		cmd.GetBlockInfoCommand(),
+		cmd.GetBlockListCommand(),
 		cmd.GetAccountListCommand(),
 		cmd.LoginCommand(),
 	)

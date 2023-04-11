@@ -13,15 +13,16 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/traherom/memstream v0.0.0-20210211152058-869756e84126
 	google.golang.org/grpc v1.50.1
-	google.golang.org/protobuf v1.28.1
+	google.golang.org/protobuf v1.30.0
 )
 
 require (
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/kelindar/simd v1.1.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.12 // indirect
 	golang.org/x/net v0.3.0 // indirect
 	google.golang.org/genproto v0.0.0-20221024183307-1bc688fe9f3e // indirect
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0 // indirect
 )
 
 require (

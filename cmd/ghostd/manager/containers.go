@@ -40,6 +40,7 @@ func (containers *Containers) ReleaseContainer(id uint32) bool {
 		if container.Cmd != nil {
 			container.Cmd.Process.Kill()
 		}
+		container.Client.CloseServer()
 		containers.Count--
 		delete(containers.List, id)
 	} else {
@@ -175,7 +176,7 @@ func (containers *Containers) CreateContainer(password []byte, username, host, p
 
 	wg.Wait()
 	container.Client.ConnectServer()
-	defer container.Client.CloseServer()
+	//defer container.Client.CloseServer()
 	if !container.Client.LoginContainer(id, password, username, host, port) {
 		log.Println("Login Fail ", username)
 	}

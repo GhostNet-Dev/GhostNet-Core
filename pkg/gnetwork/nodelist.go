@@ -72,7 +72,7 @@ func (account *GhostAccount) AddMasterUserList(userList []*ptypes.GhostUser) {
 			User:    user,
 			NetAddr: user.Ip.GetUdpAddr(),
 		}
-	log.Print("Add Master = ", user.Nickname)
+		log.Print("Add Master = ", user.Nickname)
 		account.SaveToDb(store.DefaultMastersTable, user)
 	}
 }
@@ -128,7 +128,7 @@ func (account *GhostAccount) GetNodeByNickname(nickname string) *GhostNode {
 			account.AddUserNode(ghostNode)
 			return ghostNode
 		}
-		log.Print("nickname not found")
+		log.Print("nickname not found = ", nickname)
 	}
 	return find
 }

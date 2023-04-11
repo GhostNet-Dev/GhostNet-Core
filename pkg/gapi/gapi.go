@@ -85,6 +85,9 @@ func (gApi *GhostApi) CheckStatusHandler(id uint32) uint32 {
 
 func (gApi *GhostApi) GetBlockInfoHandler(id, blockId uint32) *ptypes.PairedBlocks {
 	pair := gApi.blockContainer.GetBlock(blockId)
+	if pair == nil {
+		return nil
+	}
 	protoPairedBlock := types.GhostBlockToProtoType(pair)
 	return protoPairedBlock
 }

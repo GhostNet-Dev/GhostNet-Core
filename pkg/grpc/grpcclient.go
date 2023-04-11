@@ -183,6 +183,7 @@ func (client *GrpcClient) GetAccount(id uint32) []*ptypes.GhostUser {
 	r, err := client.c.GetAccount(ctx, &rpc.GetAccountRequest{Id: id})
 	if err != nil {
 		log.Printf("could not connect: %v", err)
+		return nil
 	}
 	return r.User
 }
@@ -193,6 +194,7 @@ func (client *GrpcClient) GetBlockInfo(id, blockId uint32) *ptypes.PairedBlocks 
 	r, err := client.c.GetBlockInfo(ctx, &rpc.GetBlockInfoRequest{Id: id, BlockId: blockId})
 	if err != nil {
 		log.Printf("could not connect: %v", err)
+		return nil
 	}
 	return r.Pair
 }

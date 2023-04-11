@@ -86,7 +86,7 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 				return &TxChkResult{TxChkResult_FormatMismatch}
 			}
 
-			if txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) {
+			if !txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) {
 				return &TxChkResult{TxChkResult_MissingRefTx}
 			}
 
