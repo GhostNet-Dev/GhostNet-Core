@@ -43,7 +43,7 @@ var (
 
 	account  = gnetwork.NewGhostAccount(liteStore)
 	tTreeMap = gnetwork.NewTrieTreeMap(Miner.GetPubAddress(), account)
-	master   = gnetwork.NewMasterNode(w, ghostIp, config, packetFactory, udp, blockContainer, account, tTreeMap)
+	master   = gnetwork.NewMasterNode(1, w, ghostIp, packetFactory, udp, blockContainer, account, tTreeMap)
 
 	fileService = fileservice.NewFileServer(udp, packetFactory, Miner, ghostIp, "./", glog)
 	cloud       = cloudservice.NewCloudService(fileService, tTreeMap, glog)

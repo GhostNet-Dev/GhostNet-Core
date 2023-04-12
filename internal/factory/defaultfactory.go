@@ -81,7 +81,7 @@ func NewDefaultFactory(networkFactory *NetworkFactory, bootFactory *BootFactory,
 
 	factory.Account = gnetwork.NewGhostAccount(bootFactory.Db)
 	factory.TTreeMap = gnetwork.NewTrieTreeMap(user.GetPubAddress(), factory.Account)
-	factory.Master = gnetwork.NewMasterNode(user, ghostIp, config, networkFactory.PacketFactory,
+	factory.Master = gnetwork.NewMasterNode(config.GhostVersion, user, ghostIp, networkFactory.PacketFactory,
 		networkFactory.Udp, factory.BlockContainer, factory.Account, factory.TTreeMap)
 
 	factory.FileService = fileservice.NewFileServer(networkFactory.Udp, networkFactory.PacketFactory,
