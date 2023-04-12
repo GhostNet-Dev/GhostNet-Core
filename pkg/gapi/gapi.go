@@ -3,7 +3,6 @@ package gapi
 import (
 	"log"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blocks"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
@@ -22,20 +21,18 @@ type GhostContainerApi struct {
 	block          *blocks.Blocks
 	blockContainer *store.BlockContainer
 	loadWallet     *bootloader.LoadWallet
-	config         *gconfig.GConfig
-	eventListener  map[rpc.ContainerControlType][]func(rpc.ContainerControlType)
+	eventListener  map[rpc.ContainerControlType][]func(rpc.ContainerControlType, interface{})
 }
 
 func NewGhostContainerApi(grpcServer *grpc.GrpcServer, block *blocks.Blocks,
 	blockContainer *store.BlockContainer,
-	loadWallet *bootloader.LoadWallet, config *gconfig.GConfig) *GhostContainerApi {
+	loadWallet *bootloader.LoadWallet) *GhostContainerApi {
 	ghostApi := &GhostContainerApi{
 		grpcServer:     grpcServer,
 		block:          block,
 		blockContainer: blockContainer,
 		loadWallet:     loadWallet,
-		config:         config,
-		eventListener:  make(map[rpc.ContainerControlType][]func(rpc.ContainerControlType)),
+		eventListener:  make(map[rpc.ContainerControlType][]func(rpc.ContainerControlType, interface{})),
 	}
 
 	grpcServer.CreateGenesisHandler = ghostApi.CreateGenesisHandler
@@ -46,7 +43,7 @@ func NewGhostContainerApi(grpcServer *grpc.GrpcServer, block *blocks.Blocks,
 	return ghostApi
 }
 
-func (gApi *GhostContainerApi) RegisterEventListener(control rpc.ContainerControlType, handler func(rpc.ContainerControlType)) {
+func (gApi *GhostContainerApi) RegisterEventListener(control rpc.ContainerControlType, handler func(rpc.ContainerControlType, interface{})) {
 	gApi.eventListener[control] = append(gApi.eventListener[control], handler)
 }
 
@@ -62,18 +59,19 @@ func (gApi *GhostContainerApi) LoginContainerHandler(id uint32, password []byte,
 		log.Println("Login fail user = ", username)
 		return false
 	}
-	gApi.config.Username = username
-	gApi.config.Password = password
 	control := rpc.ContainerControlType_StartResume
 	for _, handler := range gApi.eventListener[control] {
-		handler(control)
+		handler(control, struct {
+			Nickname string
+			PassHash []byte
+		}{Nickname: username, PassHash: password})
 	}
 	return true
 }
 
 func (gApi *GhostContainerApi) ControlContainerHandler(id uint32, control rpc.ContainerControlType) bool {
 	for _, handler := range gApi.eventListener[control] {
-		handler(control)
+		handler(control, nil)
 	}
 	return true
 }

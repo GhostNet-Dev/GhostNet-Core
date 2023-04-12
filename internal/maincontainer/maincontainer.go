@@ -97,7 +97,7 @@ func (main *MainContainer) startBootLoading() {
 	main.defaultFactory = factory.NewDefaultFactory(main.networkFactory, main.bootFactory, w, main.config, main.glog)
 	main.defaultFactory.FactoryOpen()
 	main.ghostApi = gapi.NewGhostContainerApi(main.grpcServer, main.defaultFactory.Block, main.defaultFactory.BlockContainer,
-		main.bootFactory.LoadWallet, main.config)
+		main.bootFactory.LoadWallet)
 	main.glog.DebugOutput(main, "Initialize complete", glogger.Default)
 	main.glog.DebugOutput(main, "Start Mainserver", glogger.Default)
 	go main.StartServer()
