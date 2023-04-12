@@ -5,7 +5,6 @@ import (
 	"net"
 	"testing"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
@@ -17,22 +16,21 @@ import (
 )
 
 var (
-	ghostIp    = &ptypes.GhostIp{
+	ghostIp = &ptypes.GhostIp{
 		Ip:   "127.0.0.1",
 		Port: "8888",
 	}
-	TestTables = []string{"nodes", "wallet"}
+	TestTables     = []string{"nodes", "wallet"}
 	liteStore      = store.NewLiteStore("./", TestTables)
 	gAccount       = NewGhostAccount(liteStore)
 	packetFactory  = p2p.NewPacketFactory()
 	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glogger.NewGLogger(0))
 	blockContainer = store.NewBlockContainer("sqlite3")
-	config         = gconfig.NewDefaultConfig()
 	from, _        = net.ResolveUDPAddr("udp", ghostIp.Ip+":"+ghostIp.Port)
 	owner          = gcrypto.GenerateKeyPair()
 
 	w      = gcrypto.NewWallet("test", owner, ghostIp, &ptypes.GhostUser{PubKey: "masterpubkey", Nickname: "master"})
-	master = NewMasterNode(w, ghostIp, config, packetFactory, udp, blockContainer, gAccount, NewTrieTreeMap(owner.GetPubAddress(), gAccount))
+	master = NewMasterNode(1, w, ghostIp, packetFactory, udp, blockContainer, gAccount, NewTrieTreeMap(owner.GetPubAddress(), gAccount))
 )
 
 func TestGetVersionSq(t *testing.T) {
@@ -52,7 +50,7 @@ func TestGetVersionSq(t *testing.T) {
 	}
 
 	assert.Equal(t, packets.PacketSecondType_GetGhostNetVersion, responseInfos[0].SecondType, "packet type is wrong")
-	assert.Equal(t, master.config.GhostVersion, cq.Version, "packet response is wrong")
+	assert.Equal(t, master.ghostNetVersion, cq.Version, "packet response is wrong")
 }
 
 func TestNotifyMasterNodeSq(t *testing.T) {

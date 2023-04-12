@@ -4,7 +4,6 @@ import (
 	"log"
 	"net"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
@@ -18,11 +17,12 @@ type MasterNetwork struct {
 	nickname string
 	// My Master Node, not me
 	masterInfo *GhostNode
+	// GhostNetVersion
+	ghostNetVersion uint32
 	// connected Master Nodes
 	udp            *p2p.UdpServer
 	owner          *gcrypto.GhostAddress
 	localGhostIp   *ptypes.GhostIp
-	config         *gconfig.GConfig
 	blockContainer *store.BlockContainer
 	tTreeMap       *TrieTreeMap
 	account        *GhostAccount
@@ -33,19 +33,19 @@ type MasterNetwork struct {
 	packetCqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
 }
 
-func NewMasterNode(w *gcrypto.Wallet, myIpAddr *ptypes.GhostIp,
-	config *gconfig.GConfig, packetFactory *p2p.PacketFactory, udp *p2p.UdpServer,
+func NewMasterNode(ghostNetVersion uint32, w *gcrypto.Wallet, myIpAddr *ptypes.GhostIp,
+	packetFactory *p2p.PacketFactory, udp *p2p.UdpServer,
 	blockContainer *store.BlockContainer, account *GhostAccount, tTreeMap *TrieTreeMap) *MasterNetwork {
 	masterNode := &MasterNetwork{
-		nickname:       w.GetNickname(),
-		udp:            udp,
-		owner:          w.GetGhostAddress(),
-		localGhostIp:   myIpAddr,
-		config:         config,
-		blockContainer: blockContainer,
-		account:        account,
-		tTreeMap:       tTreeMap,
-		masterInfo:     &GhostNode{User: w.GetGhostUser()},
+		nickname:        w.GetNickname(),
+		udp:             udp,
+		owner:           w.GetGhostAddress(),
+		localGhostIp:    myIpAddr,
+		ghostNetVersion: ghostNetVersion,
+		blockContainer:  blockContainer,
+		account:         account,
+		tTreeMap:        tTreeMap,
+		masterInfo:      &GhostNode{User: w.GetGhostUser()},
 	}
 	masterNode.RegisterHandler(packetFactory)
 	tTreeMap.LoadTrieTree()

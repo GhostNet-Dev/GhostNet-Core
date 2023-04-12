@@ -19,7 +19,7 @@ func (master *MasterNetwork) GetGhostNetVersionSq(requestHeaderInfo *p2p.Request
 
 	cq := packets.VersionInfoCq{
 		Master:  p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
-		Version: master.config.GhostVersion,
+		Version: master.ghostNetVersion,
 	}
 
 	sendData, err := proto.Marshal(&cq)
@@ -42,7 +42,7 @@ func (master *MasterNetwork) GetGhostNetVersionCq(requestHeaderInfo *p2p.Request
 	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
 		log.Fatal(err)
 	}
-	if cq.Version > uint32(master.config.GhostVersion) {
+	if cq.Version > uint32(master.ghostNetVersion) {
 		// TODO: 새로운 Version을 받아야한다.
 	}
 	return nil
