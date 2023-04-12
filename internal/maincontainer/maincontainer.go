@@ -80,7 +80,7 @@ func (main *MainContainer) StartContainer() {
 		return true
 	}
 
-	if err := main.grpcServer.ServeGRPC(main.config); err != nil {
+	if err := main.grpcServer.ServeGRPC(main.config.GrpcPort); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -63,7 +63,7 @@ func ExecuteContainer() {
 	manager.NewGrpcDeamonHandler(bootFactory.LoadWallet, bootFactory.Genesis, containers, server, cfg)
 
 	log.Println("Start Grpc Server")
-	if err := server.ServeGRPC(cfg); err != nil {
+	if err := server.ServeGRPC(cfg.GrpcPort); err != nil {
 		log.Fatal(err)
 	}
 }

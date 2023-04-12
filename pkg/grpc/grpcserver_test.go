@@ -20,7 +20,7 @@ func PreCondition() {
 	wg.Add(1)
 	go func() {
 		wg.Done()
-		server.ServeGRPC(cfg)
+		server.ServeGRPC(cfg.GrpcPort)
 	}()
 	wg.Wait()
 

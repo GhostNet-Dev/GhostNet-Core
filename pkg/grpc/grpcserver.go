@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/rpc"
@@ -39,14 +38,14 @@ func NewGrpcServer() *GrpcServer {
 	return &GrpcServer{}
 }
 
-func (grpcServer *GrpcServer) ServeGRPC(cfg *gconfig.GConfig) error {
-	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)
+func (grpcServer *GrpcServer) ServeGRPC(grpcPort string) error {
+	lis, err := net.Listen("tcp", ":"+grpcPort)
 	if err != nil {
 		return err
 	}
 	s := grpc.NewServer()
 	rpc.RegisterGApiServer(s, grpcServer)
-	glogger.GlobalDebugOutput(grpcServer, fmt.Sprint("start gRPC Server on ", cfg.GrpcPort, "\n"), 0)
+	glogger.GlobalDebugOutput(grpcServer, fmt.Sprint("start gRPC Server on ", grpcPort, "\n"), 0)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
