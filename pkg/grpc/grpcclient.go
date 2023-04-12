@@ -12,6 +12,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// cli(GrpcClient) -> cli(rpc.GApiClient) ->
+// ghostd(GrpcServer) -> ghostd(GrpcDeamonHandler) -> container(GrpcClient) ->
+// container(GrpcServer) -> container(GhostContainerApi)
+
 type GrpcClient struct {
 	GrpcIp   string
 	GrpcPort string

@@ -8,9 +8,11 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
+	"github.com/GhostNet-Dev/GhostNet-Core/internal/factory"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/maincontainer"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 )
 
 var (
@@ -33,7 +35,10 @@ func RootCmd() *cobra.Command {
 			cfg.Password = gcrypto.PasswordToSha256(password)
 
 			fmt.Printf("Start GhostNet Node Addr = %s:%s", cfg.Ip, cfg.Port)
-			container := maincontainer.NewMainContainer(nil, nil, cfg)
+			glog := glogger.NewGLogger(cfg.Id)
+			networkFactory := factory.NewNetworkFactory(cfg, glog)
+			bootFactory := factory.NewBootFactory(networkFactory.Udp, networkFactory.PacketFactory, cfg, glog)
+			container := maincontainer.NewMainContainer(networkFactory, bootFactory, cfg)
 			container.StartContainer()
 		},
 	}

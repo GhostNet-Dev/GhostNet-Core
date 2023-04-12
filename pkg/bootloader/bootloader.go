@@ -3,7 +3,6 @@ package bootloader
 import (
 	"log"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -13,41 +12,39 @@ import (
 type BootLoader struct {
 	udp           *p2p.UdpServer
 	packetFactory *p2p.PacketFactory
-	config        *gconfig.GConfig
 	db            *store.LiteStore
 	wallet        *LoadWallet
 	conn          *ConnectMaster
 	genesis       *LoadGenesis
 }
 
-func NewBootLoader(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig,
+func NewBootLoader(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory,
 	db *store.LiteStore, wallet *LoadWallet, gen *LoadGenesis) *BootLoader {
 
 	return &BootLoader{
 		udp:           udp,
 		packetFactory: packetFactory,
-		config:        config,
 		db:            db,
 		wallet:        wallet,
 		genesis:       gen,
 	}
 }
 
-func (b *BootLoader) BootLoading(config *gconfig.GConfig) *gcrypto.Wallet {
+func (b *BootLoader) BootLoading(user *ptypes.GhostUser, passwdHash []byte) *gcrypto.Wallet {
 	// Load Wallet
-	w, err := b.wallet.OpenWallet(config.Username, config.Password)
+	w, err := b.wallet.OpenWallet(user.Nickname, passwdHash)
 	if err != nil {
-		w = b.wallet.CreateWallet(config.Username, config.Password)
-		b.wallet.SaveWallet(w, config.Password)
+		w = b.wallet.CreateWallet(user.Nickname, passwdHash)
+		b.wallet.SaveWallet(w, passwdHash)
 	}
 
 	// if Creator, need not to connect other master
 	// Load Creator
 	creators := b.genesis.CreatorList()
-	if creator, exist := creators[config.Username]; exist {
+	if creator, exist := creators[user.Nickname]; exist {
 		if creatorAddr, err := b.genesis.LoadCreatorKeyFile(creator.Nickname,
-			creator.PubKey, config.Password); err == nil {
-			w = gcrypto.NewWallet(creator.Nickname, creatorAddr, &ptypes.GhostIp{Ip: config.Ip, Port: config.Port}, nil)
+			creator.PubKey, passwdHash); err == nil {
+			w = gcrypto.NewWallet(creator.Nickname, creatorAddr, &ptypes.GhostIp{Ip: user.Ip.Ip, Port: user.Ip.Port}, nil)
 		} else {
 			log.Println("Load Creator Key File Fail..")
 			return nil

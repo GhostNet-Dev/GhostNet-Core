@@ -12,6 +12,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/p2p"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 )
 
 type MainContainer struct {
@@ -21,20 +22,16 @@ type MainContainer struct {
 	bootFactory    *factory.BootFactory
 	defaultFactory *factory.DefaultFactory
 	grpcServer     *grpc.GrpcServer
-	ghostApi       *gapi.GhostApi
+	ghostApi       *gapi.GhostContainerApi
 	glog           *glogger.GLogger
+
+	user *ptypes.GhostUser
 }
 
 func NewMainContainer(networkFactory *factory.NetworkFactory, bootFactory *factory.BootFactory,
 	config *gconfig.GConfig) *MainContainer {
 	glog := glogger.NewGLogger(config.Id)
 
-	if networkFactory == nil {
-		networkFactory = factory.NewNetworkFactory(config, glog)
-	}
-	if bootFactory == nil {
-		bootFactory = factory.NewBootFactory(networkFactory.Udp, networkFactory.PacketFactory, config, glog)
-	}
 	return &MainContainer{
 		config:         config,
 		bootFactory:    bootFactory,
@@ -67,11 +64,19 @@ func (main *MainContainer) StartContainer() {
 		main.config.Ip = ip
 		main.config.Port = port
 
+		main.user = &ptypes.GhostUser{
+			Nickname: username,
+			Ip: &ptypes.GhostIp{
+				Ip:   ip,
+				Port: port,
+			},
+		}
+
 		main.glog.DebugOutput(main, "Net Open", glogger.Default)
 		main.udp.Start(nil, ip, port)
 
 		main.glog.DebugOutput(main, "Start Bootloading", glogger.Default)
-		main.StartBootLoading()
+		main.startBootLoading()
 		return true
 	}
 
@@ -80,18 +85,18 @@ func (main *MainContainer) StartContainer() {
 	}
 }
 
-func (main *MainContainer) StartBootLoading() {
+func (main *MainContainer) startBootLoading() {
 	booter := bootloader.NewBootLoader(main.networkFactory.Udp,
-		main.networkFactory.PacketFactory, main.config, main.bootFactory.Db,
+		main.networkFactory.PacketFactory, main.bootFactory.Db,
 		main.bootFactory.LoadWallet, main.bootFactory.Genesis)
-	w := booter.BootLoading(main.config)
+	w := booter.BootLoading(main.user, main.config.Password)
 	if w == nil {
 		return
 	}
 
 	main.defaultFactory = factory.NewDefaultFactory(main.networkFactory, main.bootFactory, w, main.config, main.glog)
 	main.defaultFactory.FactoryOpen()
-	main.ghostApi = gapi.NewGhostApi(main.grpcServer, main.defaultFactory.Block, main.defaultFactory.BlockContainer,
+	main.ghostApi = gapi.NewGhostContainerApi(main.grpcServer, main.defaultFactory.Block, main.defaultFactory.BlockContainer,
 		main.bootFactory.LoadWallet, main.config)
 	main.glog.DebugOutput(main, "Initialize complete", glogger.Default)
 	main.glog.DebugOutput(main, "Start Mainserver", glogger.Default)

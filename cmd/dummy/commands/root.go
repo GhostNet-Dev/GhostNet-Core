@@ -55,6 +55,11 @@ func ExecuteContainer() {
 		Ip:   masterIp,
 		Port: masterPort,
 	}
+	user := &ptypes.GhostUser{
+		Nickname: cfg.Username,
+		Ip:       &ptypes.GhostIp{Ip: cfg.Ip, Port: cfg.Port},
+	}
+
 	glog := glogger.NewGLogger(0)
 	// for encrypt passwd
 	cfg.Password = gcrypto.PasswordToSha256(password)
@@ -68,10 +73,10 @@ func ExecuteContainer() {
 	// boot factory initialize
 	bootFactory := factory.NewBootFactory(netFactory.Udp, netFactory.PacketFactory, cfg, glog)
 	booter := bootloader.NewBootLoader(netFactory.Udp,
-		netFactory.PacketFactory, cfg, bootFactory.Db,
+		netFactory.PacketFactory, bootFactory.Db,
 		bootFactory.LoadWallet, bootFactory.Genesis)
 
-	w := booter.BootLoading(cfg)
+	w := booter.BootLoading(user, cfg.Password)
 	log.Print("User: ", w.GetGhostUser())
 	log.Print("Master: ", w.GetMasterNode())
 

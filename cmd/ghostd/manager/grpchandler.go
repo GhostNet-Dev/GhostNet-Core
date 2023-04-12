@@ -11,7 +11,10 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/rpc"
 )
 
-type GrpcHandler struct {
+// cli(GrpcClient) -> cli(rpc.GApiClient) ->
+// ghostd(GrpcServer) -> ghostd(GrpcDeamonHandler) -> container(GrpcClient) ->
+// container(GrpcServer) -> container(GhostContainerApi)
+type GrpcDeamonHandler struct {
 	loadWallet *bootloader.LoadWallet
 	genesis    *bootloader.LoadGenesis
 	containers *Containers
@@ -20,8 +23,8 @@ type GrpcHandler struct {
 }
 
 func NewGrpcDeamonHandler(loadWallet *bootloader.LoadWallet, genesis *bootloader.LoadGenesis,
-	containers *Containers, grpcServer *grpc.GrpcServer, config *gconfig.GConfig) *GrpcHandler {
-	gHandler := &GrpcHandler{
+	containers *Containers, grpcServer *grpc.GrpcServer, config *gconfig.GConfig) *GrpcDeamonHandler {
+	gHandler := &GrpcDeamonHandler{
 		loadWallet: loadWallet,
 		genesis:    genesis,
 		containers: containers,
@@ -45,13 +48,13 @@ func NewGrpcDeamonHandler(loadWallet *bootloader.LoadWallet, genesis *bootloader
 	return gHandler
 }
 
-func (ghandler *GrpcHandler) GetInfoDeamon() *rpc.GetInfoResponse {
+func (ghandler *GrpcDeamonHandler) GetInfoDeamon() *rpc.GetInfoResponse {
 	return &rpc.GetInfoResponse{
 		TotalContainer: ghandler.containers.Count,
 	}
 }
 
-func (ghandler *GrpcHandler) GetContainerListDeamon(id uint32) *rpc.GetContainerListResponse {
+func (ghandler *GrpcDeamonHandler) GetContainerListDeamon(id uint32) *rpc.GetContainerListResponse {
 	container, exist := ghandler.containers.GetContainer(id)
 	if !exist {
 		return nil
@@ -65,7 +68,7 @@ func (ghandler *GrpcHandler) GetContainerListDeamon(id uint32) *rpc.GetContainer
 	}
 }
 
-func (ghandler *GrpcHandler) CreateAccountDeamon(password []byte, username string) bool {
+func (ghandler *GrpcDeamonHandler) CreateAccountDeamon(password []byte, username string) bool {
 	w, _ := ghandler.loadWallet.OpenWallet(username, password)
 	if w == nil {
 		w = ghandler.loadWallet.CreateWallet(username, password)
@@ -77,18 +80,18 @@ func (ghandler *GrpcHandler) CreateAccountDeamon(password []byte, username strin
 	return true
 }
 
-func (ghandler *GrpcHandler) CreateGenesisDeamon(id uint32, password []byte) bool {
+func (ghandler *GrpcDeamonHandler) CreateGenesisDeamon(id uint32, password []byte) bool {
 	if container, exist := ghandler.containers.GetContainer(id); exist {
 		return container.Client.CreateGenesis(id, password)
 	}
 	return false
 }
 
-func (ghandler *GrpcHandler) ReleaseContainerDeamon(id uint32) bool {
+func (ghandler *GrpcDeamonHandler) ReleaseContainerDeamon(id uint32) bool {
 	return ghandler.containers.ReleaseContainer(id)
 }
 
-func (ghandler *GrpcHandler) GetPrivateKeyDeamon(id uint32, password []byte, username string) ([]byte, bool) {
+func (ghandler *GrpcDeamonHandler) GetPrivateKeyDeamon(id uint32, password []byte, username string) ([]byte, bool) {
 	w, err := ghandler.loadWallet.OpenWallet(username, password)
 	if err != nil {
 		log.Print(err)
@@ -99,7 +102,7 @@ func (ghandler *GrpcHandler) GetPrivateKeyDeamon(id uint32, password []byte, use
 	return cipherKey, true
 }
 
-func (ghandler *GrpcHandler) LoginContainerDeamon(id uint32, password []byte, username, ip, port string) bool {
+func (ghandler *GrpcDeamonHandler) LoginContainerDeamon(id uint32, password []byte, username, ip, port string) bool {
 	creators := ghandler.genesis.CreatorList()
 	if creator, exist := creators[username]; exist {
 		if _, err := ghandler.genesis.LoadCreatorKeyFile(creator.Nickname,
@@ -118,7 +121,7 @@ func (ghandler *GrpcHandler) LoginContainerDeamon(id uint32, password []byte, us
 	return ghandler.containers.LoginContainer(id, password, username, ip, port) != nil
 }
 
-func (ghandler *GrpcHandler) ForkContainerDeamon(password []byte, username, ip, port string) bool {
+func (ghandler *GrpcDeamonHandler) ForkContainerDeamon(password []byte, username, ip, port string) bool {
 	log.Print("CreateContainerHandler")
 	if w, err := ghandler.loadWallet.OpenWallet(username, password); w == nil {
 		log.Print("not exist account = ", username, "or err = ", err)
@@ -127,7 +130,7 @@ func (ghandler *GrpcHandler) ForkContainerDeamon(password []byte, username, ip, 
 	return ghandler.containers.ForkContainer(password, username, ip, port) != nil
 }
 
-func (ghandler *GrpcHandler) CreateContainerDeamon(password []byte, username, ip, port string) bool {
+func (ghandler *GrpcDeamonHandler) CreateContainerDeamon(password []byte, username, ip, port string) bool {
 	log.Print("CreateContainerHandler")
 	creators := ghandler.genesis.CreatorList()
 	if _, exist := creators[username]; !exist {
@@ -140,28 +143,28 @@ func (ghandler *GrpcHandler) CreateContainerDeamon(password []byte, username, ip
 	return ghandler.containers.CreateContainer(password, username, ip, port) != nil
 }
 
-func (ghandler *GrpcHandler) ControlContainerDeamon(id uint32, control rpc.ContainerControlType) bool {
+func (ghandler *GrpcDeamonHandler) ControlContainerDeamon(id uint32, control rpc.ContainerControlType) bool {
 	if container, exist := ghandler.containers.GetContainer(id); exist {
 		return container.Client.ControlContainer(id, control)
 	}
 	return false
 }
 
-func (ghandler *GrpcHandler) GetLogDeamon(id uint32) []byte {
+func (ghandler *GrpcDeamonHandler) GetLogDeamon(id uint32) []byte {
 	if container, exist := ghandler.containers.GetContainer(id); exist {
 		return container.Client.GetLog(id)
 	}
 	return nil
 }
 
-func (ghandler *GrpcHandler) CheckStatusDeamon(id uint32) uint32 {
+func (ghandler *GrpcDeamonHandler) CheckStatusDeamon(id uint32) uint32 {
 	if container, exist := ghandler.containers.GetContainer(id); exist {
 		return container.Client.CheckStatus(id)
 	}
 	return 0
 }
 
-func (ghandler *GrpcHandler) GetAccountDeamon(id uint32) (users []*ptypes.GhostUser) {
+func (ghandler *GrpcDeamonHandler) GetAccountDeamon(id uint32) (users []*ptypes.GhostUser) {
 	names := ghandler.loadWallet.GetWalletList()
 	for _, name := range names {
 		users = append(users, &ptypes.GhostUser{Nickname: name})
@@ -169,7 +172,7 @@ func (ghandler *GrpcHandler) GetAccountDeamon(id uint32) (users []*ptypes.GhostU
 	return users
 }
 
-func (ghandler *GrpcHandler) GetBlockInfoDeamon(id, blockId uint32) *ptypes.PairedBlocks {
+func (ghandler *GrpcDeamonHandler) GetBlockInfoDeamon(id, blockId uint32) *ptypes.PairedBlocks {
 	if container, exist := ghandler.containers.GetContainer(id); exist {
 		return container.Client.GetBlockInfo(id, blockId)
 	}

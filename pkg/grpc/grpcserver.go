@@ -14,6 +14,9 @@ import (
 	"google.golang.org/grpc"
 )
 
+// cli(GrpcClient) -> cli(rpc.GApiClient) ->
+// ghostd(GrpcServer) -> ghostd(GrpcDeamonHandler) -> container(GrpcClient) ->
+// container(GrpcServer) -> container(GhostContainerApi)
 type GrpcServer struct {
 	rpc.UnimplementedGApiServer
 	CreateAccountHandler    func(passwdHash []byte, username string) bool
