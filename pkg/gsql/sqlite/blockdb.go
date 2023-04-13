@@ -17,8 +17,10 @@ type GSqlite3 struct {
 	filepath string
 }
 
+var GSqlite = new(GSqlite3)
+
 func NewGSqlite3() *GSqlite3 {
-	return &GSqlite3{}
+	return GSqlite
 }
 
 // OpenSQL sql Open
