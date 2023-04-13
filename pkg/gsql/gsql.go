@@ -54,7 +54,7 @@ func NewGSql(sqlType string) GSql {
 	switch sqlType {
 	case "postgres":
 	case "sqlite3":
-		gSql = sqlite.GSqlite
+		gSql = sqlite.NewGSqlite3()
 	}
 
 	if gSql == nil {
@@ -69,7 +69,7 @@ func NewGCandidateSql(sqlType string) GCandidateSql {
 	switch sqlType {
 	case "postgres":
 	case "sqlite3":
-		gCandidate = sqlite.GSqlite
+		gCandidate = sqlite.NewGSqlite3()
 	}
 
 	if gCandidate == nil {
