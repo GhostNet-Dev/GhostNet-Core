@@ -10,10 +10,10 @@ import (
 )
 
 type DownloadCheckState struct {
-	blockMachine  *BlockMachine
-	glog          *glogger.GLogger
-	reqBlockId    uint32
-	startBlockId  uint32
+	blockMachine *BlockMachine
+	glog         *glogger.GLogger
+	reqBlockId   uint32
+	startBlockId uint32
 	// Set from Verification State
 	targetBlockId uint32
 }
@@ -43,7 +43,7 @@ func (s *DownloadCheckState) RecvBlockHash(from string, masterHash []byte, block
 
 	if s.reqBlockId == 0 {
 		s.reqBlockId = blockIdx
-	} else {
+	} else if s.reqBlockId != blockIdx {
 		return
 	}
 	s.glog.DebugOutput(s, fmt.Sprint("- recv verification Hash ", blockIdx), glogger.BlockConsensus)
