@@ -19,6 +19,7 @@ type GetHeigtestState struct {
 
 func (s *GetHeigtestState) Initialize() {
 	s.candidatePool = make(map[uint32][]string)
+	s.maxHeight = s.blockMachine.blockContainer.BlockHeight()
 	go s.TimerExpired(nil)
 }
 
