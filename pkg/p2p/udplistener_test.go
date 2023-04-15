@@ -88,3 +88,5 @@ func TestPacketHandler(t *testing.T) {
 	GlobalWg.Wait()
 	assert.Equal(t, true, TestResult, "packet내용이 맞지 않습니다.")
 }
+
+// buffer size overflow => packet header + buf(1024) = 1024?
