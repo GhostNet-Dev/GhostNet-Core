@@ -124,11 +124,7 @@ func (blocks *Blocks) MakeAliceCoin(blockId uint32, adamsAddr []byte,
 
 		for _, output := range tx.Body.Vout {
 			broker := string(output.BrokerAddr)
-			if _, ok := brokerGather[broker]; ok {
-				brokerGather[broker] += outCoin
-			} else {
-				brokerGather[broker] = outCoin
-			}
+			brokerGather[broker] += outCoin
 			totalRealSum += outCoin
 		}
 	}
@@ -136,11 +132,7 @@ func (blocks *Blocks) MakeAliceCoin(blockId uint32, adamsAddr []byte,
 	if totalRealSum != CoinBase {
 		remain := CoinBase - totalRealSum
 		broker := string(adamsAddr)
-		if _, ok := brokerGather[broker]; ok {
-			brokerGather[broker] += remain
-		} else {
-			brokerGather[broker] = remain
-		}
+		brokerGather[broker] += remain
 	}
 
 	outputs := []types.TxOutput{}

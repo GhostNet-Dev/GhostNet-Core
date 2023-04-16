@@ -42,6 +42,10 @@ func (txResult *TxChkResult) Error() string {
 	return resultString
 }
 
+// TODO: reduce duplicated code
+// 1. format check
+// 2. db check
+// 3. gvm excute
 func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction,
 	txContainer *store.TxContainer) *TxChkResult {
 	var transferCoin, getherCoin uint64 = 0, 0
@@ -88,6 +92,103 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 
 			if !txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) {
 				return &TxChkResult{TxChkResult_MissingRefTx}
+			}
+
+			if input.ScriptSig == nil {
+				return &TxChkResult{TxChkResult_FormatMismatch}
+			}
+
+			// check only transfer coin
+			if prevOutput.Type == types.TxTypeCoinTransfer {
+				getherCoin += prevOutput.Value
+			}
+
+			scriptSig := input.ScriptSig
+			input.ScriptSig = prevOutput.ScriptPubKey
+			input.ScriptSize = prevOutput.ScriptSize
+
+			gFuncParam = append(gFuncParam, gvm.GFuncParam{
+				InputSig:      scriptSig,
+				ScriptPubbKey: prevOutput.ScriptPubKey,
+				TxType:        prevOutput.Type,
+			})
+		}
+	}
+
+	if transferCoin != getherCoin {
+		return &TxChkResult{TxChkResult_Error}
+	}
+
+	dummy := make([]byte, gbytes.HashSize)
+	txId := tx.TxId
+	tx.TxId = dummy
+
+	if !txs.gVmExe.ExecuteGFunction(tx.SerializeToByte(), gFuncParam) {
+		return &TxChkResult{TxChkResult_ScriptError}
+	}
+
+	tx.TxId = txId
+
+	return &TxChkResult{TxChkResult_Success}
+}
+
+func (txs *TXs) TransactionMergeValidation(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction,
+	txContainer *store.TxContainer, mergeTxContainer *store.TxContainer) *TxChkResult {
+	var transferCoin, getherCoin uint64 = 0, 0
+	var gFuncParam []gvm.GFuncParam
+
+	if tx.Body.InputCounter != uint32(len(tx.Body.Vin)) {
+		return &TxChkResult{TxChkResult_CounterMismatch}
+	}
+	if tx.Body.OutputCounter != uint32(len(tx.Body.Vout)) {
+		return &TxChkResult{TxChkResult_CounterMismatch}
+	}
+
+	if tx.Body.Vout[0].Type == types.TxTypeFSRoot {
+		dummyBuf4 := make([]byte, 4)
+		input := tx.Body.Vin[0]
+		scriptSig := input.ScriptSig
+		input.ScriptSig = dummyBuf4
+		input.ScriptSize = uint32(len(dummyBuf4))
+
+		gFuncParam = append(gFuncParam, gvm.GFuncParam{
+			InputSig:      scriptSig,
+			ScriptPubbKey: tx.Body.Vout[0].ScriptPubKey,
+			TxType:        types.TxTypeFSRoot,
+		})
+	} else {
+		for _, output := range tx.Body.Vout {
+			if output.Type == types.TxTypeCoinTransfer {
+				transferCoin += output.Value
+			}
+		}
+
+		for _, input := range tx.Body.Vin {
+			prevOutpointer := input.PrevOut
+			// Check Validate TxId
+			prevTx := txContainer.GetTx(prevOutpointer.TxId)
+			if prevTx == nil {
+				//TODO: need to separate between normal validate and merge validate
+				if mergeTxContainer != nil {
+					if prevTx = mergeTxContainer.GetTx(prevOutpointer.TxId); prevTx == nil {
+						return &TxChkResult{TxChkResult_MissingRefTx}
+					}
+				} else {
+					return &TxChkResult{TxChkResult_MissingRefTx}
+				}
+			}
+			// Check Script Format
+			prevOutput := prevTx.Body.Vout[prevOutpointer.TxOutIndex]
+			if prevOutput.ScriptSize != uint32(len(prevOutput.ScriptPubKey)) {
+				return &TxChkResult{TxChkResult_FormatMismatch}
+			}
+
+			if !txContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) {
+				//TODO: need to separate between normal validate and merge validate
+				if mergeTxContainer != nil && mergeTxContainer.CheckRefExist(prevOutpointer.TxId, prevOutpointer.TxOutIndex, tx.TxId) {
+				} else {
+					return &TxChkResult{TxChkResult_MissingRefTx}
+				}
 			}
 
 			if input.ScriptSig == nil {
