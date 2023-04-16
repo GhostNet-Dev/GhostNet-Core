@@ -1,32 +1,41 @@
 package store
 
 import (
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gsql"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
 type CandidateBlock struct {
-	blockPool      map[uint32]*types.PairedBlock
+	gSql           gsql.GSql
+	gMergeSql      gsql.GSql
 	blockContainer *BlockContainer
 	maxBlockId     uint32
 }
 
-func NewCandidateBlock(blockContainer *BlockContainer) *CandidateBlock {
+func NewCandidateBlock(gSql gsql.GSql, gMergeSql gsql.GSql, blockContainer *BlockContainer) *CandidateBlock {
 	return &CandidateBlock{
-		blockPool:      make(map[uint32]*types.PairedBlock),
+		gSql:           gSql,
+		gMergeSql:      gMergeSql,
 		blockContainer: blockContainer,
 		maxBlockId:     0,
 	}
 }
 
+func (candidateBlock *CandidateBlock) DropTable() {
+	candidateBlock.gMergeSql.DropTable()
+	candidateBlock.maxBlockId = 0
+}
+
 func (candidateBlock *CandidateBlock) Reset() {
-	candidateBlock.blockPool = make(map[uint32]*types.PairedBlock)
+	candidateBlock.gMergeSql.DropTable()
+	sqlOpen(candidateBlock.gMergeSql, candidateBlock.blockContainer.schemeSqlFilePath,
+		candidateBlock.blockContainer.dbFilePath, MergeDbFilename)
 	candidateBlock.maxBlockId = 0
 }
 
 func (candidateBlock *CandidateBlock) GetBlock(blockId uint32) (paired *types.PairedBlock) {
-	if candiPaired, exist := candidateBlock.blockPool[blockId]; exist == false {
-		paired = candidateBlock.blockContainer.GetBlock(blockId)
-
+	if candiPaired := candidateBlock.gMergeSql.SelectBlock(blockId); candiPaired == nil {
+		paired = candidateBlock.gSql.SelectBlock(blockId)
 	} else {
 		paired = candiPaired
 	}
@@ -34,14 +43,14 @@ func (candidateBlock *CandidateBlock) GetBlock(blockId uint32) (paired *types.Pa
 }
 
 func (candidateBlock *CandidateBlock) DeleteBlock(blockId uint32) {
-	delete(candidateBlock.blockPool, blockId)
+	candidateBlock.gMergeSql.DeleteBlock(blockId)
 }
 
 func (candidateBlock *CandidateBlock) AddBlock(pairedBlock *types.PairedBlock) {
 	if candidateBlock.maxBlockId < pairedBlock.BlockId() {
 		candidateBlock.maxBlockId = pairedBlock.BlockId()
 	}
-	candidateBlock.blockPool[pairedBlock.BlockId()] = pairedBlock
+	candidateBlock.gMergeSql.InsertBlock(pairedBlock)
 }
 
 func (candidateBlock *CandidateBlock) GetMaxBlockId() uint32 {

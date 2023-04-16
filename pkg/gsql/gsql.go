@@ -10,7 +10,7 @@ import (
 
 // GSql sql Instance
 type GSql interface {
-	OpenSQL(path string) error
+	OpenSQL(path string, filename string) error
 	CloseSQL()
 	CreateTable(schemaFile string) error
 	DropTable()
@@ -22,11 +22,13 @@ type GSql interface {
 	InsertBlock(pair *types.PairedBlock)
 	SelectBlock(blockId uint32) *types.PairedBlock
 	SelectBlockHeader(blockId uint32) (*types.GhostNetBlockHeader, *types.GhostNetDataBlockHeader)
+	CheckExistBlockId(blockId uint32) bool
 	CheckExistTxId(txId []byte) bool
 	CheckExistRefOutout(refTxId []byte, outIndex uint32, notTxId []byte) bool
 	GetBlockHeight() uint32
 	SelectTxsPool(poolId uint32) []types.GhostTransaction
 	SelectDataTxsPool(poolId uint32) []types.GhostDataTransaction
+	DeleteBlock(blockId uint32)
 	DeleteAfterTargetId(blockId uint32)
 	GetMaxLogicalAddress(toAddr []byte) (uint64, error)
 	GetNicknameToAddress(nickname []byte) []byte
@@ -64,12 +66,12 @@ func NewGSql(sqlType string) GSql {
 	return gSql
 }
 
-func NewGCandidateSql(sqlType string) GCandidateSql {
-	var gCandidate GCandidateSql
+func NewMergeGSql(sqlType string) GSql {
+	var gCandidate GSql
 	switch sqlType {
 	case "postgres":
 	case "sqlite3":
-		gCandidate = sqlite.NewGSqlite3()
+		gCandidate = sqlite.NewMergeGSqlite()
 	}
 
 	if gCandidate == nil {

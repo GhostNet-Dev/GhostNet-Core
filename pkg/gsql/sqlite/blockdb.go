@@ -17,15 +17,22 @@ type GSqlite3 struct {
 	filepath string
 }
 
-var GSqlite = new(GSqlite3)
+var (
+	GSqlite      = new(GSqlite3)
+	MergeGSqlite = new(GSqlite3)
+)
 
 func NewGSqlite3() *GSqlite3 {
 	return GSqlite
 }
 
+func NewMergeGSqlite() *GSqlite3 {
+	return MergeGSqlite
+}
+
 // OpenSQL sql Open
-func (gSql *GSqlite3) OpenSQL(path string) error {
-	db, err := sql.Open("sqlite3", path+"block.db?cache=shared&mode=rwc")
+func (gSql *GSqlite3) OpenSQL(path string, filename string) error {
+	db, err := sql.Open("sqlite3", path+filename+"?cache=shared&mode=rwc")
 	if err != nil {
 		log.Fatal(err)
 		defer db.Close()
@@ -64,6 +71,20 @@ func (gSql *GSqlite3) deletePairedBlockAfterTargetId(blockId uint32) {
 	_, err := gSql.db.Exec(fmt.Sprint("delete from paired_block where Id >=", blockId))
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func (gSql *GSqlite3) DeleteBlock(blockId uint32) {
+	_, err := gSql.db.Exec(fmt.Sprint("delete from paired_block where Id == ", blockId))
+	if err != nil {
+		log.Fatal(err)
+	}
+	tables := []string{"transactions", "data_transactions", "inputs", "outputs"}
+	for _, table := range tables {
+		_, err := gSql.db.Exec(fmt.Sprint("delete from ", table, " where BlockId == ", blockId))
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -402,6 +423,22 @@ func (gSql *GSqlite3) GetMaxLogicalAddress(toAddr []byte) (maxLogicalAddr uint64
 		}
 	}
 	return maxLogicalAddr, nil
+}
+
+func (gSql *GSqlite3) CheckExistBlockId(blockId uint32) bool {
+	var count uint32
+	query, err := gSql.db.Prepare("select count(*) from paired_block where Id = ?")
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	if err := query.QueryRow(blockId).Scan(&count); err == sql.ErrNoRows {
+		return false
+	} else if err != nil {
+		log.Print(err)
+	}
+	return count > 0
 }
 
 func (gSql *GSqlite3) CheckExistTxId(txId []byte) bool {

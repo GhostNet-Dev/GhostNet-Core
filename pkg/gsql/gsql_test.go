@@ -17,7 +17,7 @@ func init() {
 
 func TestSqlCreateTable(t *testing.T) {
 	gSql := NewGSql("sqlite3")
-	err := gSql.OpenSQL("./")
+	err := gSql.OpenSQL("./", "block.db")
 	if err == nil {
 		defer gSql.CloseSQL()
 	}
@@ -26,7 +26,7 @@ func TestSqlCreateTable(t *testing.T) {
 
 func TestSqlInsertAndSelectCheck(t *testing.T) {
 	gSql := NewGSql("sqlite3")
-	err := gSql.OpenSQL("./")
+	err := gSql.OpenSQL("./", "block.db")
 	if err == nil {
 		defer gSql.CloseSQL()
 	}
@@ -48,7 +48,7 @@ func TestSqlInsertAndSelectCheck(t *testing.T) {
 
 func TestSqlInAndOutBlock(t *testing.T) {
 	gSql := NewGSql("sqlite3")
-	err := gSql.OpenSQL("./")
+	err := gSql.OpenSQL("./", "block.db")
 	if err == nil {
 		defer gSql.CloseSQL()
 	}

@@ -8,10 +8,16 @@ import (
 )
 
 func (blocks *Blocks) BlockMergeCheck(pairedBlock *types.PairedBlock, prevPairedBlock *types.PairedBlock) bool {
-	return blocks.BlockValidation(pairedBlock, prevPairedBlock)
+	return blocks.blockValidation(pairedBlock, prevPairedBlock, blocks.blockContainer.MergeTxContainer)
 }
 
 func (blocks *Blocks) BlockValidation(pairedBlock *types.PairedBlock, prevPairedBlock *types.PairedBlock) bool {
+	return blocks.blockValidation(pairedBlock, prevPairedBlock, blocks.blockContainer.TxContainer)
+}
+
+
+func (blocks *Blocks) blockValidation(pairedBlock *types.PairedBlock, 
+	prevPairedBlock *types.PairedBlock, txContainer *store.TxContainer) bool {
 	header := pairedBlock.Block.Header
 	txs := pairedBlock.Block.Transaction
 	alice := pairedBlock.Block.Alice
@@ -45,7 +51,7 @@ func (blocks *Blocks) BlockValidation(pairedBlock *types.PairedBlock, prevPaired
 	}
 
 	for _, tx := range txs {
-		txChkResult := blocks.txs.TransactionValidation(&tx, nil, blocks.blockContainer.TxContainer)
+		txChkResult := blocks.txs.TransactionValidation(&tx, nil, txContainer)
 		if !txChkResult.Result() {
 			return false
 		}
