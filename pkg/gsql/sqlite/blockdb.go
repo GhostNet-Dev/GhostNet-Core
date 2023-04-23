@@ -101,6 +101,9 @@ func (gSql *GSqlite3) DeleteAfterTargetId(blockId uint32) {
 }
 
 func (gSql *GSqlite3) InsertBlock(pair *types.PairedBlock) {
+	if gSql.CheckExistBlockId(pair.BlockId()) {
+		return
+	}
 	header := pair.Block.Header
 	dataHeader := pair.DataBlock.Header
 	gSql.InsertQuery(`INSERT INTO "paired_block" 
