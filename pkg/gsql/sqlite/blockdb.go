@@ -459,14 +459,14 @@ func (gSql *GSqlite3) CheckExistTxId(txId []byte) bool {
 
 func (gSql *GSqlite3) CheckExistRefOutout(refTxId []byte, outIndex uint32, notTxId []byte) bool {
 	var count uint32
-	query, err := gSql.db.Prepare(`select count(*) from inputs where 
-		prev_TxId == ? and prev_OutIndex == ? and TxId != ?`)
+	query, err := gSql.db.Prepare(`select count(*) from outputs where 
+		TxId == ? and OutputIndex == ?`)
 	if err != nil {
 		log.Printf("%s", err)
 	}
 	defer query.Close()
 
-	if err := query.QueryRow(refTxId, outIndex, notTxId).Scan(&count); err == sql.ErrNoRows {
+	if err := query.QueryRow(refTxId, outIndex).Scan(&count); err == sql.ErrNoRows {
 		return false
 	} else if err != nil {
 		log.Print(err)
