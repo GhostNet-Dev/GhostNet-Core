@@ -32,13 +32,14 @@ func NewMergeGSqlite() *GSqlite3 {
 
 // OpenSQL sql Open
 func (gSql *GSqlite3) OpenSQL(path string, filename string) error {
-	db, err := sql.Open("sqlite3", path+filename+"?cache=shared&mode=rwc")
+	filepath := path + filename
+	db, err := sql.Open("sqlite3", filepath+"?cache=shared&mode=rwc")
 	if err != nil {
 		log.Fatal(err)
 		defer db.Close()
 	}
 	gSql.db = db
-	gSql.filepath = path + "block.db"
+	gSql.filepath = filepath
 	return err
 }
 
