@@ -82,9 +82,9 @@ func ExecuteContainer() {
 
 	defaultFactory := factory.NewDefaultFactory(netFactory, bootFactory, w, cfg, glog)
 	defaultFactory.FactoryOpen()
+	go func() { defaultFactory.BlockServer.BlockServer() }()
 
 	dummyFactory := dummyfactory.NewDummyFactory(1, masterAddr, bootFactory, netFactory, defaultFactory, glog)
-
 	log.Println("Worker Prepare Run")
 	for _, worker := range dummyFactory.Worker {
 		worker.PrepareRun()

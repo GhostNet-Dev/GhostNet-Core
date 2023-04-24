@@ -20,8 +20,6 @@ type ConnectMaster struct {
 	table           string
 	eventChannel    chan bool
 	eventWait       bool
-	packetSqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
-	packetCqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
 }
 
 const RootUrl = "www.ghostnetroot.com"
@@ -36,8 +34,6 @@ func NewConnectMaster(table string, db *store.LiteStore, packetFactory *p2p.Pack
 		table:           table,
 		eventChannel:    make(chan bool),
 		eventWait:       false,
-		packetSqHandler: make(map[packets.PacketSecondType]p2p.FuncPacketHandler),
-		packetCqHandler: make(map[packets.PacketSecondType]p2p.FuncPacketHandler),
 	}
 	conn.RegisterPacketHandler(packetFactory)
 	return conn
@@ -99,13 +95,13 @@ func (conn *ConnectMaster) SendTx(tx *types.GhostTransaction) (result bool, err 
 }
 
 func (conn *ConnectMaster) RegisterPacketHandler(packetFactory *p2p.PacketFactory) {
-	conn.packetSqHandler = make(map[packets.PacketSecondType]p2p.FuncPacketHandler)
-	conn.packetCqHandler = make(map[packets.PacketSecondType]p2p.FuncPacketHandler)
+	packetSqHandler := make(map[packets.PacketSecondType]p2p.FuncPacketHandler)
+	packetCqHandler := make(map[packets.PacketSecondType]p2p.FuncPacketHandler)
 
-	conn.packetCqHandler[packets.PacketSecondType_ConnectToMasterNode] = func(rhi *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
+	packetCqHandler[packets.PacketSecondType_ConnectToMasterNode] = func(rhi *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
 		return nil
 	}
-	conn.packetCqHandler[packets.PacketSecondType_SearchGhostPubKey] = func(rhi *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
+	packetCqHandler[packets.PacketSecondType_SearchGhostPubKey] = func(rhi *p2p.RequestHeaderInfo) []p2p.ResponseHeaderInfo {
 		header := rhi.Header
 		cq := &packets.SearchGhostPubKeyCq{}
 		if err := proto.Unmarshal(header.PacketData, cq); err != nil {
@@ -116,5 +112,5 @@ func (conn *ConnectMaster) RegisterPacketHandler(packetFactory *p2p.PacketFactor
 		return nil
 	}
 
-	packetFactory.RegisterPacketHandler(packets.PacketType_MasterNetwork, conn.packetSqHandler, conn.packetCqHandler)
+	packetFactory.UpdatePacketHandler(packets.PacketType_MasterNetwork, packetSqHandler, packetCqHandler)
 }
