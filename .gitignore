@@ -28,3 +28,4 @@ bin/ghostd
 bin/ghostnet
 bin/dummy
 1*
+__debug_bin

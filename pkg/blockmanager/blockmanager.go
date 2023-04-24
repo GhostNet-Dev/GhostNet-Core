@@ -73,6 +73,13 @@ func NewBlockManager(con *consensus.Consensus,
 
 	fsm.BlockServer = blockMgr
 	blockMgr.InitHandler(master)
+	blockContainer.RegisterBlockEvent(
+		func(pairedBlock *types.PairedBlock) {
+			blockMgr.SaveExtraInformation(pairedBlock)
+		},
+		func(pairedBlock *types.PairedBlock) {
+			blockMgr.UnsaveExtraInformation(pairedBlock)
+		})
 
 	return blockMgr
 }
@@ -171,24 +178,27 @@ func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, c
 	if !blockMgr.tXs.TransactionValidation(tx, nil, blockMgr.blockContainer.TxContainer).Result() {
 		return false
 	}
-	if !blockMgr.SaveExtraInformation(tx) {
-		return false
-	}
+
 	blockMgr.blockContainer.TxContainer.SaveCandidateTx(tx)
 	blockMgr.TriggerNewBlock()
 	return true
 }
 
-func (blockMgr *BlockManager) SaveExtraInformation(tx *types.GhostTransaction) bool {
-	for _, output := range tx.Body.Vout {
-		if output.Type == types.TxTypeFSRoot {
-			nick := output.ScriptEx
-			if !blockMgr.accountContainer.AddBcAccount(nick, tx.TxId) {
-				return false
+func (blockMgr *BlockManager) SaveExtraInformation(pairedBlock *types.PairedBlock) bool {
+	for _, tx := range pairedBlock.Block.Transaction {
+		for _, output := range tx.Body.Vout {
+			if output.Type == types.TxTypeFSRoot {
+				nick := output.ScriptEx
+				if !blockMgr.accountContainer.AddBcAccount(nick, tx.TxId) {
+					return false
+				}
 			}
 		}
 	}
 	return true
+}
+
+func (blockMgr *BlockManager) UnsaveExtraInformation(pairedBlock *types.PairedBlock) {
 }
 
 func (blockMgr *BlockManager) DownloadBlock(obj *fileservice.FileObject, pubKey string) bool {

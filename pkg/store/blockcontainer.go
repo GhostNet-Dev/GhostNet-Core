@@ -20,8 +20,10 @@ type BlockContainer struct {
 	MergeTxContainer *TxContainer
 	CandidateBlk     *CandidateBlock
 
-	schemeSqlFilePath string
-	dbFilePath        string
+	schemeSqlFilePath    string
+	dbFilePath           string
+	newBlockEventHandler func(*types.PairedBlock)
+	delBlockEventHandler func(*types.PairedBlock)
 }
 
 func NewBlockContainer(dbType string) *BlockContainer {
@@ -37,6 +39,12 @@ func NewBlockContainer(dbType string) *BlockContainer {
 	bc.CandidateBlk = NewCandidateBlock(g, gm, bc)
 
 	return bc
+}
+
+func (blockContainer *BlockContainer) RegisterBlockEvent(newBlockEvent func(*types.PairedBlock),
+	delBlockEvent func(*types.PairedBlock)) {
+	blockContainer.newBlockEventHandler = newBlockEvent
+	blockContainer.delBlockEventHandler = delBlockEvent
 }
 
 func (blockContainer *BlockContainer) BlockContainerOpen(schemeSqlFilePath string, dbFilePath string) {
@@ -84,10 +92,20 @@ func (blockContainer *BlockContainer) BlockHeight() uint32 {
 }
 
 func (blockContainer *BlockContainer) InsertBlock(pairedBlock *types.PairedBlock) {
+	if blockContainer.newBlockEventHandler != nil {
+		blockContainer.newBlockEventHandler(pairedBlock)
+	}
 	blockContainer.gSql.InsertBlock(pairedBlock)
 }
 
 func (blockContainer *BlockContainer) DeleteAfterTargetId(blockId uint32) {
+	if blockContainer.delBlockEventHandler != nil {
+		height := blockContainer.BlockHeight()
+		for i := blockId; i < height; i++ {
+			pairedBlock := blockContainer.GetBlock(blockId)
+			blockContainer.delBlockEventHandler(pairedBlock)
+		}
+	}
 	blockContainer.gSql.DeleteAfterTargetId(blockId)
 }
 
