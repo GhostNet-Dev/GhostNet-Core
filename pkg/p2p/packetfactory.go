@@ -63,3 +63,17 @@ func (pf *PacketFactory) RegisterPacketHandler(firstType packets.PacketType,
 		packetCqHandler: cqHandler,
 	}
 }
+
+func (pf *PacketFactory) UpdatePacketHandler(firstType packets.PacketType,
+	sqHandler map[packets.PacketSecondType]FuncPacketHandler,
+	cqHandler map[packets.PacketSecondType]FuncPacketHandler) {
+	if pf.firstLevel[firstType] == nil {
+		return
+	}
+	for key, value := range sqHandler {
+		pf.firstLevel[firstType].packetSqHandler[key] = value
+	}
+	for key, value := range cqHandler {
+		pf.firstLevel[firstType].packetCqHandler[key] = value
+	}
+}
