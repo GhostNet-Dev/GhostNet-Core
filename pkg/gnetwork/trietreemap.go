@@ -119,7 +119,7 @@ func (tTree *TrieTreeMap) GetTreeClusterPick(searchString string) *net.UDPAddr {
 	if user == nil {
 		for pubKey := range tTree.checkList {
 			node := tTree.account.GetNodeInfo(pubKey)
-			return node.NetAddr
+			return node.Ip.GetUdpAddr()
 		}
 	}
 	return user.Ip.GetUdpAddr()

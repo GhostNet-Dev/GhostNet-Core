@@ -55,10 +55,7 @@ func MakePatternNode(tTreeMap *TrieTreeMap, account *GhostAccount) {
 			PubKey: fmt.Sprint("1aaaa", i),
 			Ip:     ghostIp,
 		}
-		account.AddMasterNode(&GhostNode{
-			User:    ghostUser,
-			NetAddr: from,
-		})
+		account.AddMasterNode(ghostUser)
 	}
 }
 
@@ -69,9 +66,6 @@ func MakeDummyNode(account *GhostAccount) {
 			PubKey: owner.GetPubAddress(),
 			Ip:     ghostIp,
 		}
-		account.AddMasterNode(&GhostNode{
-			User:    ghostUser,
-			NetAddr: from,
-		})
+		account.AddMasterNode(ghostUser)
 	}
 }

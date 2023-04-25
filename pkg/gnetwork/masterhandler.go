@@ -86,7 +86,8 @@ func (master *MasterNetwork) ConnectToMasterNodeSq(requestHeaderInfo *p2p.Reques
 		log.Fatal(err)
 	}
 
-	master.account.AddUserNode(&GhostNode{User: sq.User, NetAddr: header.Source.GetUdpAddr()})
+	sq.User.Ip = header.Source
+	master.account.AddUserNode(sq.User)
 
 	cq := packets.MasterNodeUserInfoCq{
 		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
@@ -212,7 +213,7 @@ func (master *MasterNetwork) SearchGhostPubKeySq(requestHeaderInfo *p2p.RequestH
 	}
 
 	if node != nil {
-		cq.User = []*ptypes.GhostUser{node.User}
+		cq.User = []*ptypes.GhostUser{node}
 	}
 
 	sendData, err := proto.Marshal(&cq)
@@ -252,7 +253,7 @@ func (master *MasterNetwork) SearchMasterPubKeySq(requestHeaderInfo *p2p.Request
 
 	cq := packets.SearchGhostPubKeyCq{
 		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
-		User:   []*ptypes.GhostUser{node.User},
+		User:   []*ptypes.GhostUser{node},
 	}
 
 	sendData, err := proto.Marshal(&cq)

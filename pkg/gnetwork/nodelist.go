@@ -2,7 +2,6 @@ package gnetwork
 
 import (
 	"log"
-	"net"
 	"strings"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -11,95 +10,52 @@ import (
 )
 
 type GhostAccount struct {
-	nodeList         map[string]*GhostNode
-	masterNodeList   map[string]*GhostNode
-	nicknameToPubKey map[string]*GhostNode
+	nodeList         map[string]*ptypes.GhostUser
+	masterNodeList   map[string]*ptypes.GhostUser
+	nicknameToPubKey map[string]*ptypes.GhostUser
 	liteStore        *store.LiteStore
-}
-
-type GhostNode struct {
-	User    *ptypes.GhostUser
-	NetAddr *net.UDPAddr
 }
 
 const MaxGetherNodeList = 10
 
+// TODO: Warning!! give me Refactoring!!!
 func NewGhostAccount(liteStore *store.LiteStore) *GhostAccount {
 	account := &GhostAccount{
-		nodeList:         make(map[string]*GhostNode),
-		masterNodeList:   make(map[string]*GhostNode),
-		nicknameToPubKey: make(map[string]*GhostNode),
+		nodeList:         make(map[string]*ptypes.GhostUser),
+		masterNodeList:   make(map[string]*ptypes.GhostUser),
+		nicknameToPubKey: make(map[string]*ptypes.GhostUser),
 		liteStore:        liteStore,
 	}
 
-	account.LoadNodeList(store.DefaultNickTable)
-	account.LoadNodeList(store.DefaultMastersTable)
+	account.loadNodeList(store.DefaultNickTable)
+	account.loadNodeList(store.DefaultMastersTable)
 
 	return account
 }
 
-func (account *GhostAccount) LoadNodeList(table string) {
-	if _, v, err := account.liteStore.LoadEntry(table); err == nil {
-		for _, nodeByte := range v {
-			masterNode := &ptypes.GhostUser{}
-			if err := proto.Unmarshal(nodeByte, masterNode); err != nil {
-				log.Fatal(err)
-			}
-			if table == store.DefaultMastersTable {
-				account.AddMasterNode(&GhostNode{User: masterNode, NetAddr: masterNode.Ip.GetUdpAddr()})
-			}
-		}
-	}
+func (account *GhostAccount) AddUserNode(node *ptypes.GhostUser) {
+	account.nodeList[node.PubKey] = node
+	account.nicknameToPubKey[node.Nickname] = node
+	account.saveToDb(store.DefaultNickTable, node)
 }
 
-func (account *GhostAccount) AddUserNode(node *GhostNode) {
-	account.nodeList[node.User.PubKey] = node
-	account.nicknameToPubKey[node.User.Nickname] = node
-	account.SaveToDb(store.DefaultNickTable, node.User)
-}
-
-func (account *GhostAccount) AddMasterNode(node *GhostNode) {
-	log.Print("Add Master = ", node.User.Nickname)
-	account.masterNodeList[node.User.PubKey] = node
-	account.nicknameToPubKey[node.User.Nickname] = node
-	account.SaveToDb(store.DefaultNickTable, node.User)
-	account.SaveToDb(store.DefaultMastersTable, node.User)
+func (account *GhostAccount) AddMasterNode(node *ptypes.GhostUser) {
+	log.Print("Add Master = ", node.Nickname)
+	account.masterNodeList[node.PubKey] = node
+	account.nicknameToPubKey[node.Nickname] = node
+	account.saveToDb(store.DefaultNickTable, node)
+	account.saveToDb(store.DefaultMastersTable, node)
 }
 
 func (account *GhostAccount) AddMasterUserList(userList []*ptypes.GhostUser) {
 	for _, user := range userList {
-		account.masterNodeList[user.PubKey] = &GhostNode{
-			User:    user,
-			NetAddr: user.Ip.GetUdpAddr(),
-		}
+		account.masterNodeList[user.PubKey] = user
 		log.Print("Add Master = ", user.Nickname)
-		account.SaveToDb(store.DefaultMastersTable, user)
+		account.saveToDb(store.DefaultMastersTable, user)
 	}
 }
 
-func (account *GhostAccount) SaveToDb(table string, masterNode *ptypes.GhostUser) {
-	// Save To Db
-	nodeByte, err := proto.Marshal(masterNode)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := account.liteStore.SaveEntry(table, []byte(masterNode.Nickname), nodeByte); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func (account *GhostAccount) LoadFromDb(nickname string) (masterNode *ptypes.GhostUser, err error) {
-	nodeByte, err := account.liteStore.SelectEntry(store.DefaultNodeTable, []byte(nickname))
-	if err != nil || nodeByte == nil {
-		return nil, err
-	}
-	if err := proto.Unmarshal(nodeByte, masterNode); err != nil {
-		log.Fatal(err)
-	}
-	return masterNode, nil
-}
-
-func (account *GhostAccount) GetUserNode(pubKey string) *GhostNode {
+func (account *GhostAccount) GetUserNode(pubKey string) *ptypes.GhostUser {
 	find, exist := account.nodeList[pubKey]
 	if !exist {
 		log.Fatal("pubkey not found")
@@ -107,7 +63,7 @@ func (account *GhostAccount) GetUserNode(pubKey string) *GhostNode {
 	return find
 }
 
-func (account *GhostAccount) GetNodeInfo(pubKey string) *GhostNode {
+func (account *GhostAccount) GetNodeInfo(pubKey string) *ptypes.GhostUser {
 	find, exist := account.masterNodeList[pubKey]
 	if !exist {
 		if find, exist = account.nodeList[pubKey]; !exist {
@@ -117,14 +73,11 @@ func (account *GhostAccount) GetNodeInfo(pubKey string) *GhostNode {
 	return find
 }
 
-func (account *GhostAccount) GetNodeByNickname(nickname string) *GhostNode {
+func (account *GhostAccount) GetNodeByNickname(nickname string) *ptypes.GhostUser {
 	find, exist := account.nicknameToPubKey[nickname]
 	if !exist {
-		if node, err := account.LoadFromDb(nickname); err == nil && node != nil {
-			ghostNode := &GhostNode{
-				User:    node,
-				NetAddr: node.Ip.GetUdpAddr(),
-			}
+		if node, err := account.loadFromDb(nickname); err == nil && node != nil {
+			ghostNode := node
 			account.AddUserNode(ghostNode)
 			return ghostNode
 		}
@@ -150,7 +103,7 @@ func (account *GhostAccount) GetMasterNodeUserList(startIndex uint32) ([]*ptypes
 	userList := []*ptypes.GhostUser{}
 	for _, item := range account.masterNodeList {
 		if i >= startItem || i < endItem {
-			userList = append(userList, item.User)
+			userList = append(userList, item)
 		}
 		i++
 	}
@@ -160,7 +113,7 @@ func (account *GhostAccount) GetMasterNodeUserList(startIndex uint32) ([]*ptypes
 func (account *GhostAccount) GetMasterNodeList() []*ptypes.GhostUser {
 	userList := []*ptypes.GhostUser{}
 	for _, item := range account.masterNodeList {
-		userList = append(userList, item.User)
+		userList = append(userList, item)
 	}
 	return userList
 }
@@ -168,8 +121,8 @@ func (account *GhostAccount) GetMasterNodeList() []*ptypes.GhostUser {
 func (account *GhostAccount) GetMasterNodeSearch(pubKey string) []*ptypes.GhostUser {
 	userList := []*ptypes.GhostUser{}
 	for _, item := range account.masterNodeList {
-		if strings.HasPrefix(item.User.PubKey, pubKey) {
-			userList = append(userList, item.User)
+		if strings.HasPrefix(item.PubKey, pubKey) {
+			userList = append(userList, item)
 		}
 	}
 	return userList
@@ -177,9 +130,44 @@ func (account *GhostAccount) GetMasterNodeSearch(pubKey string) []*ptypes.GhostU
 
 func (account *GhostAccount) GetMasterNodeSearchPick(pubKey string) *ptypes.GhostUser {
 	for _, item := range account.masterNodeList {
-		if strings.HasPrefix(item.User.PubKey, pubKey) {
-			return item.User
+		if strings.HasPrefix(item.PubKey, pubKey) {
+			return item
 		}
 	}
 	return nil
+}
+
+func (account *GhostAccount) loadNodeList(table string) {
+	if _, v, err := account.liteStore.LoadEntry(table); err == nil {
+		for _, nodeByte := range v {
+			masterNode := &ptypes.GhostUser{}
+			if err := proto.Unmarshal(nodeByte, masterNode); err != nil {
+				log.Fatal(err)
+			}
+			if table == store.DefaultMastersTable {
+				account.AddMasterNode(masterNode)
+			}
+		}
+	}
+}
+func (account *GhostAccount) saveToDb(table string, masterNode *ptypes.GhostUser) {
+	// Save To Db
+	nodeByte, err := proto.Marshal(masterNode)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := account.liteStore.SaveEntry(table, []byte(masterNode.Nickname), nodeByte); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (account *GhostAccount) loadFromDb(nickname string) (masterNode *ptypes.GhostUser, err error) {
+	nodeByte, err := account.liteStore.SelectEntry(store.DefaultNodeTable, []byte(nickname))
+	if err != nil || nodeByte == nil {
+		return nil, err
+	}
+	if err := proto.Unmarshal(nodeByte, masterNode); err != nil {
+		log.Fatal(err)
+	}
+	return masterNode, nil
 }

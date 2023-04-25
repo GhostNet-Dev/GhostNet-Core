@@ -179,22 +179,41 @@ func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, c
 		return false
 	}
 
+	if !blockMgr.CheckExistFSRoot(tx) {
+		return false
+	}
+
 	blockMgr.blockContainer.TxContainer.SaveCandidateTx(tx)
 	blockMgr.TriggerNewBlock()
 	return true
 }
 
-func (blockMgr *BlockManager) SaveExtraInformation(pairedBlock *types.PairedBlock) bool {
-	for _, tx := range pairedBlock.Block.Transaction {
-		for _, output := range tx.Body.Vout {
-			if output.Type == types.TxTypeFSRoot {
-				nick := output.ScriptEx
-				if !blockMgr.accountContainer.AddBcAccount(nick, tx.TxId) {
-					return false
-				}
+func (blockMgr *BlockManager) CheckExistFSRoot(tx *types.GhostTransaction) bool {
+	// TODO: Check from Block.db
+	for _, output := range tx.Body.Vout {
+		if output.Type == types.TxTypeFSRoot {
+			nick := output.ScriptEx
+			if !blockMgr.accountContainer.AddBcAccount(nick, tx.TxId) {
+				return false
 			}
 		}
 	}
+	return true
+}
+
+func (blockMgr *BlockManager) SaveExtraInformation(pairedBlock *types.PairedBlock) bool {
+	/*
+		for _, tx := range pairedBlock.Block.Transaction {
+			for _, output := range tx.Body.Vout {
+				if output.Type == types.TxTypeFSRoot {
+					nick := output.ScriptEx
+					if !blockMgr.accountContainer.AddBcAccount(nick, tx.TxId) {
+						return false
+					}
+				}
+			}
+		}
+	*/
 	return true
 }
 

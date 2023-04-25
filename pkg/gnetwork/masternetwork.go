@@ -16,7 +16,7 @@ type MasterNetwork struct {
 	// My Nickname
 	nickname string
 	// My Master Node, not me
-	masterInfo *GhostNode
+	masterInfo *ptypes.GhostUser
 	// GhostNetVersion
 	ghostNetVersion uint32
 	// connected Master Nodes
@@ -45,7 +45,7 @@ func NewMasterNode(ghostNetVersion uint32, w *gcrypto.Wallet, myIpAddr *ptypes.G
 		blockContainer:  blockContainer,
 		account:         account,
 		tTreeMap:        tTreeMap,
-		masterInfo:      &GhostNode{User: w.GetGhostUser()},
+		masterInfo:      w.GetGhostUser(),
 	}
 	masterNode.RegisterHandler(packetFactory)
 	tTreeMap.LoadTrieTree()
@@ -80,19 +80,13 @@ func (node *MasterNetwork) RegisterHandler(packetFactory *p2p.PacketFactory) {
 }
 
 func (master *MasterNetwork) RegisterMyMasterNode(user *ptypes.GhostUser) {
-	master.masterInfo = &GhostNode{
-		User:    user,
-		NetAddr: user.Ip.GetUdpAddr(),
-	}
+	master.masterInfo = user
 	master.account.AddMasterNode(master.masterInfo)
 	master.tTreeMap.AddNode(user.GetPubKey())
 }
 
 func (master *MasterNetwork) RegisterMasterNode(user *ptypes.GhostUser) {
-	master.account.AddMasterNode(&GhostNode{
-		User:    user,
-		NetAddr: user.Ip.GetUdpAddr(),
-	})
+	master.account.AddMasterNode(user)
 	master.tTreeMap.AddNode(user.GetPubKey())
 }
 
@@ -100,7 +94,7 @@ func (master *MasterNetwork) getGhostUser() *ptypes.GhostUser {
 	return &ptypes.GhostUser{
 		Nickname:     master.nickname,
 		PubKey:       master.owner.GetPubAddress(),
-		MasterPubKey: master.masterInfo.User.PubKey,
+		MasterPubKey: master.masterInfo.PubKey,
 		Ip:           master.localGhostIp,
 	}
 }
@@ -117,13 +111,13 @@ func (master *MasterNetwork) RequestGhostNetVersion() {
 		log.Fatal(err)
 	}
 	headerInfo := &p2p.ResponseHeaderInfo{
-		ToAddr:     master.masterInfo.NetAddr,
+		ToAddr:     master.masterInfo.Ip.GetUdpAddr(),
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_NotificationMasterNode,
 		PacketData: sendData,
 		SqFlag:     true,
 	}
-	master.udp.SendUdpPacket(headerInfo, master.masterInfo.NetAddr)
+	master.udp.SendUdpPacket(headerInfo, master.masterInfo.Ip.GetUdpAddr())
 }
 
 func (master *MasterNetwork) RequestMasterNodeList(index uint32, toAddr *net.UDPAddr) {
@@ -138,13 +132,13 @@ func (master *MasterNetwork) RequestMasterNodeList(index uint32, toAddr *net.UDP
 		log.Fatal(err)
 	}
 	headerInfo := &p2p.ResponseHeaderInfo{
-		ToAddr:     master.masterInfo.NetAddr,
+		ToAddr:     master.masterInfo.Ip.GetUdpAddr(),
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_RequestMasterNodeList,
 		PacketData: sendData,
 		SqFlag:     true,
 	}
-	master.udp.SendUdpPacket(headerInfo, master.masterInfo.NetAddr)
+	master.udp.SendUdpPacket(headerInfo, master.masterInfo.Ip.GetUdpAddr())
 }
 
 func (master *MasterNetwork) ConnectToMasterNode() {
@@ -186,7 +180,7 @@ func (master *MasterNetwork) SendToMasterNodeSq(third packets.PacketThirdType, p
 		log.Fatal("node key not found")
 	}
 	headerInfo := &p2p.ResponseHeaderInfo{
-		ToAddr:     node.NetAddr,
+		ToAddr:     node.Ip.GetUdpAddr(),
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_BlockChain,
 		ThirdType:  third,
