@@ -44,7 +44,10 @@ func (w *Wallet) GetGhostUser() *ptypes.GhostUser {
 	return &ptypes.GhostUser{
 		Nickname: w.nickname,
 		PubKey:   w.GetPubAddress(),
-		Ip:       w.ghostIp,
+		Ip: &ptypes.GhostIp{
+			Ip:   w.ghostIp.Ip,
+			Port: w.ghostIp.Port,
+		},
 	}
 }
 
