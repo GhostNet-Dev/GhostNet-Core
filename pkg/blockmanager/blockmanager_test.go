@@ -30,7 +30,7 @@ var (
 	w        = gcrypto.NewWallet(nickname, Miner, ghostIp, nil)
 
 	TestTables = []string{"nodes", "wallet"}
-	liteStore  = store.NewLiteStore("./", TestTables)
+	liteStore  = store.NewLiteStore("./", "litestore.db", TestTables)
 
 	glog             = glogger.NewGLogger(0)
 	config           = gconfig.NewDefaultConfig()

@@ -13,7 +13,7 @@ import (
 
 var (
 	TestTables  = []string{"nodes", "wallet"}
-	db          = store.NewLiteStore("./", TestTables)
+	db          = store.NewLiteStore("./", "litestore.db", TestTables)
 	testAddress = gcrypto.GenerateKeyPair()
 	ghostIp     = &ptypes.GhostIp{
 		Ip:   "127.0.0.1",

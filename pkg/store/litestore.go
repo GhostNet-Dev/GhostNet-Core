@@ -27,17 +27,19 @@ type LiteStore struct {
 	db     *bolt.DB
 	tables []string
 	dbPath string
+	dbFilename string
 }
 
-func NewLiteStore(dbPath string, tables []string) *LiteStore {
+func NewLiteStore(dbPath string, dbFilename string, tables []string) *LiteStore {
 	return &LiteStore{
 		dbPath: dbPath,
 		tables: tables,
+		dbFilename: dbFilename,
 	}
 }
 
 func (liteStore *LiteStore) OpenStore() error {
-	db, err := bolt.Open(liteStore.dbPath+"litestore.db", 0600, nil)
+	db, err := bolt.Open(liteStore.dbPath+liteStore.dbFilename, 0600, nil)
 	if err != nil {
 		return fmt.Errorf("could not open bolt db = %v", err)
 	}

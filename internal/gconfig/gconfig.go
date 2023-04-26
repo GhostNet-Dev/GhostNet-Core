@@ -5,15 +5,16 @@ const (
 	DefaultConfigFilename = "global"
 	EnvPrefix             = "GON" // GhOstNet
 
-	DefaultIp           = "127.0.0.1"
-	DefaultPort         = "50129"
-	DefaultGrpcPort     = "50229"
-	DefaultRootPath     = "./"
-	DefaultSqlPath      = "./"
-	DefaultFilePath     = "./"
-	DefaultDbName       = "sqlite3"
-	DefaultDbSchemeFile = "db.sqlite3.sql"
-	DefaultDbSchemePath = "./"
+	DefaultIp                  = "127.0.0.1"
+	DefaultPort                = "50129"
+	DefaultGrpcPort            = "50229"
+	DefaultRootPath            = "./"
+	DefaultSqlPath             = "./"
+	DefaultFilePath            = "./"
+	DefaultDbName              = "sqlite3"
+	DefaultDbSchemeFile        = "db.sqlite3.sql"
+	DefaultDbSchemePath        = "./"
+	DefaultDbLiteStoreFilename = "litestore.db"
 
 	DefaultStandaloneMode = false
 	DefaultTimeout        = 8
@@ -31,6 +32,7 @@ type GConfig struct {
 	GrpcPort              string
 	RootPath              string
 	SqlPath               string
+	LiteStoreFilename     string
 	FilePath              string
 	DbName                string
 	DbSchemeFile          string
@@ -51,6 +53,7 @@ func NewDefaultConfig() *GConfig {
 		GrpcPort:              DefaultGrpcPort,
 		RootPath:              DefaultRootPath,
 		SqlPath:               DefaultSqlPath,
+		LiteStoreFilename:     DefaultDbLiteStoreFilename,
 		FilePath:              DefaultFilePath,
 		DbName:                DefaultDbName,
 		DbSchemeFile:          DefaultDbSchemeFile,
