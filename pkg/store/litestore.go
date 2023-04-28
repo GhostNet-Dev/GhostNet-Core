@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	DefaultNodeTable           = "nodes"
-	DefaultMastersTable        = "masters"
-	DefaultWalletTable         = "wallet"
-	DefaultNickTable           = "nick"
+	DefaultNodeTable             = "nodes"
+	DefaultMastersTable          = "masters"
+	DefaultWalletTable           = "wallet"
+	DefaultNickTable             = "nick"
 	DefaultNickInBlockChainTable = "nickinchain"
 )
 
@@ -24,16 +24,16 @@ var DefaultLiteTable = [...]string{
 }
 
 type LiteStore struct {
-	db     *bolt.DB
-	tables []string
-	dbPath string
+	db         *bolt.DB
+	tables     []string
+	dbPath     string
 	dbFilename string
 }
 
 func NewLiteStore(dbPath string, dbFilename string, tables []string) *LiteStore {
 	return &LiteStore{
-		dbPath: dbPath,
-		tables: tables,
+		dbPath:     dbPath,
+		tables:     tables,
 		dbFilename: dbFilename,
 	}
 }
@@ -77,6 +77,23 @@ func (liteStore *LiteStore) LoadEntry(table string) (key, result [][]byte, err e
 			result = append(result, v)
 			return nil
 		})
+		return nil
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not set up buckets, %v", err)
+	}
+	return key, result, nil
+}
+
+// 대량으로 선택한다.
+func (liteStore *LiteStore) LoadEntryDesc(table string) (key, result [][]byte, err error) {
+	err = liteStore.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("litestore")).Bucket([]byte(table))
+		c := b.Cursor()
+		for k, v := c.Last(); k != nil; k, v = c.Prev() {
+			key = append(key, k)
+			result = append(result, v)
+		}
 		return nil
 	})
 	if err != nil {
