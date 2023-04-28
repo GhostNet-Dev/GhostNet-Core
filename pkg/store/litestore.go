@@ -102,6 +102,25 @@ func (liteStore *LiteStore) LoadEntryDesc(table string) (key, result [][]byte, e
 	return key, result, nil
 }
 
+// 대량으로 선택한다.
+func (liteStore *LiteStore) LoadEntryDescLimit(table string, count int) (key, result [][]byte, err error) {
+	err = liteStore.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("litestore")).Bucket([]byte(table))
+		c := b.Cursor()
+		i := 0
+		for k, v := c.Last(); k != nil && i < count; k, v = c.Prev() {
+			key = append(key, k)
+			result = append(result, v)
+			i++
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not set up buckets, %v", err)
+	}
+	return key, result, nil
+}
+
 // 하나만 선택한다.
 func (liteStore *LiteStore) SelectEntry(table string, key []byte) (result []byte, err error) {
 	err = liteStore.db.View(func(tx *bolt.Tx) error {
