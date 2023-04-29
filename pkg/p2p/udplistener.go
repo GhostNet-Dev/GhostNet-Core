@@ -122,32 +122,32 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo, ip, port string) 
 				// TODO: it need to refac
 				// sq
 				if recvPacket.SqFlag {
-					//go func(packetInfo *RequestPacketInfo) {
-					secondLevel, exist := firstLevel.packetSqHandler[recvPacket.SecondType]
-					if !exist {
-						return
-					}
-					if response := secondLevel(&RequestHeaderInfo{FromAddr: packetInfo.Addr, Header: &recvPacket}); response != nil {
-						for _, packet := range response {
-							packet.PacketType = recvPacket.Type
-							udp.SendResponse(&packet)
+					go func(packetInfo *RequestPacketInfo) {
+						secondLevel, exist := firstLevel.packetSqHandler[recvPacket.SecondType]
+						if !exist {
+							return
 						}
-					}
-					//}(&packetInfo)
+						if response := secondLevel(&RequestHeaderInfo{FromAddr: packetInfo.Addr, Header: &recvPacket}); response != nil {
+							for _, packet := range response {
+								packet.PacketType = recvPacket.Type
+								udp.SendResponse(&packet)
+							}
+						}
+					}(&packetInfo)
 				} else {
-					//go func(packetInfo *RequestPacketInfo) {
-					// cq
-					secondLevel, exist := firstLevel.packetCqHandler[recvPacket.SecondType]
-					if !exist {
-						return
-					}
-					if response := secondLevel(&RequestHeaderInfo{FromAddr: packetInfo.Addr, Header: &recvPacket}); response != nil {
-						for _, packet := range response {
-							packet.PacketType = recvPacket.Type
-							udp.SendResponse(&packet)
+					go func(packetInfo *RequestPacketInfo) {
+						// cq
+						secondLevel, exist := firstLevel.packetCqHandler[recvPacket.SecondType]
+						if !exist {
+							return
 						}
-					}
-					//}(&packetInfo)
+						if response := secondLevel(&RequestHeaderInfo{FromAddr: packetInfo.Addr, Header: &recvPacket}); response != nil {
+							for _, packet := range response {
+								packet.PacketType = recvPacket.Type
+								udp.SendResponse(&packet)
+							}
+						}
+					}(&packetInfo)
 				}
 			}
 		}()
