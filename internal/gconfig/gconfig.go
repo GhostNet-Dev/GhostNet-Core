@@ -40,7 +40,8 @@ type GConfig struct {
 	StandaloneMode        bool
 	Id                    uint32
 
-	Timeout uint32
+	Timeout           uint32
+	BlockTickInterval int
 }
 
 func NewDefaultConfig() *GConfig {
@@ -60,5 +61,6 @@ func NewDefaultConfig() *GConfig {
 		DbSchemePath:          DefaultDbSchemePath,
 		StandaloneMode:        DefaultStandaloneMode,
 		Timeout:               DefaultTimeout,
+		BlockTickInterval:     DefaultTimeout,
 	}
 }

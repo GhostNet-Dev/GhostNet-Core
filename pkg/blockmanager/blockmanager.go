@@ -25,6 +25,7 @@ import (
 )
 
 type BlockManager struct {
+	BlockTick        int
 	consensus        *consensus.Consensus
 	fsm              *states.BlockMachine
 	block            *blocks.Blocks
@@ -42,7 +43,7 @@ type BlockManager struct {
 	packetCqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)
 }
 
-func NewBlockManager(con *consensus.Consensus,
+func NewBlockManager(blockTick int, con *consensus.Consensus,
 	fsm *states.BlockMachine,
 	block *blocks.Blocks,
 	tXs *txs.TXs,
@@ -55,6 +56,7 @@ func NewBlockManager(con *consensus.Consensus,
 	myIpAddr *ptypes.GhostIp, glog *glogger.GLogger) *BlockManager {
 
 	blockMgr := &BlockManager{
+		BlockTick:        blockTick,
 		consensus:        con,
 		fsm:              fsm,
 		block:            block,
@@ -87,7 +89,7 @@ func NewBlockManager(con *consensus.Consensus,
 func (blockMgr *BlockManager) BlockServer() {
 	blockMgr.glog.DebugOutput(blockMgr, "Block Server Start.", glogger.Default)
 	blockMgr.BlockSync()
-	for range time.Tick(time.Second * 8) {
+	for range time.Tick(time.Second * time.Duration(blockMgr.BlockTick)) {
 		blockMgr.BlockSync()
 	}
 }
