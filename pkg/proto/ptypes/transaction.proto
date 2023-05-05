@@ -41,7 +41,7 @@ message GhostTransaction {
 
 message GhostDataTransaction {
 	bytes TxId = 1;
-	uint64 LogicalAddress = 2;
+	bytes LogicalAddress = 2;
 	uint32 DataSize = 3;
 	bytes Data = 4;
 }

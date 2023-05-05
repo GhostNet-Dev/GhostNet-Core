@@ -116,7 +116,7 @@ func (w *Workload) MakeDataTx() {
 		FeeAddr:   store.AdamsAddress(),
 		FeeBroker: w.wallet.GetMasterNodeAddr(),
 	}
-	tx, dataTx := w.tXs.CreateDataTx(*txInfo, 0, w.MakeDummyFile())
+	tx, dataTx := w.tXs.CreateDataTx(*txInfo, []byte("adam"), w.MakeDummyFile())
 	tx = w.tXs.InkTheContract(tx, w.wallet.GetGhostAddress())
 
 	w.blockMgr.SendDataTx(tx, dataTx)

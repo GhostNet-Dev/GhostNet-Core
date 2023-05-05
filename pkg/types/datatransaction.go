@@ -9,14 +9,13 @@ import (
 
 type GhostDataTransaction struct {
 	TxId           gbytes.HashBytes
-	LogicalAddress uint64
+	LogicalAddress gbytes.HashBytes
 	DataSize       uint32
 	Data           []byte
 }
 
 func (dataTx *GhostDataTransaction) Size() uint32 {
-	return uint32(gbytes.HashSize) + //address
-		uint32(unsafe.Sizeof(dataTx.LogicalAddress)) +
+	return uint32(gbytes.HashSize)*2 + //address
 		uint32(unsafe.Sizeof(dataTx.DataSize)) +
 		dataTx.DataSize
 }

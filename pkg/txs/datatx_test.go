@@ -32,7 +32,7 @@ func TestSaveDataTx(t *testing.T) {
 		TransferCoin: 9999,
 	}
 	data := []byte("hello blockchain")
-	tx, dataTx := txs.CreateDataTx(txInfo, 0, data)
+	tx, dataTx := txs.CreateDataTx(txInfo, data, data)
 	tx = txs.InkTheContract(tx, Recver)
 	err := txs.TransactionValidation(tx, dataTx, blockContainer.TxContainer)
 	assert.Equal(t, true, err.Result(), "tx validate error: "+err.Error())

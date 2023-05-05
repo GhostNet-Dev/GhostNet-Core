@@ -261,11 +261,8 @@ func (tx *GhostDataTransaction) Serialize(stream *mems.MemoryStream) (sErr *Seri
 
 	}()
 	bs4 := make([]byte, 4)
-	bs8 := make([]byte, 8)
 	stream.Write(tx.TxId[:])
-	//stream.Write(tx.LogicalAddress[:])
-	binary.LittleEndian.PutUint64(bs8, tx.LogicalAddress)
-	stream.Write(bs8)
+	stream.Write(tx.LogicalAddress[:])
 	binary.LittleEndian.PutUint32(bs4, tx.DataSize)
 	stream.Write(bs4)
 	if tx.Data != nil {
@@ -286,7 +283,7 @@ func (tx *GhostDataTransaction) Deserialize(byteBuf *bytes.Buffer) (sErr *Serial
 	}()
 	tx.TxId = make([]byte, gbytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, tx.TxId)
-	binary.Read(byteBuf, binary.LittleEndian, &tx.LogicalAddress)
+	binary.Read(byteBuf, binary.LittleEndian, tx.LogicalAddress)
 	binary.Read(byteBuf, binary.LittleEndian, &tx.DataSize)
 	if byteBuf.Len() > 0 {
 		tx.Data = make([]byte, tx.DataSize)

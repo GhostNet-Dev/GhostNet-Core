@@ -39,7 +39,7 @@ func (txs *TXs) InkTheContract(tx *types.GhostTransaction,
 	return tx
 }
 
-func (txs *TXs) MakeDataTx(logicalAddr uint64, data []byte) *types.GhostDataTransaction {
+func (txs *TXs) MakeDataTx(logicalAddr []byte, data []byte) *types.GhostDataTransaction {
 	dummy := make([]byte, gbytes.HashSize)
 	dataTx := types.GhostDataTransaction{
 		TxId:           dummy,
