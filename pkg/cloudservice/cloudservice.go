@@ -31,7 +31,7 @@ func (cloud *CloudService) ReleaseChannel(filename string) {
 	delete(cloud.streamId, filename)
 }
 
-func (cloud *CloudService) DownloadSync(filename string, ipAddr *net.UDPAddr) *fileservice.FileObject {
+func (cloud *CloudService) ReadFromCloudSync(filename string, ipAddr *net.UDPAddr) *fileservice.FileObject {
 	defer cloud.ReleaseChannel(filename)
 	cloud.glog.DebugOutput(cloud, fmt.Sprint("cloud download = ", filename), glogger.Default)
 	if _, exist := cloud.streamId[filename]; !exist {

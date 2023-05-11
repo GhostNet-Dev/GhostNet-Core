@@ -88,7 +88,7 @@ func (blockMgr *BlockManager) NewBlockSq(header *packets.Header, from *net.UDPAd
 	}
 
 	if blockMgr.fsm.CheckAcceptNewBlock() {
-		fileObj := blockMgr.cloud.DownloadSync(sq.BlockFilename, from)
+		fileObj := blockMgr.cloud.ReadFromCloudSync(sq.BlockFilename, from)
 		//blockMgr.RequestBlockChainFile(sq.BlockFilename, from, blockMgr.DownloadNewBlock, nil)
 		blockMgr.DownloadNewBlock(fileObj, nil)
 	}
@@ -168,7 +168,7 @@ func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPA
 	}
 
 	if blockMgr.fsm.CheckAcceptDownloadBlock() {
-		fileObj := blockMgr.cloud.DownloadSync(sq.BlockFilename, from)
+		fileObj := blockMgr.cloud.ReadFromCloudSync(sq.BlockFilename, from)
 		blockMgr.DownloadBlock(fileObj, sq.GetMaster().Common.FromPubKeyAddress)
 	}
 	//blockMgr.RequestBlockChainFile(sq.BlockFilename, from, blockMgr.DownloadBlock, nil)

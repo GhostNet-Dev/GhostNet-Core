@@ -40,7 +40,7 @@ func TestRequestFileSq(t *testing.T) {
 
 func TestRequestFileDataSq(t *testing.T) {
 	testFileInit(fileService.localFilePath + testfile)
-	fileService.LoadFileToMemory(testfile)
+	fileService.loadFileToMemory(testfile)
 	info, _ := os.Stat(fileService.localFilePath + testfile)
 	totalDownloadSize := uint32(0)
 	// todo for total file packet

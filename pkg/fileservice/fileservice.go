@@ -81,12 +81,12 @@ func (fileService *FileService) commitFile(fileObj *FileObject) {
 }
 
 func (fileService *FileService) SendGetFile(filename string, ipAddr *net.UDPAddr, callback DoneHandler, context interface{}) {
-	if fileService.CheckFileExist(filename) == false {
+	if !fileService.CheckFileExist(filename) {
 		fileService.sendGetFileInfo(filename, ipAddr, callback, context)
 	} else {
 		fileObj, exist := fileService.fileObjManager.GetFileObject(filename)
-		if exist == false {
-			fileObj = fileService.LoadFileToMemory(filename)
+		if !exist {
+			fileObj = fileService.loadFileToMemory(filename)
 		}
 		if callback != nil {
 			callback(fileObj, context)
@@ -95,14 +95,14 @@ func (fileService *FileService) SendGetFile(filename string, ipAddr *net.UDPAddr
 }
 
 func (fileService *FileService) DeleteFile(filename string) {
-	if fileService.CheckFileExist(filename) == true {
+	if fileService.CheckFileExist(filename) {
 		os.Remove(filename)
 		fileService.fileObjManager.DeleteObject(filename)
 	}
 }
 
 // LoadFileToObj -> load to memory
-func (fileService *FileService) LoadFileToMemory(filename string) *FileObject {
+func (fileService *FileService) loadFileToMemory(filename string) *FileObject {
 	fileFullPath := fileService.localFilePath + filename
 	fileObj, ok := fileService.fileObjManager.GetFileObject(filename)
 	if ok {
@@ -148,7 +148,7 @@ func (fileService *FileService) makeFileInfo(filename string, ipAddr *net.UDPAdd
 	fileObj, exist := fileService.fileObjManager.GetFileObject(filename)
 
 	if !exist {
-		if fileObj = fileService.LoadFileToMemory(filename); fileObj != nil {
+		if fileObj = fileService.loadFileToMemory(filename); fileObj != nil {
 			exist = true
 		}
 	}

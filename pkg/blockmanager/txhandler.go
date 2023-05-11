@@ -17,7 +17,7 @@ func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *ne
 	}
 
 	filename := fileservice.ByteToFilename(sq.TxId)
-	fileObj := blockMgr.cloud.DownloadSync(filename, from)
+	fileObj := blockMgr.cloud.ReadFromCloudSync(filename, from)
 	blockMgr.DownloadTransaction(fileObj, nil)
 
 	//master.blockHandler.SendTransaction(sq.TxId)
@@ -77,8 +77,8 @@ func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from
 
 	txFilename := fileservice.ByteToFilename(sq.TxId)
 	dataTxFilename := fileservice.ByteToFilename(sq.DataTxId)
-	txFileObj := blockMgr.cloud.DownloadSync(txFilename, from)
-	dataTxFileObj := blockMgr.cloud.DownloadSync(dataTxFilename, from)
+	txFileObj := blockMgr.cloud.ReadFromCloudSync(txFilename, from)
+	dataTxFileObj := blockMgr.cloud.ReadFromCloudSync(dataTxFilename, from)
 	blockMgr.DownloadDataTransaction(txFileObj.Buffer, dataTxFileObj.Buffer)
 
 	cq := packets.SendDataTransactionCq{

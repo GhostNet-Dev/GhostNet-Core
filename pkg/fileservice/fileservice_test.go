@@ -52,7 +52,7 @@ func TestLoadFile(t *testing.T) {
 	testFileInit(fileService.localFilePath + testfile)
 	exist := fileService.CheckFileExist(testfile)
 	assert.Equal(t, true, exist, "fail to create test file")
-	fileObj := fileService.LoadFileToMemory(testfile)
+	fileObj := fileService.loadFileToMemory(testfile)
 	assert.Equal(t, testfile, fileObj.Filename, "wrong file")
 	assert.Equal(t, true, fileObj.CompleteDone, "load fail")
 }
@@ -61,7 +61,7 @@ func TestFileInfoCq(t *testing.T) {
 	testFileInit(fileService.localFilePath + testfile)
 	info, _ := os.Stat(fileService.localFilePath + testfile)
 	assert.Equal(t, true, info.Size() > 0, "get file stat error")
-	fileService.LoadFileToMemory(testfile)
+	fileService.loadFileToMemory(testfile)
 	header := fileService.makeFileInfo(testfile, toIpAddr.GetUdpAddr())
 	assert.Equal(t, packets.PacketSecondType_RequestFile, header.SecondType, "wrong second type")
 	assert.Equal(t, false, header.SqFlag, "wrong SqFlag")
@@ -76,7 +76,7 @@ func TestFileInfoCq(t *testing.T) {
 
 func TestSendFileData(t *testing.T) {
 	testFileInit(fileService.localFilePath + testfile)
-	fileObj := fileService.LoadFileToMemory(testfile)
+	fileObj := fileService.loadFileToMemory(testfile)
 
 	for offset := uint64(0); offset < fileObj.FileLength; offset += 1024 {
 		header := fileService.sendFileData(testfile, offset, 0, 0, toIpAddr.GetUdpAddr())
