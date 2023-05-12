@@ -43,6 +43,7 @@ func main() {
 		cmd.GetBlockListCommand(),
 		cmd.GetAccountListCommand(),
 		cmd.LoginCommand(),
+		cmd.ReadTxFileCommand(),
 	)
 
 	if err := startCmd.Execute(); err != nil {
