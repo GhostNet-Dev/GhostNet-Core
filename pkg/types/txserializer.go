@@ -282,6 +282,7 @@ func (tx *GhostDataTransaction) Deserialize(byteBuf *bytes.Buffer) (sErr *Serial
 		}
 	}()
 	tx.TxId = make([]byte, gbytes.HashSize)
+	tx.LogicalAddress = make([]byte, gbytes.HashSize)
 	binary.Read(byteBuf, binary.LittleEndian, tx.TxId)
 	binary.Read(byteBuf, binary.LittleEndian, tx.LogicalAddress)
 	binary.Read(byteBuf, binary.LittleEndian, &tx.DataSize)
