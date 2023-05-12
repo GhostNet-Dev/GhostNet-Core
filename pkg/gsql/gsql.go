@@ -32,6 +32,7 @@ type GSql interface {
 	DeleteAfterTargetId(blockId uint32)
 	GetMaxLogicalAddress(toAddr []byte) (uint64, error)
 	GetNicknameToAddress(nickname []byte) []byte
+	GetIssuedCoin(blockId uint32) uint64
 }
 
 type GCandidateSql interface {

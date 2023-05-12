@@ -429,6 +429,25 @@ func (gSql *GSqlite3) GetMaxLogicalAddress(toAddr []byte) (maxLogicalAddr uint64
 	return maxLogicalAddr, nil
 }
 
+func (gSql *GSqlite3) GetIssuedCoin(blockId uint32) uint64 {
+	var coin uint64
+	query, err := gSql.db.Prepare(`select sum(Value) from outputs 
+	left outer join transactions on outputs.TxId = transaction.TxId
+	where transaction.Type = ? and transaction.BlockId = ?`)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	if err := query.QueryRow(types.AliceTx, blockId).Scan(&coin); err == sql.ErrNoRows {
+		return 0
+	} else if err != nil {
+		log.Print(err)
+	}
+	return coin
+
+}
+
 func (gSql *GSqlite3) CheckExistBlockId(blockId uint32) bool {
 	var count uint32
 	query, err := gSql.db.Prepare("select count(*) from paired_block where Id = ?")

@@ -91,6 +91,10 @@ func (blockContainer *BlockContainer) BlockHeight() uint32 {
 	return blockContainer.gSql.GetBlockHeight()
 }
 
+func (blockContainer *BlockContainer) GetIssuedCoinOnBlock(blockId uint32) uint64 {
+	return blockContainer.gSql.GetIssuedCoin(blockId)
+}
+
 func (blockContainer *BlockContainer) InsertBlock(pairedBlock *types.PairedBlock) {
 	if blockContainer.newBlockEventHandler != nil {
 		blockContainer.newBlockEventHandler(pairedBlock)
