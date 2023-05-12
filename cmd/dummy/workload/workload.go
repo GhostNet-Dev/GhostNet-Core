@@ -31,7 +31,7 @@ var password = "worker"
 
 func NewWorkload(workerName string, loadWallet *bootloader.LoadWallet, blkMgr *blockmanager.BlockManager,
 	bc *store.BlockContainer, tXs *txs.TXs, conn *common.ConnectMaster, user *gcrypto.Wallet,
-	glog *glogger.GLogger) *Workload {
+	glog *glogger.GLogger) IWorkload {
 	return &Workload{
 		workerName:     workerName,
 		loadWallet:     loadWallet,
@@ -43,6 +43,10 @@ func NewWorkload(workerName string, loadWallet *bootloader.LoadWallet, blkMgr *b
 		glog:           glog,
 		Running:        false,
 	}
+}
+
+func (worker *Workload) CheckRunning() bool {
+	return worker.Running
 }
 
 func (worker *Workload) LoadWorker(masterNode *ptypes.GhostUser) {

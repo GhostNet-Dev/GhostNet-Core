@@ -43,7 +43,6 @@ func TestSqlInsertAndSelectCheck(t *testing.T) {
 
 	result := bytes.Compare(tx.SerializeToByte(), newTx.SerializeToByte())
 	assert.Equal(t, 0, result, "tx가 다릅니다.")
-
 }
 
 func TestSqlInAndOutBlock(t *testing.T) {

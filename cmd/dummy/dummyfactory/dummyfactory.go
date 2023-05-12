@@ -17,7 +17,7 @@ type DummyFactory struct {
 	defaultFactory *factory.DefaultFactory
 	conn           *common.ConnectMaster
 
-	Worker []*workload.Workload
+	Worker []workload.IWorkload
 }
 
 func NewDummyFactory(maxWorker int, masterIp *ptypes.GhostIp, bootFactory *factory.BootFactory,
@@ -33,11 +33,12 @@ func NewDummyFactory(maxWorker int, masterIp *ptypes.GhostIp, bootFactory *facto
 		conn: common.NewConnectMaster(store.DefaultMastersTable, bootFactory.Db,
 			networkFactory.PacketFactory, networkFactory.Udp, defaultFactory.UserWallet),
 	}
-
-	for i := 0; i < maxWorker; i++ {
-		factory.Worker = append(factory.Worker, workload.NewWorkload(fmt.Sprintf("worker%d", i), bootFactory.LoadWallet,
+	factory.Worker = []workload.IWorkload{
+		workload.NewWorkload(fmt.Sprintf("worker%d", 0), bootFactory.LoadWallet,
 			defaultFactory.BlockServer, defaultFactory.BlockContainer, defaultFactory.Txs,
-			factory.conn, defaultFactory.UserWallet, glog))
+			factory.conn, defaultFactory.UserWallet, glog),
+		workload.NewWorkloadFs(fmt.Sprintf("worker%d", 1), bootFactory.LoadWallet,
+			factory.defaultFactory.BlockIo, factory.conn, defaultFactory.UserWallet, glog),
 	}
 
 	return factory

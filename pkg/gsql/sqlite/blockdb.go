@@ -445,7 +445,6 @@ func (gSql *GSqlite3) GetIssuedCoin(blockId uint32) uint64 {
 		log.Print(err)
 	}
 	return coin
-
 }
 
 func (gSql *GSqlite3) CheckExistBlockId(blockId uint32) bool {

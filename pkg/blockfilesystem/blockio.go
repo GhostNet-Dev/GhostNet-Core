@@ -13,18 +13,21 @@ import (
 )
 
 type BlockIo struct {
-	wallet       *gcrypto.Wallet
 	blockManager *blockmanager.BlockManager
 	bc           *store.BlockContainer
 	tXs          *txs.TXs
 	cloud        *cloudservice.CloudService
-	rootTxPtr    []types.PrevOutputParam
 }
 
-func NewBlockIo(w *gcrypto.Wallet, blkMgr *blockmanager.BlockManager,
+type BlockIoHandler struct {
+	wallet    *gcrypto.Wallet
+	rootTxPtr []types.PrevOutputParam
+	blockIo   *BlockIo
+}
+
+func NewBlockIo(blkMgr *blockmanager.BlockManager,
 	bc *store.BlockContainer, tXs *txs.TXs, cloud *cloudservice.CloudService) *BlockIo {
 	return &BlockIo{
-		wallet:       w,
 		blockManager: blkMgr,
 		bc:           bc,
 		tXs:          tXs,
@@ -32,32 +35,39 @@ func NewBlockIo(w *gcrypto.Wallet, blkMgr *blockmanager.BlockManager,
 	}
 }
 
-func (io *BlockIo) CreateFilesystem() {
+func (io *BlockIo) CreateFilesystem(w *gcrypto.Wallet) *BlockIoHandler {
 	txInfo := &txs.TransferTxInfo{
-		MyWallet:  io.wallet,
-		ToAddr:    io.wallet.MyPubKey(),
-		Broker:    io.wallet.GetMasterNodeAddr(),
+		MyWallet:  w,
+		ToAddr:    w.MyPubKey(),
+		Broker:    w.GetMasterNodeAddr(),
 		FeeAddr:   store.AdamsAddress(),
-		FeeBroker: io.wallet.GetMasterNodeAddr(),
+		FeeBroker: w.GetMasterNodeAddr(),
 	}
-	tx := io.tXs.CreateRootFsTx(*txInfo, io.wallet.GetNickname())
-	tx = io.tXs.InkTheContract(tx, io.wallet.GetGhostAddress())
+	tx := io.tXs.CreateRootFsTx(*txInfo, w.GetNickname())
+	tx = io.tXs.InkTheContract(tx, w.GetGhostAddress())
 	io.blockManager.SendTx(tx)
+	return &BlockIoHandler{
+		wallet:  w,
+		blockIo: io,
+	}
 }
 
-func (io *BlockIo) OpenFilesystem() bool {
-	if outputParams, ok := io.tXs.GetRootFsTx(io.wallet.MyPubKey()); ok {
-		io.rootTxPtr = outputParams
-		return true
+func (io *BlockIo) OpenFilesystem(w *gcrypto.Wallet) *BlockIoHandler {
+	if outputParams, ok := io.tXs.GetRootFsTx(w.MyPubKey()); ok {
+		return &BlockIoHandler{
+			wallet:    w,
+			rootTxPtr: outputParams,
+			blockIo:   io,
+		}
 	}
-	return false
+	return nil
 }
 
 func (io *BlockIo) CloseFilesystem() {
 }
 
-func (io *BlockIo) ReadData(key []byte) []byte {
-	fileObj := io.cloud.ReadFromCloudSync(fileservice.ByteToFilename(key),
+func (io *BlockIoHandler) ReadData(key []byte) []byte {
+	fileObj := io.blockIo.cloud.ReadFromCloudSync(fileservice.ByteToFilename(key),
 		io.wallet.GetMasterNode().Ip.GetUdpAddr())
 	if fileObj == nil {
 		log.Print("could not found file: ", fileObj.Filename)
@@ -66,7 +76,7 @@ func (io *BlockIo) ReadData(key []byte) []byte {
 	return fileObj.Buffer
 }
 
-func (io *BlockIo) WriteData(uniqKey []byte, data []byte) (key []byte) {
+func (io *BlockIoHandler) WriteData(uniqKey []byte, data []byte) (key []byte) {
 	prevMap := map[types.TxOutputType][]types.PrevOutputParam{}
 	prevMap[types.TxTypeDataStore] = io.rootTxPtr // for mapping
 
@@ -78,10 +88,10 @@ func (io *BlockIo) WriteData(uniqKey []byte, data []byte) (key []byte) {
 		FeeAddr:   store.AdamsAddress(),
 		FeeBroker: io.wallet.GetMasterNodeAddr(),
 	}
-	tx, dataTx := io.tXs.CreateDataTx(*txInfo, uniqKey, data)
-	tx = io.tXs.InkTheContract(tx, io.wallet.GetGhostAddress())
+	tx, dataTx := io.blockIo.tXs.CreateDataTx(*txInfo, uniqKey, data)
+	tx = io.blockIo.tXs.InkTheContract(tx, io.wallet.GetGhostAddress())
 
-	io.blockManager.SendDataTx(tx, dataTx)
+	io.blockIo.blockManager.SendDataTx(tx, dataTx)
 
 	key = dataTx.TxId
 	return key

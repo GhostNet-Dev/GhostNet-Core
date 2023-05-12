@@ -94,7 +94,7 @@ func ExecuteContainer() {
 	for {
 		checkRunning := 0
 		for _, worker := range dummyFactory.Worker {
-			if worker.Running {
+			if worker.CheckRunning() {
 				checkRunning++
 			}
 			worker.Run()
