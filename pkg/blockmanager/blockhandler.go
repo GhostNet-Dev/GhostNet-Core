@@ -23,6 +23,7 @@ func (blockMgr *BlockManager) InitHandler(master *gnetwork.MasterNetwork) {
 	blockMgr.packetSqHandler[packets.PacketThirdType_SendBlockHash] = blockMgr.SendBlockHashSq
 	blockMgr.packetSqHandler[packets.PacketThirdType_GetTxStatus] = blockMgr.GetTxStatusSq
 	blockMgr.packetSqHandler[packets.PacketThirdType_SendTxStatus] = blockMgr.SendTxStatusSq
+	blockMgr.packetSqHandler[packets.PacketThirdType_CheckRootFs] = blockMgr.CheckRootFsSq
 
 	blockMgr.packetCqHandler[packets.PacketThirdType_GetHeightestBlock] = blockMgr.GetHeightestBlockCq
 	blockMgr.packetCqHandler[packets.PacketThirdType_NewBlock] = blockMgr.NewBlockCq
@@ -36,6 +37,7 @@ func (blockMgr *BlockManager) InitHandler(master *gnetwork.MasterNetwork) {
 	blockMgr.packetCqHandler[packets.PacketThirdType_SendBlockHash] = blockMgr.SendBlockHashCq
 	blockMgr.packetCqHandler[packets.PacketThirdType_GetTxStatus] = blockMgr.GetTxStatusCq
 	blockMgr.packetCqHandler[packets.PacketThirdType_SendTxStatus] = blockMgr.SendTxStatusCq
+	blockMgr.packetCqHandler[packets.PacketThirdType_CheckRootFs] = blockMgr.CheckRootFsCq
 
 	master.RegisterBlockHandler(blockMgr.BlockHandlerSq, blockMgr.BlockHandlerCq)
 }
