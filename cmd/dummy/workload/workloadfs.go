@@ -1,11 +1,13 @@
 package workload
 
 import (
+	"errors"
 	"math/rand"
 	"time"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/cmd/dummy/common"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blockfilesystem"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blockmanager"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
@@ -18,19 +20,21 @@ type WorkloadFs struct {
 	loadWallet     *bootloader.LoadWallet
 	wallet         *gcrypto.Wallet
 	conn           *common.ConnectMaster
+	blockMgr       *blockmanager.BlockManager
 	blockIo        *blockfilesystem.BlockIo
 	blockIoHandler *blockfilesystem.BlockIoHandler
 	glog           *glogger.GLogger
 	Running        bool
 }
 
-func NewWorkloadFs(workerName string, loadWallet *bootloader.LoadWallet,
+func NewWorkloadFs(workerName string, loadWallet *bootloader.LoadWallet, blockMgr *blockmanager.BlockManager,
 	blockIo *blockfilesystem.BlockIo, conn *common.ConnectMaster, user *gcrypto.Wallet,
 	glog *glogger.GLogger) IWorkload {
 	return &WorkloadFs{
 		workerName: workerName,
 		loadWallet: loadWallet,
 		conn:       conn,
+		blockMgr:   blockMgr,
 		blockIo:    blockIo,
 		wallet:     user,
 		glog:       glog,
@@ -72,14 +76,19 @@ func (w *WorkloadFs) Run() {
 	w.blockIoHandler.WriteData([]byte("worker1"), w.MakeDummyFile())
 }
 
-func (w *WorkloadFs) CheckAccountTx() (bool, error) {
-	if exist, err := w.conn.CheckNickname(w.workerName); exist && err == nil {
-		return true, nil
-	} else if !exist && err == nil {
-		return false, nil
-	} else {
-		return false, err
+func (w *WorkloadFs) CheckAccountTx() (result bool, err error) {
+	eventChannel := make(chan bool, 1)
+	w.blockMgr.RequestCheckExistFsRoot([]byte(w.workerName), func(result bool) {
+		eventChannel <- result
+	})
+
+	select {
+	case result = <-eventChannel:
+	case <-time.After(time.Second * 8):
+		return false, errors.New("timeout")
 	}
+
+	return result, nil
 }
 
 func (w *WorkloadFs) MakeDummyTransaction(wallet *gcrypto.Wallet, to []byte, broker []byte) (*types.GhostTransaction, *types.GhostDataTransaction) {

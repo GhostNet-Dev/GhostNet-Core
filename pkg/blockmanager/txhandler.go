@@ -18,7 +18,9 @@ func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *ne
 
 	filename := fileservice.ByteToFilename(sq.TxId)
 	fileObj := blockMgr.cloud.ReadFromCloudSync(filename, from)
-	blockMgr.DownloadTransaction(fileObj, nil)
+	if !blockMgr.DownloadTransaction(fileObj, nil) {
+		blockMgr.fileService.DeleteFile(filename)
+	}
 
 	//master.blockHandler.SendTransaction(sq.TxId)
 	cq := packets.SendTransactionCq{
@@ -79,8 +81,10 @@ func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from
 	dataTxFilename := fileservice.ByteToFilename(sq.DataTxId)
 	txFileObj := blockMgr.cloud.ReadFromCloudSync(txFilename, from)
 	dataTxFileObj := blockMgr.cloud.ReadFromCloudSync(dataTxFilename, from)
-	blockMgr.DownloadDataTransaction(txFileObj.Buffer, dataTxFileObj.Buffer)
 
+	if !blockMgr.DownloadDataTransaction(txFileObj.Buffer, dataTxFileObj.Buffer) {
+		blockMgr.fileService.DeleteFile(txFilename)
+	}
 	cq := packets.SendDataTransactionCq{
 		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
 	}
@@ -196,3 +200,40 @@ func (blockMgr *BlockManager) SendTxStatusSq(header *packets.Header, from *net.U
 }
 
 func (blockMgr *BlockManager) SendTxStatusCq(header *packets.Header, from *net.UDPAddr) {}
+
+func (blockMgr *BlockManager) CheckRootFsSq(header *packets.Header, from *net.UDPAddr) []p2p.ResponseHeaderInfo {
+	sq := &packets.CheckRootFsSq{}
+	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
+		log.Fatal(err)
+	}
+
+	exist := blockMgr.blockContainer.TxContainer.CheckExistFsRoot(sq.Nickname)
+
+	cq := packets.CheckRootFsCq{
+		Master:   p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Nickname: sq.Nickname,
+		Exist:    exist,
+	}
+
+	cqData, err := proto.Marshal(&cq)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return []p2p.ResponseHeaderInfo{
+		{
+			ToAddr:     from,
+			ThirdType:  packets.PacketThirdType_CheckRootFs,
+			PacketData: cqData,
+			SqFlag:     false,
+		},
+	}
+}
+
+func (blockMgr *BlockManager) CheckRootFsCq(header *packets.Header, from *net.UDPAddr) {
+	cq := &packets.CheckRootFsCq{}
+	if err := proto.Unmarshal(header.PacketData, cq); err != nil {
+		log.Fatal(err)
+	}
+	blockMgr.callback(cq.Exist)
+}

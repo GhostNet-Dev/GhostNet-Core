@@ -1,6 +1,7 @@
 package workload
 
 import (
+	"errors"
 	"math/rand"
 	"time"
 
@@ -79,14 +80,19 @@ func (w *Workload) Run() {
 	w.MakeDataTx()
 }
 
-func (w *Workload) CheckAccountTx() (bool, error) {
-	if exist, err := w.conn.CheckNickname(w.workerName); exist && err == nil {
-		return true, nil
-	} else if !exist && err == nil {
-		return false, nil
-	} else {
-		return false, err
+func (w *Workload) CheckAccountTx() (result bool, err error) {
+	eventChannel := make(chan bool, 1)
+	w.blockMgr.RequestCheckExistFsRoot([]byte(w.workerName), func(result bool) {
+		eventChannel <- result
+	})
+
+	select {
+	case result = <-eventChannel:
+	case <-time.After(time.Second * 8):
+		return false, errors.New("timeout")
 	}
+
+	return result, nil
 }
 
 func (w *Workload) MakeAccountTx() {

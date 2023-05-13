@@ -1483,6 +1483,124 @@ func (x *SendTxStatusCq) GetMaster() *MasterPacket {
 	return nil
 }
 
+type CheckRootFsSq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Master   *MasterPacket `protobuf:"bytes,1,opt,name=Master,proto3" json:"Master,omitempty"`
+	Nickname []byte        `protobuf:"bytes,2,opt,name=Nickname,proto3" json:"Nickname,omitempty"`
+}
+
+func (x *CheckRootFsSq) Reset() {
+	*x = CheckRootFsSq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_block_packet_proto_msgTypes[26]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CheckRootFsSq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckRootFsSq) ProtoMessage() {}
+
+func (x *CheckRootFsSq) ProtoReflect() protoreflect.Message {
+	mi := &file_block_packet_proto_msgTypes[26]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckRootFsSq.ProtoReflect.Descriptor instead.
+func (*CheckRootFsSq) Descriptor() ([]byte, []int) {
+	return file_block_packet_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *CheckRootFsSq) GetMaster() *MasterPacket {
+	if x != nil {
+		return x.Master
+	}
+	return nil
+}
+
+func (x *CheckRootFsSq) GetNickname() []byte {
+	if x != nil {
+		return x.Nickname
+	}
+	return nil
+}
+
+type CheckRootFsCq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Master   *MasterPacket `protobuf:"bytes,1,opt,name=Master,proto3" json:"Master,omitempty"`
+	Nickname []byte        `protobuf:"bytes,2,opt,name=Nickname,proto3" json:"Nickname,omitempty"`
+	Exist    bool          `protobuf:"varint,3,opt,name=Exist,proto3" json:"Exist,omitempty"`
+}
+
+func (x *CheckRootFsCq) Reset() {
+	*x = CheckRootFsCq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_block_packet_proto_msgTypes[27]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CheckRootFsCq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckRootFsCq) ProtoMessage() {}
+
+func (x *CheckRootFsCq) ProtoReflect() protoreflect.Message {
+	mi := &file_block_packet_proto_msgTypes[27]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckRootFsCq.ProtoReflect.Descriptor instead.
+func (*CheckRootFsCq) Descriptor() ([]byte, []int) {
+	return file_block_packet_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *CheckRootFsCq) GetMaster() *MasterPacket {
+	if x != nil {
+		return x.Master
+	}
+	return nil
+}
+
+func (x *CheckRootFsCq) GetNickname() []byte {
+	if x != nil {
+		return x.Nickname
+	}
+	return nil
+}
+
+func (x *CheckRootFsCq) GetExist() bool {
+	if x != nil {
+		return x.Exist
+	}
+	return false
+}
+
 var File_block_packet_proto protoreflect.FileDescriptor
 
 var file_block_packet_proto_rawDesc = []byte{
@@ -1651,6 +1769,20 @@ var file_block_packet_proto_rawDesc = []byte{
 	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74,
 	0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73, 0x74,
 	0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72,
+	0x22, 0x63, 0x0a, 0x0d, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x52, 0x6f, 0x6f, 0x74, 0x46, 0x73, 0x53,
+	0x71, 0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65, 0x74, 0x2e, 0x70, 0x61, 0x63,
+	0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x50, 0x61, 0x63, 0x6b, 0x65,
+	0x74, 0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x12, 0x1a, 0x0a, 0x08, 0x4e, 0x69, 0x63,
+	0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x08, 0x4e, 0x69, 0x63,
+	0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x79, 0x0a, 0x0d, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x52, 0x6f,
+	0x6f, 0x74, 0x46, 0x73, 0x43, 0x71, 0x12, 0x36, 0x0a, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x68, 0x6f, 0x73, 0x74, 0x6e, 0x65,
+	0x74, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x2e, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72,
+	0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x52, 0x06, 0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x12, 0x1a,
+	0x0a, 0x08, 0x4e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c,
+	0x52, 0x08, 0x4e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x45, 0x78,
+	0x69, 0x73, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x05, 0x45, 0x78, 0x69, 0x73, 0x74,
 	0x2a, 0x3b, 0x0a, 0x0a, 0x54, 0x78, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x0b,
 	0x0a, 0x07, 0x49, 0x6e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x10, 0x00, 0x12, 0x13, 0x0a, 0x0f, 0x49,
 	0x6e, 0x43, 0x61, 0x6e, 0x64, 0x69, 0x64, 0x61, 0x74, 0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x10, 0x01,
@@ -1674,7 +1806,7 @@ func file_block_packet_proto_rawDescGZIP() []byte {
 }
 
 var file_block_packet_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_block_packet_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
+var file_block_packet_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_block_packet_proto_goTypes = []interface{}{
 	(TxLocation)(0),               // 0: ghostnet.packets.TxLocation
 	(*GetHeightestBlockSq)(nil),   // 1: ghostnet.packets.GetHeightestBlockSq
@@ -1703,41 +1835,45 @@ var file_block_packet_proto_goTypes = []interface{}{
 	(*GetTxStatusCq)(nil),         // 24: ghostnet.packets.GetTxStatusCq
 	(*SendTxStatusSq)(nil),        // 25: ghostnet.packets.SendTxStatusSq
 	(*SendTxStatusCq)(nil),        // 26: ghostnet.packets.SendTxStatusCq
-	(*MasterPacket)(nil),          // 27: ghostnet.packets.MasterPacket
+	(*CheckRootFsSq)(nil),         // 27: ghostnet.packets.CheckRootFsSq
+	(*CheckRootFsCq)(nil),         // 28: ghostnet.packets.CheckRootFsCq
+	(*MasterPacket)(nil),          // 29: ghostnet.packets.MasterPacket
 }
 var file_block_packet_proto_depIdxs = []int32{
-	27, // 0: ghostnet.packets.GetHeightestBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 1: ghostnet.packets.GetHeightestBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 2: ghostnet.packets.NewBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 3: ghostnet.packets.NewBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 4: ghostnet.packets.GetBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 5: ghostnet.packets.GetBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 6: ghostnet.packets.SendBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 7: ghostnet.packets.SendBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 8: ghostnet.packets.SendTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 9: ghostnet.packets.SendTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 10: ghostnet.packets.SendDataTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 11: ghostnet.packets.SendDataTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 12: ghostnet.packets.SearchTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 13: ghostnet.packets.SearchTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 14: ghostnet.packets.GetDataTxIdListSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 15: ghostnet.packets.GetDataTxIdListCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 16: ghostnet.packets.SendDataTxIdListSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 17: ghostnet.packets.SendDataTxIdListCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 18: ghostnet.packets.GetBlockHashSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 19: ghostnet.packets.GetBlockHashCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 20: ghostnet.packets.SendBlockHashSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 21: ghostnet.packets.SendBlockHashCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 22: ghostnet.packets.GetTxStatusSq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 23: ghostnet.packets.GetTxStatusCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // 24: ghostnet.packets.SendTxStatusSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 0: ghostnet.packets.GetHeightestBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 1: ghostnet.packets.GetHeightestBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 2: ghostnet.packets.NewBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 3: ghostnet.packets.NewBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 4: ghostnet.packets.GetBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 5: ghostnet.packets.GetBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 6: ghostnet.packets.SendBlockSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 7: ghostnet.packets.SendBlockCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 8: ghostnet.packets.SendTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 9: ghostnet.packets.SendTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 10: ghostnet.packets.SendDataTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 11: ghostnet.packets.SendDataTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 12: ghostnet.packets.SearchTransactionSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 13: ghostnet.packets.SearchTransactionCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 14: ghostnet.packets.GetDataTxIdListSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 15: ghostnet.packets.GetDataTxIdListCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 16: ghostnet.packets.SendDataTxIdListSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 17: ghostnet.packets.SendDataTxIdListCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 18: ghostnet.packets.GetBlockHashSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 19: ghostnet.packets.GetBlockHashCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 20: ghostnet.packets.SendBlockHashSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 21: ghostnet.packets.SendBlockHashCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 22: ghostnet.packets.GetTxStatusSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 23: ghostnet.packets.GetTxStatusCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 24: ghostnet.packets.SendTxStatusSq.Master:type_name -> ghostnet.packets.MasterPacket
 	0,  // 25: ghostnet.packets.SendTxStatusSq.TxLoc:type_name -> ghostnet.packets.TxLocation
-	27, // 26: ghostnet.packets.SendTxStatusCq.Master:type_name -> ghostnet.packets.MasterPacket
-	27, // [27:27] is the sub-list for method output_type
-	27, // [27:27] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	29, // 26: ghostnet.packets.SendTxStatusCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 27: ghostnet.packets.CheckRootFsSq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // 28: ghostnet.packets.CheckRootFsCq.Master:type_name -> ghostnet.packets.MasterPacket
+	29, // [29:29] is the sub-list for method output_type
+	29, // [29:29] is the sub-list for method input_type
+	29, // [29:29] is the sub-list for extension type_name
+	29, // [29:29] is the sub-list for extension extendee
+	0,  // [0:29] is the sub-list for field type_name
 }
 
 func init() { file_block_packet_proto_init() }
@@ -2059,6 +2195,30 @@ func file_block_packet_proto_init() {
 				return nil
 			}
 		}
+		file_block_packet_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CheckRootFsSq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_block_packet_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CheckRootFsCq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -2066,7 +2226,7 @@ func file_block_packet_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_block_packet_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   26,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

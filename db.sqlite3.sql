@@ -155,6 +155,8 @@ CREATE TABLE IF NOT EXISTS "c_outputs" (
 	"Value"	integer,
 	"ScriptSize"	integer,
 	"Script"	blob,
+	"ScriptExSize"	integer,
+	"ScriptEx"	blob,
 	"OutputIndex"	integer,
 	PRIMARY KEY("Id" AUTOINCREMENT)
 );

@@ -54,9 +54,10 @@ func (gSql *GSqlite3) InsertCandidateTx(tx *types.GhostTransaction, poolId uint3
 	}
 	for i, output := range tx.Body.Vout {
 		gSql.InsertQuery(`INSERT INTO "c_outputs" 
-			("TxId","BlockId","ToAddr","BrokerAddr", "Type", "Value", "ScriptSize","Script",
+			("TxId","BlockId","ToAddr","BrokerAddr", "Type", "Value", "ScriptSize","Script", "ScriptExSize", "ScriptEx",
 			"OutputIndex") VALUES (?,?,?,? ,?,?,?,?, ?);
-			`, tx.TxId, poolId, output.Addr, output.BrokerAddr, output.Type, output.Value, output.ScriptSize, output.ScriptPubKey, i)
+			`, tx.TxId, poolId, output.Addr, output.BrokerAddr, output.Type, output.Value, output.ScriptSize, output.ScriptPubKey,
+			output.ScriptExSize, output.ScriptEx, i)
 	}
 }
 

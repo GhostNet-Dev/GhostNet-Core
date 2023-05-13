@@ -24,7 +24,8 @@ type GSql interface {
 	SelectBlockHeader(blockId uint32) (*types.GhostNetBlockHeader, *types.GhostNetDataBlockHeader)
 	CheckExistBlockId(blockId uint32) bool
 	CheckExistTxId(txId []byte) bool
-	CheckExistRefOutout(refTxId []byte, outIndex uint32, notTxId []byte) bool
+	CheckExistRefOutput(refTxId []byte, outIndex uint32, notTxId []byte) bool
+	CheckExistFsRoot(nickname []byte) bool
 	GetBlockHeight() uint32
 	SelectTxsPool(poolId uint32) []types.GhostTransaction
 	SelectDataTxsPool(poolId uint32) []types.GhostDataTransaction

@@ -14,12 +14,12 @@ import (
 )
 
 type ConnectMaster struct {
-	db              *store.LiteStore
-	udp             *p2p.UdpServer
-	wallet          *gcrypto.Wallet
-	table           string
-	eventChannel    chan bool
-	eventWait       bool
+	db           *store.LiteStore
+	udp          *p2p.UdpServer
+	wallet       *gcrypto.Wallet
+	table        string
+	eventChannel chan bool
+	eventWait    bool
 }
 
 const RootUrl = "www.ghostnetroot.com"
@@ -28,12 +28,12 @@ func NewConnectMaster(table string, db *store.LiteStore, packetFactory *p2p.Pack
 	udp *p2p.UdpServer, w *gcrypto.Wallet) *ConnectMaster {
 
 	conn := &ConnectMaster{
-		db:              db,
-		udp:             udp,
-		wallet:          w,
-		table:           table,
-		eventChannel:    make(chan bool),
-		eventWait:       false,
+		db:           db,
+		udp:          udp,
+		wallet:       w,
+		table:        table,
+		eventChannel: make(chan bool),
+		eventWait:    false,
 	}
 	conn.RegisterPacketHandler(packetFactory)
 	return conn

@@ -42,7 +42,11 @@ func (txContainer *TxContainer) GetTx(txId []byte) *types.GhostTransaction {
 }
 
 func (txContainer *TxContainer) CheckRefExist(refTxId []byte, outIndex uint32, notTxId []byte) bool {
-	return txContainer.gSql.CheckExistRefOutout(refTxId, outIndex, notTxId)
+	return txContainer.gSql.CheckExistRefOutput(refTxId, outIndex, notTxId)
+}
+
+func (txContainer *TxContainer) CheckExistFsRoot(nickname []byte) bool {
+	return txContainer.gSql.CheckExistFsRoot(nickname)
 }
 
 func (txContainer *TxContainer) GetMaxLogicalAddress(owner []byte) (uint64, error) {
