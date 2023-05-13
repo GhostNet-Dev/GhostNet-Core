@@ -64,7 +64,7 @@ func (gSql *GSqlite3) InsertCandidateTx(tx *types.GhostTransaction, poolId uint3
 func (gSql *GSqlite3) DeleteCandidatePool(poolId uint32) {
 	tables := []string{"c_transactions", "c_data_transactions", "c_inputs", "c_outputs"}
 	for _, table := range tables {
-		gSql.InsertQuery(fmt.Sprint("delete from ", table, " where BlockId =="), poolId)
+		gSql.InsertQuery(fmt.Sprint("delete from ", table, " where BlockId == ?"), poolId)
 	}
 }
 func (gSql *GSqlite3) deleteCandidateTx(txId []byte) {
