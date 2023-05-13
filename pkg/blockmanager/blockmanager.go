@@ -41,6 +41,7 @@ type BlockManager struct {
 
 	packetSqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo
 	packetCqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)
+	callback        func(bool)
 }
 
 func NewBlockManager(blockTick int, con *consensus.Consensus,
@@ -154,6 +155,7 @@ func (blockMgr *BlockManager) PrepareSendBlock(blockId uint32) (string, bool) {
 }
 
 func (blockMgr *BlockManager) DownloadDataTransaction(txByte []byte, dataTxByte []byte) bool {
+	blockMgr.glog.DebugOutput(blockMgr, "Tx with data Download Complete", glogger.Default)
 	tx := &types.GhostTransaction{}
 	if !tx.Deserialize(bytes.NewBuffer(txByte)).Result() {
 		return false
@@ -163,6 +165,7 @@ func (blockMgr *BlockManager) DownloadDataTransaction(txByte []byte, dataTxByte 
 		return false
 	}
 	if !blockMgr.tXs.TransactionValidation(tx, dataTx, blockMgr.blockContainer.TxContainer).Result() {
+		blockMgr.glog.DebugOutput(blockMgr, "Tx with data Validation Fail", glogger.Default)
 		return false
 	}
 	blockMgr.blockContainer.TxContainer.SaveCandidateTx(tx)
@@ -178,10 +181,11 @@ func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, c
 		return false
 	}
 	if !blockMgr.tXs.TransactionValidation(tx, nil, blockMgr.blockContainer.TxContainer).Result() {
+		blockMgr.glog.DebugOutput(blockMgr, "Tx Validation Fail", glogger.Default)
 		return false
 	}
 
-	if !blockMgr.CheckExistFSRoot(tx) {
+	if !blockMgr.checkExistFSRoot(tx) {
 		return false
 	}
 
@@ -190,12 +194,12 @@ func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, c
 	return true
 }
 
-func (blockMgr *BlockManager) CheckExistFSRoot(tx *types.GhostTransaction) bool {
+func (blockMgr *BlockManager) checkExistFSRoot(tx *types.GhostTransaction) bool {
 	// TODO: Check from Block.db
 	for _, output := range tx.Body.Vout {
 		if output.Type == types.TxTypeFSRoot {
 			nick := output.ScriptEx
-			if !blockMgr.accountContainer.AddBcAccount(nick, tx.TxId) {
+			if !blockMgr.blockContainer.TxContainer.CheckExistFsRoot(nick) {
 				return false
 			}
 		}
@@ -203,19 +207,21 @@ func (blockMgr *BlockManager) CheckExistFSRoot(tx *types.GhostTransaction) bool 
 	return true
 }
 
+func (blockMgr *BlockManager) RequestCheckExistFsRoot(nickname []byte, callback func(bool))  {
+	sq := packets.CheckRootFsSq{
+		Master:   p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Nickname: nickname,
+	}
+	sendData, err := proto.Marshal(&sq)
+	if err != nil {
+		log.Fatal(err)
+	}
+	blockMgr.callback = callback
+	blockMgr.master.SendToMasterNodeSq(packets.PacketThirdType_CheckRootFs, blockMgr.owner.GetPubAddress(),
+		sendData)
+}
+
 func (blockMgr *BlockManager) SaveExtraInformation(pairedBlock *types.PairedBlock) bool {
-	/*
-		for _, tx := range pairedBlock.Block.Transaction {
-			for _, output := range tx.Body.Vout {
-				if output.Type == types.TxTypeFSRoot {
-					nick := output.ScriptEx
-					if !blockMgr.accountContainer.AddBcAccount(nick, tx.TxId) {
-						return false
-					}
-				}
-			}
-		}
-	*/
 	return true
 }
 

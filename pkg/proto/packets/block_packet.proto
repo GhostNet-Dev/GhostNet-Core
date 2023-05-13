@@ -137,3 +137,14 @@ message SendTxStatusSq {
 message SendTxStatusCq {
     MasterPacket Master = 1;
 }
+
+message CheckRootFsSq {
+    MasterPacket Master = 1;
+    bytes Nickname = 2;
+}
+
+message CheckRootFsCq {
+    MasterPacket Master = 1;
+    bytes Nickname = 2;
+    bool Exist = 3;
+}

@@ -50,6 +50,7 @@ enum PacketThirdType {
     SendBlockPrevHash = 18;
     GetTxStatus = 19;
     SendTxStatus = 20;
+    CheckRootFs = 21;
 }
 
 enum RoutingType {

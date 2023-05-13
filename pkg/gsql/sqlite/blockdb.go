@@ -479,7 +479,7 @@ func (gSql *GSqlite3) CheckExistTxId(txId []byte) bool {
 	return count > 0
 }
 
-func (gSql *GSqlite3) CheckExistRefOutout(refTxId []byte, outIndex uint32, notTxId []byte) bool {
+func (gSql *GSqlite3) CheckExistRefOutput(refTxId []byte, outIndex uint32, notTxId []byte) bool {
 	var count uint32
 	query, err := gSql.db.Prepare(`select count(*) from outputs where 
 		TxId == ? and OutputIndex == ?`)
@@ -489,6 +489,23 @@ func (gSql *GSqlite3) CheckExistRefOutout(refTxId []byte, outIndex uint32, notTx
 	defer query.Close()
 
 	if err := query.QueryRow(refTxId, outIndex).Scan(&count); err == sql.ErrNoRows {
+		return false
+	} else if err != nil {
+		log.Print(err)
+	}
+	return count > 0
+}
+
+func (gSql *GSqlite3) CheckExistFsRoot(nickname []byte) bool {
+	var count uint32
+	query, err := gSql.db.Prepare(`select count(*) from outputs where 
+		ScriptEx == ?`)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	if err := query.QueryRow(nickname).Scan(&count); err == sql.ErrNoRows {
 		return false
 	} else if err != nil {
 		log.Print(err)
