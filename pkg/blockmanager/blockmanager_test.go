@@ -51,7 +51,7 @@ var (
 	block       = blocks.NewBlocks(blockContainer, tXs, 1)
 	con         = consensus.NewConsensus(blockContainer, block, glog)
 	fsm         = states.NewBlockMachine(blockContainer, con, glog)
-	blockServer = NewBlockManager(8, con, fsm, block, tXs, blockContainer, accountContainer, master, fileService, cloud, Miner, ghostIp, glog)
+	blockServer = NewBlockManager(8, con, fsm, block, tXs, blockContainer, accountContainer, master, fileService, cloud, w, glog)
 )
 
 func init() {

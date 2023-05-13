@@ -35,7 +35,7 @@ type BlockManager struct {
 	master           *gnetwork.MasterNetwork
 	fileService      *fileservice.FileService
 	cloud            *cloudservice.CloudService
-	owner            *gcrypto.GhostAddress
+	owner            *gcrypto.Wallet
 	localIpAddr      *ptypes.GhostIp
 	glog             *glogger.GLogger
 
@@ -53,8 +53,8 @@ func NewBlockManager(blockTick int, con *consensus.Consensus,
 	master *gnetwork.MasterNetwork,
 	fileService *fileservice.FileService,
 	cloud *cloudservice.CloudService,
-	user *gcrypto.GhostAddress,
-	myIpAddr *ptypes.GhostIp, glog *glogger.GLogger) *BlockManager {
+	user *gcrypto.Wallet,
+	glog *glogger.GLogger) *BlockManager {
 
 	blockMgr := &BlockManager{
 		BlockTick:        blockTick,
@@ -68,7 +68,6 @@ func NewBlockManager(blockTick int, con *consensus.Consensus,
 		fileService:      fileService,
 		cloud:            cloud,
 		owner:            user,
-		localIpAddr:      myIpAddr,
 		glog:             glog,
 		packetSqHandler:  make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo),
 		packetCqHandler:  make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)),
@@ -115,7 +114,7 @@ func (blockMgr *BlockManager) TriggerNewBlock() {
 	}
 	blockMgr.glog.DebugOutput(blockMgr, "Trigger New Block", glogger.BlockConsensus)
 	// miner와 creator는 동일하게 한다. 즉 creator만 mining을 할 수 있다.
-	newPairBlock := blockMgr.block.MakeNewBlock(blockMgr.owner, blockMgr.owner.Get160PubKey(), triggerTxCount)
+	newPairBlock := blockMgr.block.MakeNewBlock(blockMgr.owner.GetGhostAddress(), blockMgr.owner.GetGhostAddress().Get160PubKey(), triggerTxCount)
 	if newPairBlock == nil {
 		return
 	}
@@ -225,8 +224,8 @@ func (blockMgr *BlockManager) RequestCheckExistFsRoot(nickname []byte, callback 
 		log.Fatal(err)
 	}
 	blockMgr.callback = callback
-	blockMgr.master.SendToMasterNodeSq(packets.PacketThirdType_CheckRootFs, blockMgr.owner.GetPubAddress(),
-		sendData)
+	blockMgr.master.SendToMasterNodeSq(packets.PacketThirdType_CheckRootFs,
+		blockMgr.owner.GetMasterNode().PubKey, sendData)
 }
 
 func (blockMgr *BlockManager) SaveExtraInformation(pairedBlock *types.PairedBlock) bool {

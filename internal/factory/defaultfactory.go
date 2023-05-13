@@ -94,7 +94,7 @@ func NewDefaultFactory(networkFactory *NetworkFactory, bootFactory *BootFactory,
 	factory.Con = consensus.NewConsensus(factory.BlockContainer, factory.Block, factory.glog)
 	factory.Fsm = states.NewBlockMachine(factory.BlockContainer, factory.Con, factory.glog)
 	factory.BlockServer = blockmanager.NewBlockManager(config.BlockTickInterval, factory.Con, factory.Fsm, factory.Block,
-		factory.Txs, factory.BlockContainer, factory.AccountContainer, factory.Master, factory.FileService, factory.Cloud, user.GetGhostAddress(), ghostIp, factory.glog)
+		factory.Txs, factory.BlockContainer, factory.AccountContainer, factory.Master, factory.FileService, factory.Cloud, user, factory.glog)
 	factory.BlockIo = blockfilesystem.NewBlockIo(factory.BlockServer,
 		factory.BlockContainer, factory.Txs, factory.Cloud)
 
