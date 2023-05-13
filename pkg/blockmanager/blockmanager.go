@@ -206,7 +206,7 @@ func (blockMgr *BlockManager) checkExistFSRoot(tx *types.GhostTransaction) bool 
 	for _, output := range tx.Body.Vout {
 		if output.Type == types.TxTypeFSRoot {
 			nick := output.ScriptEx
-			if !blockMgr.blockContainer.TxContainer.CheckExistFsRoot(nick) {
+			if blockMgr.blockContainer.TxContainer.CheckExistFsRoot(nick) {
 				return false
 			}
 		}
