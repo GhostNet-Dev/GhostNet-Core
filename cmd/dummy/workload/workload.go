@@ -65,12 +65,17 @@ func (worker *Workload) LoadWorker(masterNode *ptypes.GhostUser) {
 
 func (w *Workload) PrepareRun() {
 	w.Running = true
-	if exist, err := w.CheckAccountTx(); !exist && err == nil {
-		w.MakeAccountTx()
-	} else if exist {
-		w.MakeDataTx()
-	} else {
-		w.glog.DebugOutput(w, err.Error(), glogger.Default)
+	for {
+		if exist, err := w.CheckAccountTx(); !exist && err == nil {
+			w.MakeAccountTx()
+		} else if exist {
+			w.MakeDataTx()
+			break
+		} else {
+			w.glog.DebugOutput(w, err.Error(), glogger.Default)
+			break
+		}
+		time.Sleep(time.Second * 3)
 	}
 }
 

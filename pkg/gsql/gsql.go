@@ -44,6 +44,7 @@ type GCandidateSql interface {
 	GetMinPoolId() uint32
 	GetMaxPoolId() uint32
 	UpdatePoolId(oldPoolId uint32, newPoolId uint32)
+	CheckExistCandidateTxId(txId []byte) bool
 }
 
 type MasterNodeStore interface {

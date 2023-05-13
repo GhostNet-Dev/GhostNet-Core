@@ -107,7 +107,7 @@ func (gSql *GSqlite3) SelectTxsPool(poolId uint32) (txs []types.GhostTransaction
 	if err != nil {
 		log.Fatal(err)
 	}
-	txs, dirtyTxs := gSql.GetCandidateTxRows(rows)
+	txs, dirtyTxs := gSql.getCandidateTxRows(rows)
 	rows.Close()
 	for _, tx := range dirtyTxs {
 		gSql.deleteCandidateTx(tx.TxId)
@@ -124,10 +124,10 @@ func (gSql *GSqlite3) SelectDataTxsPool(poolId uint32) []types.GhostDataTransact
 	}
 	defer rows.Close()
 
-	return gSql.GetCandidateDataTxRows(rows)
+	return gSql.getCandidateDataTxRows(rows)
 }
 
-func (gSql *GSqlite3) SelectCandidateInputs(TxId []byte, count uint32) []types.TxInput {
+func (gSql *GSqlite3) selectCandidateInputs(TxId []byte, count uint32) []types.TxInput {
 	inputs := make([]types.TxInput, count)
 
 	rows, err := gSql.db.Query(`select prev_TxId, prev_OutIndex, Sequence, ScriptSize, Script
@@ -157,7 +157,7 @@ func (gSql *GSqlite3) SelectCandidateInputs(TxId []byte, count uint32) []types.T
 	return inputs
 }
 
-func (gSql *GSqlite3) SelectCandidateOutputs(TxId []byte, count uint32) []types.TxOutput {
+func (gSql *GSqlite3) selectCandidateOutputs(TxId []byte, count uint32) []types.TxOutput {
 	outputs := make([]types.TxOutput, count)
 
 	rows, err := gSql.db.Query(`select ToAddr, BrokerAddr, Script, ScriptSize, Type, Value from c_outputs 
@@ -184,18 +184,34 @@ func (gSql *GSqlite3) SelectCandidateOutputs(TxId []byte, count uint32) []types.
 	return outputs
 }
 
-func (gSql *GSqlite3) GetCandidateTxRows(rows *sql.Rows) (txs, dirtyTxs []types.GhostTransaction) {
+func (gSql *GSqlite3) CheckExistCandidateTxId(txId []byte) bool {
+	var count uint32
+	query, err := gSql.db.Prepare("select count(*) from c_transactions where TxId = ?")
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	if err := query.QueryRow(txId).Scan(&count); err == sql.ErrNoRows {
+		return false
+	} else if err != nil {
+		log.Print(err)
+	}
+	return count > 0
+}
+
+func (gSql *GSqlite3) getCandidateTxRows(rows *sql.Rows) (txs, dirtyTxs []types.GhostTransaction) {
 	for rows.Next() {
 		tx := types.GhostTransaction{}
 		if err := rows.Scan(&tx.TxId, &tx.Body.InputCounter, &tx.Body.OutputCounter,
 			&tx.Body.Nonce, &tx.Body.LockTime); err != nil {
 			log.Fatal(err)
 		}
-		if tx.Body.Vin = gSql.SelectCandidateInputs(tx.TxId, tx.Body.InputCounter); tx.Body.InputCounter > 0 && tx.Body.Vin == nil {
+		if tx.Body.Vin = gSql.selectCandidateInputs(tx.TxId, tx.Body.InputCounter); tx.Body.InputCounter > 0 && tx.Body.Vin == nil {
 			dirtyTxs = append(dirtyTxs, tx)
 			continue
 		}
-		if tx.Body.Vout = gSql.SelectCandidateOutputs(tx.TxId, tx.Body.OutputCounter); tx.Body.OutputCounter > 0 && tx.Body.Vout == nil {
+		if tx.Body.Vout = gSql.selectCandidateOutputs(tx.TxId, tx.Body.OutputCounter); tx.Body.OutputCounter > 0 && tx.Body.Vout == nil {
 			dirtyTxs = append(dirtyTxs, tx)
 			continue
 		}
@@ -208,7 +224,7 @@ func (gSql *GSqlite3) GetCandidateTxRows(rows *sql.Rows) (txs, dirtyTxs []types.
 	return txs, dirtyTxs
 }
 
-func (gSql *GSqlite3) GetCandidateDataTxRows(rows *sql.Rows) []types.GhostDataTransaction {
+func (gSql *GSqlite3) getCandidateDataTxRows(rows *sql.Rows) []types.GhostDataTransaction {
 	dataTxs := []types.GhostDataTransaction{}
 	for rows.Next() {
 		dataTx := types.GhostDataTransaction{}

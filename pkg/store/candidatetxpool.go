@@ -33,6 +33,10 @@ func (txContainer *TxContainer) GetCandidateTxPool() *CandidateTxPool {
 	return txContainer.CandidateTxPools.Pop().(*CandidateTxPool)
 }
 
+func (txContainer *TxContainer) CheckExistCandidateTxId(txId []byte) bool {
+	return txContainer.gCandidateSql.CheckExistCandidateTxId(txId)
+}
+
 func (txContainer *TxContainer) MakeCandidateTrPool(blockId uint32, minTxCount uint32) *CandidateTxPool {
 	minPoolId := txContainer.gCandidateSql.GetMinPoolId()
 	if txContainer.CurrentPoolId-minPoolId > 5 {

@@ -164,6 +164,10 @@ func (blockMgr *BlockManager) DownloadDataTransaction(txByte []byte, dataTxByte 
 	if !dataTx.Deserialize(bytes.NewBuffer(dataTxByte)).Result() {
 		return false
 	}
+	if blockMgr.blockContainer.TxContainer.CheckExistCandidateTxId(tx.TxId) {
+		blockMgr.glog.DebugOutput(blockMgr, "Already candidate Tx", glogger.Default)
+		return false
+	}
 	if !blockMgr.tXs.TransactionValidation(tx, dataTx, blockMgr.blockContainer.TxContainer).Result() {
 		blockMgr.glog.DebugOutput(blockMgr, "Tx with data Validation Fail", glogger.Default)
 		return false
@@ -178,6 +182,10 @@ func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, c
 	blockMgr.glog.DebugOutput(blockMgr, "Tx Download Complete", glogger.Default)
 	tx := &types.GhostTransaction{}
 	if !tx.Deserialize(bytes.NewBuffer(obj.Buffer)).Result() {
+		return false
+	}
+	if blockMgr.blockContainer.TxContainer.CheckExistCandidateTxId(tx.TxId) {
+		blockMgr.glog.DebugOutput(blockMgr, "Already candidate Tx", glogger.Default)
 		return false
 	}
 	if !blockMgr.tXs.TransactionValidation(tx, nil, blockMgr.blockContainer.TxContainer).Result() {
@@ -207,7 +215,7 @@ func (blockMgr *BlockManager) checkExistFSRoot(tx *types.GhostTransaction) bool 
 	return true
 }
 
-func (blockMgr *BlockManager) RequestCheckExistFsRoot(nickname []byte, callback func(bool))  {
+func (blockMgr *BlockManager) RequestCheckExistFsRoot(nickname []byte, callback func(bool)) {
 	sq := packets.CheckRootFsSq{
 		Master:   p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
 		Nickname: nickname,

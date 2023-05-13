@@ -61,13 +61,17 @@ func (worker *WorkloadFs) LoadWorker(masterNode *ptypes.GhostUser) {
 
 func (w *WorkloadFs) PrepareRun() {
 	w.Running = true
-	if exist, err := w.CheckAccountTx(); !exist && err == nil {
-		if w.blockIoHandler = w.blockIo.OpenFilesystem(w.wallet); w.blockIoHandler == nil {
+	for {
+		if exist, err := w.CheckAccountTx(); !exist && err == nil {
+			if w.blockIoHandler = w.blockIo.OpenFilesystem(w.wallet); w.blockIoHandler == nil {
+				w.blockIoHandler = w.blockIo.CreateFilesystem(w.wallet)
+			}
+		} else {
 			w.blockIoHandler = w.blockIo.CreateFilesystem(w.wallet)
+			w.blockIoHandler.WriteData([]byte("worker1"), w.MakeDummyFile())
+			break
 		}
-	} else {
-		w.blockIoHandler = w.blockIo.CreateFilesystem(w.wallet)
-		w.blockIoHandler.WriteData([]byte("worker1"), w.MakeDummyFile())
+		time.Sleep(time.Second * 3)
 	}
 }
 
