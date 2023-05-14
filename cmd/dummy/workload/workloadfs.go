@@ -67,7 +67,10 @@ func (w *WorkloadFs) PrepareRun() {
 				w.blockIoHandler = w.blockIo.CreateFilesystem(w.wallet)
 			}
 		} else {
-			w.blockIoHandler = w.blockIo.CreateFilesystem(w.wallet)
+			w.blockIoHandler = w.blockIo.OpenFilesystem(w.wallet)
+			if w.blockIoHandler == nil {
+				continue
+			}
 			w.blockIoHandler.WriteData([]byte("worker1"), w.MakeDummyFile())
 			break
 		}
