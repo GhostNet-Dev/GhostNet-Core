@@ -432,8 +432,8 @@ func (gSql *GSqlite3) GetMaxLogicalAddress(toAddr []byte) (maxLogicalAddr uint64
 func (gSql *GSqlite3) GetIssuedCoin(blockId uint32) uint64 {
 	var coin uint64
 	query, err := gSql.db.Prepare(`select sum(Value) from outputs 
-	left outer join transactions on outputs.TxId = transaction.TxId
-	where transaction.Type = ? and transaction.BlockId = ?`)
+	left outer join transactions on outputs.TxId = transactions.TxId
+	where transactions.Type = ? and transactions.BlockId = ?`)
 	if err != nil {
 		log.Printf("%s", err)
 	}
