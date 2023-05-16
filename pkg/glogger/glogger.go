@@ -109,12 +109,14 @@ func formatTimeHeader(buf *[]byte, t time.Time, file string, line int) {
 	itoa(buf, day, 2)
 	*buf = append(*buf, ' ')
 	//time
-	hour, min, sec := t.Clock()
+	hour, min, _ /*sec*/ := t.Clock()
 	itoa(buf, hour, 2)
 	*buf = append(*buf, ':')
 	itoa(buf, min, 2)
-	*buf = append(*buf, ':')
-	itoa(buf, sec, 2)
+	/*
+		*buf = append(*buf, ':')
+		itoa(buf, sec, 2)
+	*/
 	*buf = append(*buf, ' ')
 	//file line
 	*buf = append(*buf, Green...)
