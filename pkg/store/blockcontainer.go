@@ -22,8 +22,8 @@ type BlockContainer struct {
 
 	schemeSqlFilePath    string
 	dbFilePath           string
-	newBlockEventHandler func(*types.PairedBlock)
-	delBlockEventHandler func(*types.PairedBlock)
+	newBlockEventHandler []func(*types.PairedBlock)
+	delBlockEventHandler []func(*types.PairedBlock)
 }
 
 func NewBlockContainer(dbType string) *BlockContainer {
@@ -31,10 +31,12 @@ func NewBlockContainer(dbType string) *BlockContainer {
 	gm := gsql.NewMergeGSql(dbType)
 	gCandidate := g.(gsql.GCandidateSql) // gsql.NewGCandidateSql("sqlite3")
 	bc := &BlockContainer{
-		gSql:             g,
-		gMergeSql:        gm,
-		TxContainer:      NewTxContainer(g, gCandidate),
-		MergeTxContainer: NewTxContainer(gm, nil),
+		gSql:                 g,
+		gMergeSql:            gm,
+		TxContainer:          NewTxContainer(g, gCandidate),
+		MergeTxContainer:     NewTxContainer(gm, nil),
+		newBlockEventHandler: make([]func(*types.PairedBlock), 0),
+		delBlockEventHandler: make([]func(*types.PairedBlock), 0),
 	}
 	bc.CandidateBlk = NewCandidateBlock(g, gm, bc)
 
@@ -43,8 +45,8 @@ func NewBlockContainer(dbType string) *BlockContainer {
 
 func (blockContainer *BlockContainer) RegisterBlockEvent(newBlockEvent func(*types.PairedBlock),
 	delBlockEvent func(*types.PairedBlock)) {
-	blockContainer.newBlockEventHandler = newBlockEvent
-	blockContainer.delBlockEventHandler = delBlockEvent
+	blockContainer.newBlockEventHandler = append(blockContainer.newBlockEventHandler, newBlockEvent)
+	blockContainer.delBlockEventHandler = append(blockContainer.delBlockEventHandler, delBlockEvent)
 }
 
 func (blockContainer *BlockContainer) BlockContainerOpen(schemeSqlFilePath string, dbFilePath string) {
@@ -96,18 +98,20 @@ func (blockContainer *BlockContainer) GetIssuedCoinOnBlock(blockId uint32) uint6
 }
 
 func (blockContainer *BlockContainer) InsertBlock(pairedBlock *types.PairedBlock) {
-	if blockContainer.newBlockEventHandler != nil {
-		blockContainer.newBlockEventHandler(pairedBlock)
+	for _, handler := range blockContainer.newBlockEventHandler {
+		handler(pairedBlock)
 	}
 	blockContainer.gSql.InsertBlock(pairedBlock)
 }
 
 func (blockContainer *BlockContainer) DeleteAfterTargetId(blockId uint32) {
-	if blockContainer.delBlockEventHandler != nil {
+	if len(blockContainer.delBlockEventHandler) > 0 {
 		height := blockContainer.BlockHeight()
 		for i := blockId; i < height; i++ {
 			pairedBlock := blockContainer.GetBlock(blockId)
-			blockContainer.delBlockEventHandler(pairedBlock)
+			for _, handler := range blockContainer.delBlockEventHandler {
+				handler(pairedBlock)
+			}
 		}
 	}
 	blockContainer.gSql.DeleteAfterTargetId(blockId)
