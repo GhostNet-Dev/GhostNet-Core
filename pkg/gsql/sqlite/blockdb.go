@@ -261,7 +261,7 @@ func (gSql *GSqlite3) SelectTx(TxId []byte) (tx *types.GhostTransaction, blockId
 		return nil, 0
 	}
 
-	tx.TxId = TxId
+	tx = &types.GhostTransaction{TxId: TxId}
 	rows, err := gSql.db.Query(`select BlockId, InputCounter, OutputCounter, Nonce, LockTime from transactions tx 
 		where TxId = ? order by TxIndex`, TxId)
 	if err != nil {
