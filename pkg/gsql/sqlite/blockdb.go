@@ -256,14 +256,13 @@ func (gSql *GSqlite3) SelectTxs(blockId uint32, txType uint32) []types.GhostTran
 }
 
 // SelectTx 역시나 여긴 인터페이스 역할을하고 아래 쿼리들은 하위 클래스에 할당해야할 것 같음
-func (gSql *GSqlite3) SelectTx(TxId []byte) *types.GhostTransaction {
+func (gSql *GSqlite3) SelectTx(TxId []byte) (tx *types.GhostTransaction, blockId uint32) {
 	if ok := gSql.CheckExistTxId(TxId); !ok {
-		return nil
+		return nil, 0
 	}
 
-	tx := types.GhostTransaction{TxId: TxId}
-
-	rows, err := gSql.db.Query(`select InputCounter, OutputCounter, Nonce, LockTime from transactions tx 
+	tx.TxId = TxId
+	rows, err := gSql.db.Query(`select BlockId, InputCounter, OutputCounter, Nonce, LockTime from transactions tx 
 		where TxId = ? order by TxIndex`, TxId)
 	if err != nil {
 		log.Fatal(err)
@@ -271,7 +270,7 @@ func (gSql *GSqlite3) SelectTx(TxId []byte) *types.GhostTransaction {
 	defer rows.Close()
 
 	for rows.Next() {
-		if err = rows.Scan(&tx.Body.InputCounter, &tx.Body.OutputCounter,
+		if err = rows.Scan(&blockId, &tx.Body.InputCounter, &tx.Body.OutputCounter,
 			&tx.Body.Nonce, &tx.Body.LockTime); err != nil {
 			log.Fatal(err)
 		}
@@ -284,7 +283,7 @@ func (gSql *GSqlite3) SelectTx(TxId []byte) *types.GhostTransaction {
 	tx.Body.Vin = gSql.SelectInputs(TxId, tx.Body.InputCounter)
 	tx.Body.Vout = gSql.SelectOutputs(TxId, tx.Body.OutputCounter)
 
-	return &tx
+	return tx, blockId
 }
 
 func (gSql *GSqlite3) SelectInputs(TxId []byte, count uint32) []types.TxInput {

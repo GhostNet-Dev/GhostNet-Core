@@ -35,7 +35,7 @@ func TestSqlInsertAndSelectCheck(t *testing.T) {
 	}
 	tx := MakeTx()
 	gSql.InsertTx(0, &tx, 0, 0)
-	newTx := gSql.SelectTx(tx.TxId)
+	newTx, _ := gSql.SelectTx(tx.TxId)
 	size := tx.Size()
 	sizeNew := newTx.Size()
 

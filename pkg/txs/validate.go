@@ -80,7 +80,7 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 		for _, input := range tx.Body.Vin {
 			prevOutpointer := input.PrevOut
 			// Check Validate TxId
-			prevTx := txContainer.GetTx(prevOutpointer.TxId)
+			prevTx, _ := txContainer.GetTx(prevOutpointer.TxId)
 			if prevTx == nil {
 				return &TxChkResult{TxChkResult_MissingRefTx}
 			}
@@ -166,11 +166,11 @@ func (txs *TXs) TransactionMergeValidation(tx *types.GhostTransaction, dataTx *t
 		for _, input := range tx.Body.Vin {
 			prevOutpointer := input.PrevOut
 			// Check Validate TxId
-			prevTx := txContainer.GetTx(prevOutpointer.TxId)
+			prevTx, _ := txContainer.GetTx(prevOutpointer.TxId)
 			if prevTx == nil {
 				//TODO: need to separate between normal validate and merge validate
 				if mergeTxContainer != nil {
-					if prevTx = mergeTxContainer.GetTx(prevOutpointer.TxId); prevTx == nil {
+					if prevTx, _ = mergeTxContainer.GetTx(prevOutpointer.TxId); prevTx == nil {
 						return &TxChkResult{TxChkResult_MissingRefTx}
 					}
 				} else {

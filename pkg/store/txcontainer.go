@@ -37,7 +37,7 @@ func (txContainer *TxContainer) CheckExistTxId(txId []byte) bool {
 	return txContainer.gSql.CheckExistTxId(txId)
 }
 
-func (txContainer *TxContainer) GetTx(txId []byte) *types.GhostTransaction {
+func (txContainer *TxContainer) GetTx(txId []byte) (*types.GhostTransaction, uint32) {
 	return txContainer.gSql.SelectTx(txId)
 }
 
