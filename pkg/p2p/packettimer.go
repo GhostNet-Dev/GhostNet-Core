@@ -91,7 +91,7 @@ func (packetTimer *PacketTimer) ReleaseSqPacket(requestId []byte) {
 	}
 	packetTimer.mutex.Unlock()
 
-	if req.response.Callback != nil {
+	if req != nil && req.response.Callback != nil {
 		req.response.Callback(true)
 	}
 }
