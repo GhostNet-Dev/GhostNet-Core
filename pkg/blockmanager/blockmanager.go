@@ -42,6 +42,7 @@ type BlockManager struct {
 	packetSqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo
 	packetCqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)
 	callback        func(bool)
+	newBlockTrigger bool
 }
 
 func NewBlockManager(blockTick int, con *consensus.Consensus,
@@ -71,6 +72,7 @@ func NewBlockManager(blockTick int, con *consensus.Consensus,
 		glog:             glog,
 		packetSqHandler:  make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr) []p2p.ResponseHeaderInfo),
 		packetCqHandler:  make(map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)),
+		newBlockTrigger:  false,
 	}
 
 	fsm.BlockServer = blockMgr
@@ -110,6 +112,12 @@ func (blockMgr *BlockManager) BlockSync() bool {
 func (blockMgr *BlockManager) TriggerNewBlock() {
 	result, triggerTxCount := blockMgr.consensus.CheckTriggerNewBlock()
 	if !blockMgr.fsm.CheckAcceptNewBlock() || !result {
+		return
+	}
+	if !blockMgr.newBlockTrigger {
+		blockMgr.newBlockTrigger = true
+		defer func() { blockMgr.newBlockTrigger = false }()
+	} else {
 		return
 	}
 	blockMgr.glog.DebugOutput(blockMgr, "Trigger New Block", glogger.BlockConsensus)
