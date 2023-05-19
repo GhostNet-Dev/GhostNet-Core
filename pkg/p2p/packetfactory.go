@@ -33,9 +33,13 @@ func NewPacketFactory() *PacketFactory {
 	}
 }
 
+func NewRequestId() []byte {
+	return xid.New().Bytes()
+}
+
 func MakeMasterPacket(from string, reqId []byte, clientId uint32, fromIp *ptypes.GhostIp) *packets.MasterPacket {
 	if reqId == nil {
-		reqId = xid.New().Bytes()
+		reqId = NewRequestId()
 	}
 	return &packets.MasterPacket{
 		Common: &packets.GhostPacket{
