@@ -69,6 +69,9 @@ func (packetTimer *PacketTimer) RetryPacket(req *TimerEntry) {
 func (packetTimer *PacketTimer) RegisterSqPacket(header *ResponseHeaderInfo) {
 	packetTimer.mutex.Lock()
 	defer packetTimer.mutex.Unlock()
+	if _, exist := packetTimer.packetPool[string(header.RequestId)]; exist {
+		return
+	}
 	entry := &TimerEntry{
 		response:  header,
 		time:      time.Now().Unix(),

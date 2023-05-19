@@ -21,7 +21,7 @@ func (fileService *FileService) RequestFileSq(requestHeaderInfo *p2p.RequestHead
 		return []p2p.ResponseHeaderInfo{*fileService.makeFileInfo(sq, header.Source.GetUdpAddr())}
 	case packets.FileRequestType_GetFileData:
 		fileObj, exist := fileService.fileObjManager.GetFileObject(sq.Filename)
-		if exist == false {
+		if !exist {
 			return nil
 		}
 

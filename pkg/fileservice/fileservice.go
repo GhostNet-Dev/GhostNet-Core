@@ -175,6 +175,7 @@ func (fileService *FileService) makeFileInfo(sq *packets.RequestFilePacketSq, ip
 		PacketType: packets.PacketType_FileTransfer,
 		SecondType: packets.PacketSecondType_RequestFile,
 		ThirdType:  packets.PacketThirdType_Reserved1,
+		RequestId:  cq.Master.GetRequestId(),
 		SqFlag:     false,
 		PacketData: sendData,
 	}
