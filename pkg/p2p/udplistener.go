@@ -204,6 +204,10 @@ func (udp *UdpServer) TranslationToHeader(sendInfo *ResponseHeaderInfo) *packets
 	}
 }
 
+func (udp *UdpServer) RegisterPacketTimer(sendInfo *ResponseHeaderInfo) {
+	udp.PacketTimer.RegisterSqPacket(sendInfo)
+}
+
 func (udp *UdpServer) SendPacket(sendInfo *ResponseHeaderInfo, ipAddr *ptypes.GhostIp) {
 	to, _ := net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
 	udp.SendUdpPacket(sendInfo, to)

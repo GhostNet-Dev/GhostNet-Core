@@ -199,6 +199,7 @@ func (master *MasterNetwork) SendToMasterNodeGrpSq(routingType packets.RoutingTy
 		log.Fatal("PacketType not defined.")
 	}
 	// p2p.PacketHeaderInfo -> packets.Header
+	master.udp.RegisterPacketTimer(headerInfo)
 	header := master.udp.TranslationToHeader(headerInfo)
 	packetList := master.makeForwadingPacket(routingType, level, header)
 	for _, packet := range packetList {
