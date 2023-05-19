@@ -121,7 +121,7 @@ func (fileService *FileService) loadFileToMemory(filename string) *FileObject {
 func (fileService *FileService) sendGetFileInfo(filename string, ipAddr *net.UDPAddr,
 	callback DoneHandler, context interface{}) {
 	sq := &packets.RequestFilePacketSq{
-		Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
+		Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), nil, 0, fileService.localAddr),
 		RequestType: packets.FileRequestType_GetFileInfo,
 		Filename:    filename,
 	}
@@ -138,13 +138,15 @@ func (fileService *FileService) sendGetFileInfo(filename string, ipAddr *net.UDP
 		PacketType: packets.PacketType_FileTransfer,
 		SecondType: packets.PacketSecondType_RequestFile,
 		ThirdType:  packets.PacketThirdType_Reserved1,
+		RequestId:  sq.Master.GetRequestId(),
 		SqFlag:     true,
 		PacketData: sendData,
 	}, ipAddr)
 }
 
 // makeFileInfo -> RequestFilePacketCq
-func (fileService *FileService) makeFileInfo(filename string, ipAddr *net.UDPAddr) *p2p.ResponseHeaderInfo {
+func (fileService *FileService) makeFileInfo(sq *packets.RequestFilePacketSq, ipAddr *net.UDPAddr) *p2p.ResponseHeaderInfo {
+	filename := sq.Filename
 	fileObj, exist := fileService.fileObjManager.GetFileObject(filename)
 
 	if !exist {
@@ -154,7 +156,7 @@ func (fileService *FileService) makeFileInfo(filename string, ipAddr *net.UDPAdd
 	}
 
 	cq := &packets.RequestFilePacketCq{
-		Master:   p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
+		Master:   p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, fileService.localAddr),
 		Filename: filename,
 		Result:   exist,
 	}
@@ -230,7 +232,7 @@ func (fileService *FileService) sendFileData(filename string, startPos uint64, s
 	}
 
 	sq := &packets.ResponseFilePacketSq{
-		Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
+		Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), nil, 0, fileService.localAddr),
 		Filename:    filename,
 		StartPos:    startPos,
 		FileData:    buf,
@@ -249,6 +251,7 @@ func (fileService *FileService) sendFileData(filename string, startPos uint64, s
 		PacketType: packets.PacketType_FileTransfer,
 		SecondType: packets.PacketSecondType_ResponseFile,
 		ThirdType:  packets.PacketThirdType_Reserved1,
+		RequestId:  sq.Master.GetRequestId(),
 		SqFlag:     true,
 		PacketData: sendData,
 	}

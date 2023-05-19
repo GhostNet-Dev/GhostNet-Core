@@ -117,7 +117,7 @@ func (conn *ConnectMaster) WaitEvent() (timeout bool) {
 
 func (conn *ConnectMaster) GetGhostNetVersion(masterNode *ptypes.GhostUser) {
 	sq := &packets.VersionInfoSq{
-		Master: p2p.MakeMasterPacket(conn.wallet.GetGhostAddress().GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),
+		Master: p2p.MakeMasterPacket(conn.wallet.GetGhostAddress().GetPubAddress(), nil, 0, conn.udp.GetLocalIp()),
 	}
 	sendData, err := proto.Marshal(sq)
 	if err != nil {
@@ -127,6 +127,7 @@ func (conn *ConnectMaster) GetGhostNetVersion(masterNode *ptypes.GhostUser) {
 		ToAddr:     masterNode.Ip.GetUdpAddr(),
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_GetGhostNetVersion,
+		RequestId:  sq.Master.GetRequestId(),
 		PacketData: sendData,
 		SqFlag:     true,
 	}
@@ -135,7 +136,7 @@ func (conn *ConnectMaster) GetGhostNetVersion(masterNode *ptypes.GhostUser) {
 
 func (conn *ConnectMaster) ConnectToMaster(masterNode *ptypes.GhostUser) {
 	sq := &packets.MasterNodeUserInfoSq{
-		Master: p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),
+		Master: p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), nil, 0, conn.udp.GetLocalIp()),
 		User:   conn.wallet.GetGhostUser(),
 	}
 	sendData, err := proto.Marshal(sq)
@@ -146,6 +147,7 @@ func (conn *ConnectMaster) ConnectToMaster(masterNode *ptypes.GhostUser) {
 		ToAddr:     masterNode.Ip.GetUdpAddr(),
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_ConnectToMasterNode,
+		RequestId:  sq.Master.GetRequestId(),
 		PacketData: sendData,
 		SqFlag:     true,
 	}
@@ -154,7 +156,7 @@ func (conn *ConnectMaster) ConnectToMaster(masterNode *ptypes.GhostUser) {
 
 func (conn *ConnectMaster) RequestMasterNodesToAdam() {
 	sq := &packets.RequestMasterNodeListSq{
-		Master:     p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),
+		Master:     p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), nil, 0, conn.udp.GetLocalIp()),
 		StartIndex: 0,
 	}
 	sendData, err := proto.Marshal(sq)
@@ -165,6 +167,7 @@ func (conn *ConnectMaster) RequestMasterNodesToAdam() {
 		ToAddr:     GetRootIpAddress(),
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_RequestMasterNodeList,
+		RequestId:  sq.Master.GetRequestId(),
 		PacketData: sendData,
 		SqFlag:     true,
 	}
@@ -227,7 +230,7 @@ func (conn *ConnectMaster) ResponseMasterNodeListSq(requestHeaderInfo *p2p.Reque
 	}
 
 	cq := packets.ResponseMasterNodeListCq{
-		Master: p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),
+		Master: p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), sq.Master.GetRequestId(), 0, conn.udp.GetLocalIp()),
 	}
 
 	sendData, err := proto.Marshal(&cq)

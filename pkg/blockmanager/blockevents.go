@@ -13,7 +13,7 @@ import (
 
 func (blockMgr *BlockManager) BroadcastBlockChainNotification() {
 	sq := packets.GetHeightestBlockSq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
 	}
 	sendData, err := proto.Marshal(&sq)
 	if err != nil {
@@ -23,6 +23,7 @@ func (blockMgr *BlockManager) BroadcastBlockChainNotification() {
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_BlockChain,
 		ThirdType:  packets.PacketThirdType_GetHeightestBlock,
+		RequestId:  sq.Master.GetRequestId(),
 		PacketData: sendData,
 		SqFlag:     true,
 	}
@@ -39,26 +40,26 @@ func (blockMgr *BlockManager) MiningStop() {
 
 func (blockMgr *BlockManager) RequestGetBlock(pubKey string, blockIdx uint32) {
 	sq := packets.GetBlockSq{
-		Master:  p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master:  p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
 		BlockId: blockIdx,
 	}
 	sendData, err := proto.Marshal(&sq)
 	if err != nil {
 		log.Fatal(err)
 	}
-	blockMgr.master.SendToMasterNodeSq(packets.PacketThirdType_GetBlock, pubKey, sendData)
+	blockMgr.master.SendToMasterNodeSq(packets.PacketThirdType_GetBlock, pubKey, sendData, sq.Master.GetRequestId())
 }
 
 func (blockMgr *BlockManager) RequestGetBlockHash(pubKey string, blockIdx uint32) {
 	sq := packets.GetBlockHashSq{
-		Master:  p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master:  p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
 		BlockId: blockIdx,
 	}
 	sendData, err := proto.Marshal(&sq)
 	if err != nil {
 		log.Fatal(err)
 	}
-	blockMgr.master.SendToMasterNodeSq(packets.PacketThirdType_GetBlockHash, pubKey, sendData)
+	blockMgr.master.SendToMasterNodeSq(packets.PacketThirdType_GetBlockHash, pubKey, sendData, sq.Master.GetRequestId())
 }
 
 func (blockMgr *BlockManager) MergeErrorNotification(pubKey string, result bool) {

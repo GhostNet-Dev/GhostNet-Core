@@ -14,12 +14,13 @@ import (
 )
 
 type UdpServer struct {
-	UdpConn   *net.UDPConn
-	Pf        *PacketFactory
-	glog      *glogger.GLogger
-	Ip        string
-	Port      string
-	StartFlag bool
+	UdpConn     *net.UDPConn
+	Pf          *PacketFactory
+	PacketTimer *PacketTimer
+	glog        *glogger.GLogger
+	Ip          string
+	Port        string
+	StartFlag   bool
 }
 
 type RequestPacketInfo struct {
@@ -39,17 +40,23 @@ type ResponseHeaderInfo struct {
 	SecondType packets.PacketSecondType
 	ThirdType  packets.PacketThirdType
 	PacketData []byte
+	RequestId  []byte
 	SqFlag     bool
+	Callback   func(bool)
 }
 
 func NewUdpServer(ip, port string, packetFactory *PacketFactory, glog *glogger.GLogger) *UdpServer {
-	return &UdpServer{
+	server := &UdpServer{
 		Ip:        ip,
 		Port:      port,
 		Pf:        packetFactory,
 		glog:      glog,
 		StartFlag: false,
 	}
+	server.PacketTimer = NewPacketTimer(2, 4, func(rhi *ResponseHeaderInfo) {
+		server.SendRetry(rhi)
+	})
+	return server
 }
 
 func (udp *UdpServer) GetLocalIp() *ptypes.GhostIp {
@@ -136,6 +143,7 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo, ip, port string) 
 					}(&packetInfo)
 				} else {
 					go func(packetInfo *RequestPacketInfo) {
+						udp.PacketTimer.ReleaseSqPacket(recvPacket.RequestId)
 						// cq
 						secondLevel, exist := firstLevel.packetCqHandler[recvPacket.SecondType]
 						if !exist {
@@ -190,9 +198,15 @@ func (udp *UdpServer) TranslationToHeader(sendInfo *ResponseHeaderInfo) *packets
 		SecondType: sendInfo.SecondType,
 		ThirdType:  sendInfo.ThirdType,
 		SqFlag:     sendInfo.SqFlag,
+		RequestId:  sendInfo.RequestId,
 		PacketData: sendInfo.PacketData,
 		Source:     udp.GetLocalIp(),
 	}
+}
+
+func (udp *UdpServer) SendPacket(sendInfo *ResponseHeaderInfo, ipAddr *ptypes.GhostIp) {
+	to, _ := net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
+	udp.SendUdpPacket(sendInfo, to)
 }
 
 func (udp *UdpServer) SendUdpPacket(sendInfo *ResponseHeaderInfo, to *net.UDPAddr) {
@@ -201,6 +215,9 @@ func (udp *UdpServer) SendUdpPacket(sendInfo *ResponseHeaderInfo, to *net.UDPAdd
 	if err != nil {
 		log.Fatal(err)
 	}
+	if sendInfo.SqFlag {
+		udp.PacketTimer.RegisterSqPacket(sendInfo)
+	}
 	udp.RawSendPacket(to, sendData)
 	udp.glog.DebugOutput(udp,
 		fmt.Sprint("Send to ", to, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
@@ -208,14 +225,26 @@ func (udp *UdpServer) SendUdpPacket(sendInfo *ResponseHeaderInfo, to *net.UDPAdd
 			sendInfo.SqFlag), glogger.PacketLog)
 }
 
-func (udp *UdpServer) SendPacket(sendInfo *ResponseHeaderInfo, ipAddr *ptypes.GhostIp) {
-	to, _ := net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
-	udp.SendUdpPacket(sendInfo, to)
-}
-
 func (udp *UdpServer) SendResponse(sendInfo *ResponseHeaderInfo) {
 	udp.glog.DebugOutput(udp,
 		fmt.Sprint("Response to ", sendInfo.ToAddr, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
+			" => ", packets.PacketThirdType_name[int32(sendInfo.ThirdType)], " SQ: ",
+			sendInfo.SqFlag), glogger.PacketLog)
+
+	anyData := udp.TranslationToHeader(sendInfo)
+	sendData, err := proto.Marshal(anyData)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if sendInfo.SqFlag {
+		udp.PacketTimer.RegisterSqPacket(sendInfo)
+	}
+	udp.RawSendPacket(sendInfo.ToAddr, sendData)
+}
+
+func (udp *UdpServer) SendRetry(sendInfo *ResponseHeaderInfo) {
+	udp.glog.DebugOutput(udp,
+		fmt.Sprint("Retry to ", sendInfo.ToAddr, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
 			" => ", packets.PacketThirdType_name[int32(sendInfo.ThirdType)], " SQ: ",
 			sendInfo.SqFlag), glogger.PacketLog)
 

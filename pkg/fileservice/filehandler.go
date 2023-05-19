@@ -18,7 +18,7 @@ func (fileService *FileService) RequestFileSq(requestHeaderInfo *p2p.RequestHead
 
 	switch sq.RequestType {
 	case packets.FileRequestType_GetFileInfo:
-		return []p2p.ResponseHeaderInfo{*fileService.makeFileInfo(sq.Filename, header.Source.GetUdpAddr())}
+		return []p2p.ResponseHeaderInfo{*fileService.makeFileInfo(sq, header.Source.GetUdpAddr())}
 	case packets.FileRequestType_GetFileData:
 		fileObj, exist := fileService.fileObjManager.GetFileObject(sq.Filename)
 		if exist == false {
@@ -26,7 +26,7 @@ func (fileService *FileService) RequestFileSq(requestHeaderInfo *p2p.RequestHead
 		}
 
 		cq := &packets.RequestFilePacketCq{
-			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
+			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, fileService.localAddr),
 			RequestType: sq.RequestType,
 			Filename:    sq.Filename,
 			StartOffset: sq.StartOffset,
@@ -46,7 +46,7 @@ func (fileService *FileService) RequestFileSq(requestHeaderInfo *p2p.RequestHead
 				PacketData: sendData,
 				SqFlag:     false,
 			},
-			*fileService.sendFileData(sq.Filename, sq.StartOffset, 0, sq.Master.Common.TimeId, header.Source.GetUdpAddr()),
+			*fileService.sendFileData(sq.Filename, sq.StartOffset, 0, sq.Master.GetTimeId(), header.Source.GetUdpAddr()),
 		}
 	}
 	return nil
@@ -59,13 +59,13 @@ func (fileService *FileService) RequestFileCq(requestHeaderInfo *p2p.RequestHead
 		log.Fatal(err)
 	}
 
-	if cq.Result == true && cq.RequestType == packets.FileRequestType_GetFileInfo {
+	if cq.Result && cq.RequestType == packets.FileRequestType_GetFileInfo {
 		if fileObj := fileService.fileObjManager.AllocBuffer(cq.Filename, cq.FileLength); fileObj == nil {
 			fileService.glog.DebugOutput(fileService, "wrong filename", glogger.Default)
 			return nil
 		}
 		sq := &packets.RequestFilePacketSq{
-			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
+			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), nil, 0, fileService.localAddr),
 			RequestType: packets.FileRequestType_GetFileData,
 			Filename:    cq.Filename,
 			StartOffset: 0,
@@ -81,6 +81,7 @@ func (fileService *FileService) RequestFileCq(requestHeaderInfo *p2p.RequestHead
 				ToAddr:     header.Source.GetUdpAddr(),
 				PacketType: packets.PacketType_FileTransfer,
 				SecondType: packets.PacketSecondType_RequestFile,
+				RequestId:  sq.Master.GetRequestId(),
 				PacketData: sendData,
 				SqFlag:     true,
 			},
@@ -98,7 +99,7 @@ func (fileService *FileService) ResponseFileSq(requestHeaderInfo *p2p.RequestHea
 	}
 
 	cq := &packets.ResponseFilePacketCq{
-		Master: p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
+		Master: p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, fileService.localAddr),
 		Result: true,
 	}
 
@@ -118,7 +119,7 @@ func (fileService *FileService) ResponseFileSq(requestHeaderInfo *p2p.RequestHea
 
 	if fileService.saveToFileObject(sq.Filename, sq.StartPos, sq.BufferSize, sq.FileData, sq.FileLength) == false {
 		newSq := &packets.RequestFilePacketSq{
-			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), 0, 0, fileService.localAddr),
+			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), nil, 0, fileService.localAddr),
 			RequestType: packets.FileRequestType_GetFileData,
 			Filename:    sq.Filename,
 			StartOffset: sq.StartPos + Buffer_Size,
@@ -131,6 +132,7 @@ func (fileService *FileService) ResponseFileSq(requestHeaderInfo *p2p.RequestHea
 			ToAddr:     header.Source.GetUdpAddr(),
 			PacketType: packets.PacketType_FileTransfer,
 			SecondType: packets.PacketSecondType_RequestFile,
+			RequestId:  newSq.Master.GetRequestId(),
 			PacketData: newSqData,
 			SqFlag:     true,
 		})

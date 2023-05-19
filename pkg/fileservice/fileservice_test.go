@@ -62,7 +62,7 @@ func TestFileInfoCq(t *testing.T) {
 	info, _ := os.Stat(fileService.localFilePath + testfile)
 	assert.Equal(t, true, info.Size() > 0, "get file stat error")
 	fileService.loadFileToMemory(testfile)
-	header := fileService.makeFileInfo(testfile, toIpAddr.GetUdpAddr())
+	header := fileService.makeFileInfo(&packets.RequestFilePacketSq{Filename: testfile}, toIpAddr.GetUdpAddr())
 	assert.Equal(t, packets.PacketSecondType_RequestFile, header.SecondType, "wrong second type")
 	assert.Equal(t, false, header.SqFlag, "wrong SqFlag")
 

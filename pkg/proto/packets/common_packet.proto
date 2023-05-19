@@ -68,11 +68,12 @@ message Header {
     bool SqFlag = 4;
     bytes PacketData = 5;
     ptypes.GhostIp Source = 6;
+    bytes RequestId = 7;
 }
 
 message GhostPacket {
     string FromPubKeyAddress = 1;
-    uint32 RequestId = 2;
+    bytes RequestId = 2;
     uint32 ClientId = 3;
     uint64 TimeId = 4;
 }

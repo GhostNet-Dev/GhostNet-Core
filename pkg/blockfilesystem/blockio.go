@@ -2,6 +2,7 @@ package blockfilesystem
 
 import (
 	"log"
+	"sync"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blockmanager"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/cloudservice"
@@ -45,7 +46,17 @@ func (io *BlockIo) CreateFilesystem(w *gcrypto.Wallet) *BlockIoHandler {
 	}
 	tx := io.tXs.CreateRootFsTx(*txInfo, w.GetNickname())
 	tx = io.tXs.InkTheContract(tx, w.GetGhostAddress())
-	io.blockManager.SendTx(tx)
+	wg := &sync.WaitGroup{}
+	result := false
+	io.blockManager.SendTx(tx, func(b bool) {
+		defer wg.Done()
+		result = b
+	})
+	wg.Wait()
+
+	if !result {
+		return nil
+	}
 	return &BlockIoHandler{
 		wallet:  w,
 		blockIo: io,
@@ -91,7 +102,7 @@ func (io *BlockIoHandler) WriteData(uniqKey []byte, data []byte) (key []byte) {
 	tx, dataTx := io.blockIo.tXs.CreateDataTx(*txInfo, uniqKey, data)
 	tx = io.blockIo.tXs.InkTheContract(tx, io.wallet.GetGhostAddress())
 
-	io.blockIo.blockManager.SendDataTx(tx, dataTx)
+	io.blockIo.blockManager.SendDataTx(tx, dataTx, nil)
 
 	key = dataTx.TxId
 	return key

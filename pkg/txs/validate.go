@@ -64,6 +64,10 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 		scriptSig := input.ScriptSig
 		input.ScriptSig = dummyBuf4
 		input.ScriptSize = uint32(len(dummyBuf4))
+		nickname := string(tx.Body.Vout[0].ScriptEx)
+		if txContainer.CheckExistFsRoot([]byte(nickname)) {
+			return &TxChkResult{TxChkResult_AlreadyExist}
+		}
 
 		gFuncParam = append(gFuncParam, gvm.GFuncParam{
 			InputSig:      scriptSig,

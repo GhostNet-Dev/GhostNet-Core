@@ -35,7 +35,7 @@ var (
 
 func TestGetVersionSq(t *testing.T) {
 	sq := packets.VersionInfoSq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), nil, 0, master.localGhostIp),
 	}
 
 	sendData, err := proto.Marshal(&sq)
@@ -55,7 +55,7 @@ func TestGetVersionSq(t *testing.T) {
 
 func TestNotifyMasterNodeSq(t *testing.T) {
 	sq := &packets.MasterNodeUserInfoSq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), nil, 0, master.localGhostIp),
 		User: &ptypes.GhostUser{
 			Nickname: master.nickname,
 			PubKey:   owner.GetPubAddress(),
@@ -79,7 +79,7 @@ func TestNotifyMasterNodeSq(t *testing.T) {
 
 func TestConnectToMasterNodeSq(t *testing.T) {
 	sq := &packets.MasterNodeUserInfoSq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), nil, 0, master.localGhostIp),
 		User: &ptypes.GhostUser{
 			Nickname: master.nickname,
 			PubKey:   owner.GetPubAddress(),
@@ -106,7 +106,7 @@ func TestRequestMasterNodeListSq(t *testing.T) {
 	TestNotifyMasterNodeSq(t)
 
 	sq := &packets.RequestMasterNodeListSq{
-		Master:     p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master:     p2p.MakeMasterPacket(master.owner.GetPubAddress(), nil, 0, master.localGhostIp),
 		StartIndex: 0,
 	}
 
@@ -129,7 +129,7 @@ func TestRequestMasterNodeListSq(t *testing.T) {
 }
 
 func TestResponseMasterNodeListSq(t *testing.T) {
-	sq := &packets.ResponseMasterNodeListSq{Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp)}
+	sq := &packets.ResponseMasterNodeListSq{Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), nil, 0, master.localGhostIp)}
 
 	sendData, err := proto.Marshal(sq)
 	if err != nil {
@@ -147,7 +147,7 @@ func TestResponseMasterNodeListSq(t *testing.T) {
 func TestSearchMasterPubKey(t *testing.T) {
 	TestNotifyMasterNodeSq(t)
 	sq := &packets.SearchGhostPubKeySq{
-		Master:   p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master:   p2p.MakeMasterPacket(master.owner.GetPubAddress(), nil, 0, master.localGhostIp),
 		Nickname: "test",
 		PubKey:   master.owner.GetPubAddress(),
 	}

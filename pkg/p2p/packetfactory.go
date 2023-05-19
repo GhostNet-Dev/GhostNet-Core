@@ -6,6 +6,7 @@ import (
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"github.com/rs/xid"
 )
 
 type RoutingInfo struct {
@@ -32,7 +33,10 @@ func NewPacketFactory() *PacketFactory {
 	}
 }
 
-func MakeMasterPacket(from string, reqId uint32, clientId uint32, fromIp *ptypes.GhostIp) *packets.MasterPacket {
+func MakeMasterPacket(from string, reqId []byte, clientId uint32, fromIp *ptypes.GhostIp) *packets.MasterPacket {
+	if reqId == nil {
+		reqId = xid.New().Bytes()
+	}
 	return &packets.MasterPacket{
 		Common: &packets.GhostPacket{
 			FromPubKeyAddress: from,

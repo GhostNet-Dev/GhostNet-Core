@@ -16,9 +16,10 @@ func NewQueue() *Queue {
 	}
 }
 
-func (q *Queue) Push(v interface{}) {
-	q.v.PushBack(v)
+func (q *Queue) Push(v interface{}) *list.Element {
+	e := q.v.PushBack(v)
 	q.Count++
+	return e
 }
 
 func (q *Queue) Pop() interface{} {
@@ -30,4 +31,12 @@ func (q *Queue) Pop() interface{} {
 	q.Count--
 
 	return q.v.Remove(front)
+}
+
+func (q *Queue) Peek() interface{} {
+	return q.v.Front().Value
+}
+
+func (q *Queue) Remove(item *list.Element) interface{} {
+	return q.v.Remove(item)
 }

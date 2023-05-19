@@ -48,6 +48,7 @@ message SendTransactionSq {
 
 message SendTransactionCq {
     MasterPacket Master = 1;
+    bool Result = 2;
 }
 
 message SendDataTransactionSq {
@@ -58,6 +59,7 @@ message SendDataTransactionSq {
 
 message SendDataTransactionCq {
     MasterPacket Master = 1;
+    bool Result = 2;
 }
 
 message SearchTransactionSq {

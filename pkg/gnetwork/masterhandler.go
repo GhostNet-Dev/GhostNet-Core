@@ -18,7 +18,7 @@ func (master *MasterNetwork) GetGhostNetVersionSq(requestHeaderInfo *p2p.Request
 	}
 
 	cq := packets.VersionInfoCq{
-		Master:  p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master:  p2p.MakeMasterPacket(master.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, master.localGhostIp),
 		Version: master.ghostNetVersion,
 	}
 
@@ -57,7 +57,7 @@ func (master *MasterNetwork) NotificationMasterNodeSq(requestHeaderInfo *p2p.Req
 	master.RegisterMasterNode(sq.User)
 
 	cq := packets.MasterNodeUserInfoCq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, master.localGhostIp),
 		User:   master.getGhostUser(),
 	}
 
@@ -90,7 +90,7 @@ func (master *MasterNetwork) ConnectToMasterNodeSq(requestHeaderInfo *p2p.Reques
 	master.account.AddUserNode(sq.User)
 
 	cq := packets.MasterNodeUserInfoCq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, master.localGhostIp),
 		User:   master.getGhostUser(),
 	}
 
@@ -129,7 +129,7 @@ func (master *MasterNetwork) RequestMasterNodeListSq(requestHeaderInfo *p2p.Requ
 	userList, totalItem := master.account.GetMasterNodeUserList(sq.StartIndex)
 
 	resSq := packets.ResponseMasterNodeListSq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), nil, 0, master.localGhostIp),
 		User:   userList,
 		Total:  totalItem,
 	}
@@ -139,7 +139,7 @@ func (master *MasterNetwork) RequestMasterNodeListSq(requestHeaderInfo *p2p.Requ
 	}
 	// make request cq
 	cq := packets.RequestMasterNodeListCq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, master.localGhostIp),
 	}
 
 	sendData, err := proto.Marshal(&cq)
@@ -157,6 +157,7 @@ func (master *MasterNetwork) RequestMasterNodeListSq(requestHeaderInfo *p2p.Requ
 		{
 			ToAddr:     header.Source.GetUdpAddr(),
 			SecondType: packets.PacketSecondType_ResponseMasterNodeList,
+			RequestId:  resSq.Master.GetRequestId(),
 			PacketData: responseData,
 			SqFlag:     true,
 		},
@@ -177,7 +178,7 @@ func (master *MasterNetwork) ResponseMasterNodeListSq(requestHeaderInfo *p2p.Req
 	master.account.AddMasterUserList(sq.User)
 
 	cq := packets.ResponseMasterNodeListCq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, master.localGhostIp),
 	}
 
 	sendData, err := proto.Marshal(&cq)
@@ -209,7 +210,7 @@ func (master *MasterNetwork) SearchGhostPubKeySq(requestHeaderInfo *p2p.RequestH
 	node := master.account.GetNodeByNickname(sq.Nickname)
 
 	cq := packets.SearchGhostPubKeyCq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, master.localGhostIp),
 	}
 
 	if node != nil {
@@ -252,7 +253,7 @@ func (master *MasterNetwork) SearchMasterPubKeySq(requestHeaderInfo *p2p.Request
 	}
 
 	cq := packets.SearchGhostPubKeyCq{
-		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), 0, 0, master.localGhostIp),
+		Master: p2p.MakeMasterPacket(master.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, master.localGhostIp),
 		User:   []*ptypes.GhostUser{node},
 	}
 

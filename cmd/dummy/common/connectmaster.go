@@ -41,7 +41,7 @@ func NewConnectMaster(table string, db *store.LiteStore, packetFactory *p2p.Pack
 
 func (conn *ConnectMaster) CheckNickname(nickname string) (result bool, err error) {
 	sq := &packets.SearchGhostPubKeySq{
-		Master:   p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),
+		Master:   p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), nil, 0, conn.udp.GetLocalIp()),
 		Nickname: nickname,
 	}
 	sendData, err := proto.Marshal(sq)
@@ -53,6 +53,7 @@ func (conn *ConnectMaster) CheckNickname(nickname string) (result bool, err erro
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_SearchGhostPubKey,
 		PacketData: sendData,
+		RequestId:  sq.Master.GetRequestId(),
 		SqFlag:     true,
 	}
 	conn.udp.SendUdpPacket(headerInfo, headerInfo.ToAddr)
@@ -68,7 +69,7 @@ func (conn *ConnectMaster) CheckNickname(nickname string) (result bool, err erro
 
 func (conn *ConnectMaster) SendTx(tx *types.GhostTransaction) (result bool, err error) {
 	sq := &packets.SendTransactionSq{
-		Master: p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), 0, 0, conn.udp.GetLocalIp()),
+		Master: p2p.MakeMasterPacket(conn.wallet.GetPubAddress(), nil, 0, conn.udp.GetLocalIp()),
 		TxId:   tx.TxId,
 	}
 	sendData, err := proto.Marshal(sq)
@@ -80,6 +81,7 @@ func (conn *ConnectMaster) SendTx(tx *types.GhostTransaction) (result bool, err 
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_BlockChain,
 		ThirdType:  packets.PacketThirdType_SendTransaction,
+		RequestId:  sq.Master.GetRequestId(),
 		PacketData: sendData,
 		SqFlag:     true,
 	}

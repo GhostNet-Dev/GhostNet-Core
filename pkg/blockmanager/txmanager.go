@@ -11,13 +11,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (blockMgr *BlockManager) SendTx(tx *types.GhostTransaction) {
+func (blockMgr *BlockManager) SendTx(tx *types.GhostTransaction, cqEvent func(bool)) {
 	filename := fileservice.ByteToFilename(tx.TxId)
 	if exist := blockMgr.fileService.CheckFileExist(filename); !exist {
 		blockMgr.fileService.CreateFile(filename, tx.SerializeToByte(), nil, nil)
 	}
 	sq := &packets.SendTransactionSq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
 		TxId:   tx.TxId,
 	}
 	sendData, err := proto.Marshal(sq)
@@ -28,13 +28,15 @@ func (blockMgr *BlockManager) SendTx(tx *types.GhostTransaction) {
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_BlockChain,
 		ThirdType:  packets.PacketThirdType_SendTransaction,
+		RequestId:  sq.Master.GetRequestId(),
 		PacketData: sendData,
+		Callback:   cqEvent,
 		SqFlag:     true,
 	}
 	blockMgr.master.SendToMasterNodeGrpSq(packets.RoutingType_BroadCastingLevelZero, gnetwork.DefaultTreeLevel, headerInfo)
 }
 
-func (blockMgr *BlockManager) SendDataTx(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction) {
+func (blockMgr *BlockManager) SendDataTx(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction, cqEvent func(bool)) {
 	filename := fileservice.ByteToFilename(tx.TxId)
 	dataFilename := fileservice.ByteToFilename(dataTx.TxId)
 	if exist := blockMgr.fileService.CheckFileExist(filename); !exist {
@@ -44,7 +46,7 @@ func (blockMgr *BlockManager) SendDataTx(tx *types.GhostTransaction, dataTx *typ
 		blockMgr.fileService.CreateFile(dataFilename, dataTx.SerializeToByte(), nil, nil)
 	}
 	sq := &packets.SendDataTransactionSq{
-		Master:   p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master:   p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
 		TxId:     tx.TxId,
 		DataTxId: dataTx.TxId,
 	}
@@ -56,7 +58,9 @@ func (blockMgr *BlockManager) SendDataTx(tx *types.GhostTransaction, dataTx *typ
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_BlockChain,
 		ThirdType:  packets.PacketThirdType_SendDataTransaction,
+		RequestId:  sq.Master.GetRequestId(),
 		PacketData: sendData,
+		Callback:   cqEvent,
 		SqFlag:     true,
 	}
 	blockMgr.master.SendToMasterNodeGrpSq(packets.RoutingType_BroadCastingLevelZero, gnetwork.DefaultTreeLevel, headerInfo)

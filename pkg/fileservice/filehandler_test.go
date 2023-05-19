@@ -14,7 +14,7 @@ import (
 func TestRequestFileSq(t *testing.T) {
 	testFileInit(fileService.localFilePath + testfile)
 	sq := packets.RequestFilePacketSq{
-		Master:      p2p.MakeMasterPacket(owner.GetPubAddress(), 0, 0, ipAddr),
+		Master:      p2p.MakeMasterPacket(owner.GetPubAddress(), nil, 0, ipAddr),
 		RequestType: packets.FileRequestType_GetFileInfo,
 		Filename:    testfile,
 	}
@@ -46,7 +46,7 @@ func TestRequestFileDataSq(t *testing.T) {
 	// todo for total file packet
 	for offset := uint64(0); offset < uint64(info.Size()); offset += Buffer_Size {
 		sq := packets.RequestFilePacketSq{
-			Master:      p2p.MakeMasterPacket(owner.GetPubAddress(), 0, 0, ipAddr),
+			Master:      p2p.MakeMasterPacket(owner.GetPubAddress(), nil, 0, ipAddr),
 			RequestType: packets.FileRequestType_GetFileData,
 			Filename:    testfile,
 			StartOffset: offset,
@@ -93,7 +93,7 @@ func TestResponseSqTest(t *testing.T) {
 		}
 		offset, _ := fp.Seek(0, os.SEEK_CUR)
 		sq := packets.ResponseFilePacketSq{
-			Master:     p2p.MakeMasterPacket(owner.GetPubAddress(), 0, 0, ipAddr),
+			Master:     p2p.MakeMasterPacket(owner.GetPubAddress(), nil, 0, ipAddr),
 			Filename:   testfile,
 			FileData:   buf[:readSize],
 			FileLength: uint64(fileInfo.Size()),

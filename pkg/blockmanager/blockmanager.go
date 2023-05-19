@@ -120,7 +120,7 @@ func (blockMgr *BlockManager) TriggerNewBlock() {
 	}
 	blockMgr.glog.DebugOutput(blockMgr, fmt.Sprint("Create Block Id = ", newPairBlock.BlockId()), glogger.BlockConsensus)
 	sq := packets.NewBlockSq{
-		Master:        p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master:        p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
 		BlockFilename: newPairBlock.GetBlockFilename(),
 	}
 	sendData, err := proto.Marshal(&sq)
@@ -131,6 +131,7 @@ func (blockMgr *BlockManager) TriggerNewBlock() {
 		PacketType: packets.PacketType_MasterNetwork,
 		SecondType: packets.PacketSecondType_BlockChain,
 		ThirdType:  packets.PacketThirdType_NewBlock,
+		RequestId:  sq.Master.GetRequestId(),
 		PacketData: sendData,
 		SqFlag:     true,
 	}
@@ -216,7 +217,7 @@ func (blockMgr *BlockManager) checkExistFSRoot(tx *types.GhostTransaction) bool 
 
 func (blockMgr *BlockManager) RequestCheckExistFsRoot(nickname []byte, callback func(bool)) {
 	sq := packets.CheckRootFsSq{
-		Master:   p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master:   p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
 		Nickname: nickname,
 	}
 	sendData, err := proto.Marshal(&sq)
@@ -225,7 +226,7 @@ func (blockMgr *BlockManager) RequestCheckExistFsRoot(nickname []byte, callback 
 	}
 	blockMgr.callback = callback
 	blockMgr.master.SendToMasterNodeSq(packets.PacketThirdType_CheckRootFs,
-		blockMgr.owner.GetMasterNode().PubKey, sendData)
+		blockMgr.owner.GetMasterNode().PubKey, sendData, sq.Master.GetRequestId())
 }
 
 func (blockMgr *BlockManager) SaveExtraInformation(pairedBlock *types.PairedBlock) bool {

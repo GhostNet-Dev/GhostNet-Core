@@ -111,7 +111,7 @@ func (w *Workload) MakeAccountTx() {
 	tx := w.tXs.CreateRootFsTx(*txInfo, w.workerName)
 	tx = w.tXs.InkTheContract(tx, w.wallet.GetGhostAddress())
 
-	w.blockMgr.SendTx(tx)
+	w.blockMgr.SendTx(tx, nil)
 }
 
 func (w *Workload) MakeDataTx() {
@@ -134,7 +134,7 @@ func (w *Workload) MakeDataTx() {
 	tx, dataTx := w.tXs.CreateDataTx(*txInfo, []byte("adam"), w.MakeDummyFile())
 	tx = w.tXs.InkTheContract(tx, w.wallet.GetGhostAddress())
 
-	w.blockMgr.SendDataTx(tx, dataTx)
+	w.blockMgr.SendDataTx(tx, dataTx, nil)
 }
 
 func (w *Workload) MakeDummyTransaction(wallet *gcrypto.Wallet, to []byte, broker []byte) (*types.GhostTransaction, *types.GhostDataTransaction) {

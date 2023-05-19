@@ -18,13 +18,15 @@ func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *ne
 
 	filename := fileservice.ByteToFilename(sq.TxId)
 	fileObj := blockMgr.cloud.ReadFromCloudSync(filename, from)
-	if !blockMgr.DownloadTransaction(fileObj, nil) {
+	txValidate := blockMgr.DownloadTransaction(fileObj, nil)
+	if !txValidate {
 		blockMgr.fileService.DeleteFile(filename)
 	}
 
 	//master.blockHandler.SendTransaction(sq.TxId)
 	cq := packets.SendTransactionCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
+		Result: txValidate,
 	}
 
 	cqData, err := proto.Marshal(&cq)
@@ -51,7 +53,7 @@ func (blockMgr *BlockManager) SearchTransactionSq(header *packets.Header, from *
 
 	//master.blockHandler.SendTransaction(sq.TxId)
 	cq := packets.SearchTransactionCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 	}
 
 	cqData, err := proto.Marshal(&cq)
@@ -86,7 +88,7 @@ func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from
 		blockMgr.fileService.DeleteFile(txFilename)
 	}
 	cq := packets.SendDataTransactionCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 	}
 
 	cqData, err := proto.Marshal(&cq)
@@ -112,7 +114,7 @@ func (blockMgr *BlockManager) SearchDataTransactionSq(header *packets.Header, fr
 	}
 
 	cq := packets.SearchTransactionCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 	}
 
 	cqData, err := proto.Marshal(&cq)
@@ -139,7 +141,7 @@ func (blockMgr *BlockManager) GetTxStatusSq(header *packets.Header, from *net.UD
 	}
 
 	cq := packets.GetTxStatusCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 	}
 
 	cqData, err := proto.Marshal(&cq)
@@ -148,7 +150,7 @@ func (blockMgr *BlockManager) GetTxStatusSq(header *packets.Header, from *net.UD
 	}
 
 	newSq := packets.SendTxStatusSq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
 	}
 
 	sendData, err := proto.Marshal(&newSq)
@@ -181,7 +183,7 @@ func (blockMgr *BlockManager) SendTxStatusSq(header *packets.Header, from *net.U
 	}
 
 	cq := packets.SendTxStatusCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 	}
 
 	cqData, err := proto.Marshal(&cq)
@@ -210,7 +212,7 @@ func (blockMgr *BlockManager) CheckRootFsSq(header *packets.Header, from *net.UD
 	exist := blockMgr.blockContainer.TxContainer.CheckExistFsRoot(sq.Nickname)
 
 	cq := packets.CheckRootFsCq{
-		Master:   p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master:   p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 		Nickname: sq.Nickname,
 		Exist:    exist,
 	}

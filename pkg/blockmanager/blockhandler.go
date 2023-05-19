@@ -57,7 +57,7 @@ func (blockMgr *BlockManager) GetHeightestBlockSq(header *packets.Header, from *
 	}
 
 	cq := packets.GetHeightestBlockCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 		Height: blockMgr.blockContainer.BlockHeight(),
 	}
 
@@ -96,7 +96,7 @@ func (blockMgr *BlockManager) NewBlockSq(header *packets.Header, from *net.UDPAd
 	}
 
 	cq := packets.NewBlockCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 	}
 
 	sendData, err := proto.Marshal(&cq)
@@ -124,7 +124,7 @@ func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAd
 	blockFilename, exist := blockMgr.PrepareSendBlock(sq.BlockId)
 
 	cq := packets.GetBlockCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 		Result: exist,
 	}
 
@@ -142,7 +142,7 @@ func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAd
 
 	if exist {
 		newSq := &packets.SendBlockSq{
-			Master:        p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+			Master:        p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
 			BlockFilename: blockFilename,
 		}
 
@@ -153,6 +153,7 @@ func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAd
 		responseInfo = append(responseInfo, p2p.ResponseHeaderInfo{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendBlock,
+			RequestId:  newSq.Master.GetRequestId(),
 			PacketData: sendData,
 			SqFlag:     true,
 		})
@@ -176,7 +177,7 @@ func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPA
 	//blockMgr.RequestBlockChainFile(sq.BlockFilename, from, blockMgr.DownloadBlock, nil)
 	//master.blockHandler.SendBlock(sq.BlockFilename)
 	cq := packets.SendBlockCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 	}
 
 	cqData, err := proto.Marshal(&cq)
@@ -203,7 +204,7 @@ func (blockMgr *BlockManager) GetBlockHashSq(header *packets.Header, from *net.U
 	}
 
 	cq := packets.GetBlockHashCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 	}
 
 	cqData, err := proto.Marshal(&cq)
@@ -224,7 +225,7 @@ func (blockMgr *BlockManager) GetBlockHashSq(header *packets.Header, from *net.U
 		hash := pairedBlock.Block.GetHashKey()
 
 		newSq := packets.SendBlockHashSq{
-			Master:  p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+			Master:  p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
 			Hash:    hash,
 			BlockId: sq.BlockId,
 		}
@@ -236,6 +237,7 @@ func (blockMgr *BlockManager) GetBlockHashSq(header *packets.Header, from *net.U
 		responseInfos = append(responseInfos, p2p.ResponseHeaderInfo{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendBlockHash,
+			RequestId:  newSq.Master.GetRequestId(),
 			PacketData: sendData,
 			SqFlag:     true,
 		})
@@ -253,7 +255,7 @@ func (blockMgr *BlockManager) SendBlockHashSq(header *packets.Header, from *net.
 	}
 
 	cq := packets.SendBlockHashCq{
-		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), 0, 0, blockMgr.localIpAddr),
+		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
 	}
 
 	cqData, err := proto.Marshal(&cq)
@@ -261,7 +263,7 @@ func (blockMgr *BlockManager) SendBlockHashSq(header *packets.Header, from *net.
 		log.Fatal(err)
 	}
 
-	blockMgr.fsm.State().RecvBlockHash(sq.Master.Common.FromPubKeyAddress, sq.Hash, sq.BlockId)
+	blockMgr.fsm.State().RecvBlockHash(sq.Master.GetFromPubkey(), sq.Hash, sq.BlockId)
 
 	return []p2p.ResponseHeaderInfo{
 		{
