@@ -70,6 +70,7 @@ func (blockMgr *BlockManager) GetHeightestBlockSq(header *packets.Header, from *
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_GetHeightestBlock,
 			PacketData: sendData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -108,6 +109,7 @@ func (blockMgr *BlockManager) NewBlockSq(header *packets.Header, from *net.UDPAd
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_NewBlock,
 			PacketData: sendData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -137,6 +139,7 @@ func (blockMgr *BlockManager) GetBlockSq(header *packets.Header, from *net.UDPAd
 		ToAddr:     from,
 		ThirdType:  packets.PacketThirdType_GetBlock,
 		PacketData: cqData,
+		RequestId:  cq.Master.GetRequestId(),
 		SqFlag:     false,
 	}}
 
@@ -190,6 +193,7 @@ func (blockMgr *BlockManager) SendBlockSq(header *packets.Header, from *net.UDPA
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendBlock,
 			PacketData: cqData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -216,6 +220,7 @@ func (blockMgr *BlockManager) GetBlockHashSq(header *packets.Header, from *net.U
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_GetBlockHash,
 			PacketData: cqData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -270,6 +275,7 @@ func (blockMgr *BlockManager) SendBlockHashSq(header *packets.Header, from *net.
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendBlockHash,
 			PacketData: cqData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}

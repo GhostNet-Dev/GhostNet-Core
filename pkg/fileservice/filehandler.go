@@ -44,6 +44,7 @@ func (fileService *FileService) RequestFileSq(requestHeaderInfo *p2p.RequestHead
 				PacketType: packets.PacketType_FileTransfer,
 				SecondType: packets.PacketSecondType_RequestFile,
 				PacketData: sendData,
+				RequestId:  cq.Master.GetRequestId(),
 				SqFlag:     false,
 			},
 			*fileService.sendFileData(sq.Filename, sq.StartOffset, 0, sq.Master.GetTimeId(), header.Source.GetUdpAddr()),
@@ -113,6 +114,7 @@ func (fileService *FileService) ResponseFileSq(requestHeaderInfo *p2p.RequestHea
 			PacketType: packets.PacketType_FileTransfer,
 			SecondType: packets.PacketSecondType_ResponseFile,
 			PacketData: sendData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}

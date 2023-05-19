@@ -39,6 +39,7 @@ func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *ne
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendTransaction,
 			PacketData: cqData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -66,6 +67,7 @@ func (blockMgr *BlockManager) SearchTransactionSq(header *packets.Header, from *
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SearchTransaction,
 			PacketData: cqData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -101,6 +103,7 @@ func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendDataTransaction,
 			PacketData: cqData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -127,6 +130,7 @@ func (blockMgr *BlockManager) SearchDataTransactionSq(header *packets.Header, fr
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SearchDataTransaction,
 			PacketData: cqData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -163,11 +167,13 @@ func (blockMgr *BlockManager) GetTxStatusSq(header *packets.Header, from *net.UD
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_GetTxStatus,
 			PacketData: cqData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 		{
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendTxStatus,
+			RequestId:  newSq.Master.GetRequestId(),
 			PacketData: sendData,
 			SqFlag:     true,
 		},
@@ -196,6 +202,7 @@ func (blockMgr *BlockManager) SendTxStatusSq(header *packets.Header, from *net.U
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_SendTxStatus,
 			PacketData: cqData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -227,6 +234,7 @@ func (blockMgr *BlockManager) CheckRootFsSq(header *packets.Header, from *net.UD
 			ToAddr:     from,
 			ThirdType:  packets.PacketThirdType_CheckRootFs,
 			PacketData: cqData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}

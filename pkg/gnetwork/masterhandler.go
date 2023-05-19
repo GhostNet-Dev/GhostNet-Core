@@ -31,6 +31,7 @@ func (master *MasterNetwork) GetGhostNetVersionSq(requestHeaderInfo *p2p.Request
 			ToAddr:     header.Source.GetUdpAddr(),
 			SecondType: packets.PacketSecondType_GetGhostNetVersion,
 			PacketData: sendData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -70,6 +71,7 @@ func (master *MasterNetwork) NotificationMasterNodeSq(requestHeaderInfo *p2p.Req
 			ToAddr:     header.Source.GetUdpAddr(),
 			SecondType: packets.PacketSecondType_NotificationMasterNode,
 			PacketData: sendData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -103,6 +105,7 @@ func (master *MasterNetwork) ConnectToMasterNodeSq(requestHeaderInfo *p2p.Reques
 			ToAddr:     header.Source.GetUdpAddr(),
 			SecondType: packets.PacketSecondType_ConnectToMasterNode,
 			PacketData: sendData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -152,6 +155,7 @@ func (master *MasterNetwork) RequestMasterNodeListSq(requestHeaderInfo *p2p.Requ
 			ToAddr:     header.Source.GetUdpAddr(),
 			SecondType: packets.PacketSecondType_RequestMasterNodeList,
 			PacketData: sendData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 		{
@@ -191,6 +195,7 @@ func (master *MasterNetwork) ResponseMasterNodeListSq(requestHeaderInfo *p2p.Req
 			ToAddr:     header.Source.GetUdpAddr(),
 			SecondType: packets.PacketSecondType_ResponseMasterNodeList,
 			PacketData: sendData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -226,6 +231,7 @@ func (master *MasterNetwork) SearchGhostPubKeySq(requestHeaderInfo *p2p.RequestH
 			ToAddr:     header.Source.GetUdpAddr(),
 			SecondType: packets.PacketSecondType_SearchGhostPubKey,
 			PacketData: sendData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -266,6 +272,7 @@ func (master *MasterNetwork) SearchMasterPubKeySq(requestHeaderInfo *p2p.Request
 			ToAddr:     header.Source.GetUdpAddr(),
 			SecondType: packets.PacketSecondType_SearchUserInfoByPubKey,
 			PacketData: sendData,
+			RequestId:  cq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -302,6 +309,7 @@ func (master *MasterNetwork) BlockChainSq(requestHeaderInfo *p2p.RequestHeaderIn
 		{
 			ToAddr:     header.Source.GetUdpAddr(),
 			SecondType: packets.PacketSecondType_BlockChain,
+			RequestId:  header.GetRequestId(),
 			SqFlag:     false,
 		},
 	}
@@ -333,6 +341,7 @@ func (master *MasterNetwork) ForwardingSq(requestHeaderInfo *p2p.RequestHeaderIn
 		{
 			ToAddr:     header.Source.GetUdpAddr(),
 			SecondType: packets.PacketSecondType_Forwarding,
+			RequestId:  sq.Master.GetRequestId(),
 			SqFlag:     false,
 		},
 	}, headerInfo...), routingHeaderInfo...)
