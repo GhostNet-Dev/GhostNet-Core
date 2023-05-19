@@ -73,9 +73,9 @@ func (packetTimer *PacketTimer) RegisterSqPacket(header *ResponseHeaderInfo) {
 		return
 	}
 	entry := &TimerEntry{
-		response:  header,
-		time:      time.Now().Unix(),
-		retry:     0,
+		response: header,
+		time:     time.Now().Unix(),
+		retry:    0,
 	}
 
 	entry.listEntry = packetTimer.packetQ.Push(entry)
@@ -85,8 +85,10 @@ func (packetTimer *PacketTimer) RegisterSqPacket(header *ResponseHeaderInfo) {
 func (packetTimer *PacketTimer) ReleaseSqPacket(requestId []byte) {
 	packetTimer.mutex.Lock()
 	req := packetTimer.packetPool[string(requestId)]
-	packetTimer.packetQ.Remove(req.listEntry)
-	delete(packetTimer.packetPool, string(requestId))
+	if req != nil {
+		packetTimer.packetQ.Remove(req.listEntry)
+		delete(packetTimer.packetPool, string(requestId))
+	}
 	packetTimer.mutex.Unlock()
 
 	if req.response.Callback != nil {
