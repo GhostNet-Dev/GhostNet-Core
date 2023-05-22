@@ -124,6 +124,7 @@ func (blockMgr *BlockManager) TriggerNewBlock() {
 	// miner와 creator는 동일하게 한다. 즉 creator만 mining을 할 수 있다.
 	newPairBlock := blockMgr.block.MakeNewBlock(blockMgr.owner.GetGhostAddress(), blockMgr.owner.GetGhostAddress().Get160PubKey(), triggerTxCount)
 	if newPairBlock == nil {
+		blockMgr.glog.DebugOutput(blockMgr, "Fail to Make New Block", glogger.BlockConsensus)
 		return
 	}
 	blockMgr.glog.DebugOutput(blockMgr, fmt.Sprint("Create Block Id = ", newPairBlock.BlockId()), glogger.BlockConsensus)

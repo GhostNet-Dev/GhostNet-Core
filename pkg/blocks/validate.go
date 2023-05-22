@@ -2,6 +2,7 @@ package blocks
 
 import (
 	"bytes"
+	"log"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
@@ -53,6 +54,8 @@ func (blocks *Blocks) blockValidation(pairedBlock *types.PairedBlock, prevPaired
 	for _, tx := range txs {
 		if mergeTxContainer == nil {
 			if txChkResult := blocks.txs.TransactionValidation(&tx, nil, txContainer); !txChkResult.Result() {
+				blocks.blockContainer.TxContainer.DeleteCandidateTx(tx.TxId)
+				log.Print("remain candidate count = ", blocks.blockContainer.TxContainer.GetCandidateTxCount())
 				return false
 			}
 		} else {

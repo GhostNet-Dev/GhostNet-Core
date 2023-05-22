@@ -67,7 +67,7 @@ func (gSql *GSqlite3) DeleteCandidatePool(poolId uint32) {
 		gSql.InsertQuery(fmt.Sprint("delete from ", table, " where BlockId == ?"), poolId)
 	}
 }
-func (gSql *GSqlite3) deleteCandidateTx(txId []byte) {
+func (gSql *GSqlite3) DeleteCandidateTx(txId []byte) {
 	tables := []string{"c_transactions", "c_data_transactions", "c_inputs", "c_outputs"}
 	for _, table := range tables {
 		gSql.InsertQuery(fmt.Sprint("delete from ", table, " where TxId == ?"), txId)
@@ -83,7 +83,7 @@ func (gSql *GSqlite3) InsertCandidateDataTx(dataTx *types.GhostDataTransaction, 
 
 func (gSql *GSqlite3) UpdatePoolId(oldPoolId uint32, newPoolId uint32) {
 	gSql.InsertQuery(`update c_transactions set TxIndex = ? where TxIndex == ?;`,
-		oldPoolId, newPoolId)
+		newPoolId, oldPoolId)
 }
 
 func (gSql *GSqlite3) SelectCandidateTxCount() uint32 {
@@ -110,7 +110,7 @@ func (gSql *GSqlite3) SelectTxsPool(poolId uint32) (txs []types.GhostTransaction
 	txs, dirtyTxs := gSql.getCandidateTxRows(rows)
 	rows.Close()
 	for _, tx := range dirtyTxs {
-		gSql.deleteCandidateTx(tx.TxId)
+		gSql.DeleteCandidateTx(tx.TxId)
 	}
 
 	return txs
@@ -160,7 +160,7 @@ func (gSql *GSqlite3) selectCandidateInputs(TxId []byte, count uint32) []types.T
 func (gSql *GSqlite3) selectCandidateOutputs(TxId []byte, count uint32) []types.TxOutput {
 	outputs := make([]types.TxOutput, count)
 
-	rows, err := gSql.db.Query(`select ToAddr, BrokerAddr, Script, ScriptSize, Type, Value from c_outputs 
+	rows, err := gSql.db.Query(`select ToAddr, BrokerAddr, Script, ScriptSize, ScriptEx, ScriptExSize, Type, Value from c_outputs 
 		where TxId = ? limit 0, ?`, TxId, count)
 	if err != nil {
 		log.Fatal(err)
@@ -169,7 +169,8 @@ func (gSql *GSqlite3) selectCandidateOutputs(TxId []byte, count uint32) []types.
 
 	for i, output := range outputs {
 		rows.Next()
-		if err = rows.Scan(&output.Addr, &output.BrokerAddr, &output.ScriptPubKey, &output.ScriptSize,
+		if err = rows.Scan(&output.Addr, &output.BrokerAddr, &output.ScriptPubKey,
+			&output.ScriptSize, &output.ScriptEx, &output.ScriptExSize,
 			&output.Type, &output.Value); err != nil {
 			log.Print(err)
 			return nil

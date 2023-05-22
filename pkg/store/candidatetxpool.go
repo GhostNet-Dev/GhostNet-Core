@@ -21,6 +21,10 @@ func (txContainer *TxContainer) DeleteCandidatePool(poolId uint32) {
 	txContainer.gCandidateSql.DeleteCandidatePool(poolId)
 }
 
+func (txContainer *TxContainer) DeleteCandidateTx(txId []byte) {
+	txContainer.gCandidateSql.DeleteCandidateTx(txId)
+}
+
 func (txContainer *TxContainer) GetCandidateTxCount() uint32 {
 	return txContainer.gCandidateSql.SelectCandidateTxCount()
 }
@@ -46,6 +50,7 @@ func (txContainer *TxContainer) MakeCandidateTrPool(blockId uint32, minTxCount u
 	dataTxList := txContainer.gSql.SelectDataTxsPool(txContainer.CurrentPoolId)
 	// validation은 여기서 하지 않는다. 밖에서 하고 들어온다.
 	if len(txList) == 0 || len(txList)+len(dataTxList) < int(minTxCount) {
+		txContainer.CurrentPoolId = txContainer.GetMaxPoolId()
 		return nil
 	}
 	poolId := txContainer.CurrentPoolId

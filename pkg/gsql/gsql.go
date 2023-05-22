@@ -41,6 +41,7 @@ type GCandidateSql interface {
 	InsertCandidateDataTx(dataTx *types.GhostDataTransaction, poolId uint32)
 	SelectCandidateTxCount() uint32
 	DeleteCandidatePool(poolId uint32)
+	DeleteCandidateTx(txId []byte)
 	GetMinPoolId() uint32
 	GetMaxPoolId() uint32
 	UpdatePoolId(oldPoolId uint32, newPoolId uint32)

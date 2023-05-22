@@ -40,8 +40,7 @@ func (blocks *Blocks) MakeNewBlock(miner *gcrypto.GhostAddress, creator []byte,
 	newUsedTxPool := blocks.blockContainer.TxContainer.MakeCandidateTrPool(newId, minimumRequiredTxCount)
 	if newUsedTxPool == nil {
 		return nil
-	}
-
+	} 
 	dataBlock := blocks.CreateGhostNetDataBlock(newId, prevDataHash, newUsedTxPool.DataTxCandidate)
 	block := blocks.CreateGhostNetBlock(newId, prevHash, dataBlock.GetHashKey(), miner, creator,
 		newUsedTxPool.TxCandidate)
