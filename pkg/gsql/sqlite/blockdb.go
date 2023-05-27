@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
+
+	_ "embed"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 	_ "github.com/mattn/go-sqlite3"
@@ -20,6 +21,8 @@ type GSqlite3 struct {
 var (
 	GSqlite      = new(GSqlite3)
 	MergeGSqlite = new(GSqlite3)
+	//go:embed db.sqlite3.sql
+	schemaFileByte []byte
 )
 
 func NewGSqlite3() *GSqlite3 {
@@ -48,16 +51,12 @@ func (gSql *GSqlite3) CloseSQL() {
 }
 
 // CreateTable ..
-func (gSql *GSqlite3) CreateTable(schemaFile string) error {
-	file, err := ioutil.ReadFile(schemaFile)
-	if err != nil {
+func (gSql *GSqlite3) CreateTable() error {
+	query := string(schemaFileByte)
+	if _, err := gSql.db.Exec(query); err != nil {
 		log.Fatal(err.Error())
 	}
-	query := string(file)
-	if _, err = gSql.db.Exec(query); err != nil {
-		log.Fatal(err.Error())
-	}
-	return err
+	return nil
 }
 
 func (gSql *GSqlite3) DropTable() {

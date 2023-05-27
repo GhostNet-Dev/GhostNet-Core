@@ -12,7 +12,7 @@ import (
 type GSql interface {
 	OpenSQL(path string, filename string) error
 	CloseSQL()
-	CreateTable(schemaFile string) error
+	CreateTable() error
 	DropTable()
 	InsertTx(blockId uint32, tx *types.GhostTransaction, txType uint32, txIndexInBlock uint32)
 	InsertDataTx(blockId uint32, dataTx *types.GhostDataTransaction, txIndexInBlock uint32)

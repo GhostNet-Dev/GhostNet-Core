@@ -29,7 +29,7 @@ var (
 )
 
 func init() {
-	BlockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
+	BlockContainer.BlockContainerOpen("./")
 }
 
 func TestNewBlocks(t *testing.T) {

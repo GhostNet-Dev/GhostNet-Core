@@ -16,6 +16,7 @@ const ( // tx output type
 	TxTypeDataStore    TxOutputType = 2
 	TxTypeFSRoot       TxOutputType = 3
 	TxTypeContract     TxOutputType = 4
+	TxTypeShare        TxOutputType = 5
 )
 
 const (
@@ -136,4 +137,39 @@ func (tx *GhostTransaction) TxCopy() (copy GhostTransaction) {
 	byteBuf := bytes.NewBuffer(data)
 	copy.Deserialize(byteBuf)
 	return copy
+}
+
+func MakeTxOutputFromOutputParam(outputParam *NextOutputParam) *TxOutput {
+	return &TxOutput{
+		Addr:         outputParam.RecvAddr,
+		BrokerAddr:   outputParam.Broker,
+		Value:        outputParam.TransferCoin,
+		Type:         outputParam.TxType,
+		ScriptSize:   uint32(len(outputParam.OutputScript)),
+		ScriptPubKey: outputParam.OutputScript,
+		ScriptExSize: uint32(len(outputParam.OutputScriptEx)),
+		ScriptEx:     outputParam.OutputScriptEx,
+	}
+}
+
+func MakeTxInputFromOutputParam(outputParam *PrevOutputParam) *TxInput {
+	return &TxInput{
+		PrevOut:    outputParam.VOutPoint,
+		Sequence:   0xFFFFFFFF,
+		ScriptSize: outputParam.Vout.ScriptSize,
+		ScriptSig:  outputParam.Vout.ScriptPubKey, // 서명후 새로 생성된 서명으로 교체된다.
+	}
+}
+
+func MakeEmptyInput() *TxInput {
+	dummyBuf4 := make([]byte, 4)
+	dummyHash := make([]byte, gbytes.HashSize)
+	return &TxInput{
+		PrevOut: TxOutPoint{
+			TxId: dummyHash,
+		},
+		Sequence:   0xFFFFFFFF,
+		ScriptSize: uint32(len(dummyBuf4)),
+		ScriptSig:  dummyBuf4,
+	}
 }

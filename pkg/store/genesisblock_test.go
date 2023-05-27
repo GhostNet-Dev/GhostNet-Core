@@ -37,7 +37,7 @@ func TestAdamLoad(t *testing.T) {
 
 func TestBetweenDbAndFile(t *testing.T) {
 	blockContainer := NewBlockContainer("sqlite3")
-	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
+	blockContainer.BlockContainerOpen("./")
 	gene := GenesisBlock()
 	blockContainer.InsertBlock(gene)
 	pairedBlock := blockContainer.gSql.SelectBlock(1)

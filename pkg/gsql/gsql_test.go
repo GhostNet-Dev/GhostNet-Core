@@ -21,7 +21,7 @@ func TestSqlCreateTable(t *testing.T) {
 	if err == nil {
 		defer gSql.CloseSQL()
 	}
-	gSql.CreateTable("../../db.sqlite3.sql")
+	gSql.CreateTable()
 }
 
 func TestSqlInsertAndSelectCheck(t *testing.T) {
@@ -30,7 +30,7 @@ func TestSqlInsertAndSelectCheck(t *testing.T) {
 	if err == nil {
 		defer gSql.CloseSQL()
 	}
-	if err = gSql.CreateTable("../../db.sqlite3.sql"); err == nil {
+	if err = gSql.CreateTable(); err == nil {
 		defer gSql.DropTable()
 	}
 	tx := MakeTx()
@@ -51,7 +51,7 @@ func TestSqlInAndOutBlock(t *testing.T) {
 	if err == nil {
 		defer gSql.CloseSQL()
 	}
-	if err = gSql.CreateTable("../../db.sqlite3.sql"); err == nil {
+	if err = gSql.CreateTable(); err == nil {
 		defer gSql.DropTable()
 	}
 

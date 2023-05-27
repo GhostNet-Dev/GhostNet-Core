@@ -1,8 +1,6 @@
 package factory
 
 import (
-	"path"
-
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blockfilesystem"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blockmanager"
@@ -102,8 +100,7 @@ func NewDefaultFactory(networkFactory *NetworkFactory, bootFactory *BootFactory,
 }
 
 func (factory *DefaultFactory) FactoryOpen() {
-	schemeFilePath := path.Join(factory.config.DbSchemePath, factory.config.DbSchemeFile)
-	factory.BlockContainer.BlockContainerOpen(schemeFilePath, factory.config.SqlPath)
+	factory.BlockContainer.BlockContainerOpen(factory.config.SqlPath)
 	factory.BlockContainer.GenesisBlockChecker(store.GenesisBlock())
 	factory.Master.RegisterMyMasterNode(factory.UserWallet.GetMasterNode())
 }

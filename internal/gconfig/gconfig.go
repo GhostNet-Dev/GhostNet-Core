@@ -12,8 +12,6 @@ const (
 	DefaultSqlPath             = "./"
 	DefaultFilePath            = "./"
 	DefaultDbName              = "sqlite3"
-	DefaultDbSchemeFile        = "db.sqlite3.sql"
-	DefaultDbSchemePath        = "./"
 	DefaultDbLiteStoreFilename = "litestore.db"
 
 	DefaultStandaloneMode = false
@@ -35,8 +33,6 @@ type GConfig struct {
 	LiteStoreFilename     string
 	FilePath              string
 	DbName                string
-	DbSchemeFile          string
-	DbSchemePath          string
 	StandaloneMode        bool
 	Id                    uint32
 
@@ -57,8 +53,6 @@ func NewDefaultConfig() *GConfig {
 		LiteStoreFilename:     DefaultDbLiteStoreFilename,
 		FilePath:              DefaultFilePath,
 		DbName:                DefaultDbName,
-		DbSchemeFile:          DefaultDbSchemeFile,
-		DbSchemePath:          DefaultDbSchemePath,
 		StandaloneMode:        DefaultStandaloneMode,
 		Timeout:               DefaultTimeout,
 		BlockTickInterval:     DefaultTimeout,

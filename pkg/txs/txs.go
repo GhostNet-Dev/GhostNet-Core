@@ -12,14 +12,74 @@ type TXs struct {
 	gScript        *gvm.GScript
 	gVmExe         *gvm.GVM
 	blockContainer *store.BlockContainer
+	makeInOutFunc  map[types.TxOutputType]func(TransferTxInfo, []types.PrevOutputParam, []types.NextOutputParam) ([]types.TxInput, []types.TxOutput)
 }
 
 func NewTXs(g *gvm.GScript, b *store.BlockContainer, e *gvm.GVM) *TXs {
-	return &TXs{
+	txs := &TXs{
 		gScript:        g,
 		blockContainer: b,
 		gVmExe:         e,
+		makeInOutFunc:  make(map[types.TxOutputType]func(TransferTxInfo, []types.PrevOutputParam, []types.NextOutputParam) ([]types.TxInput, []types.TxOutput)),
 	}
+
+	txs.makeInOutFunc[types.TxTypeDataStore] = func(info TransferTxInfo, prev []types.PrevOutputParam,
+		next []types.NextOutputParam) (inputs []types.TxInput, outputs []types.TxOutput) {
+		for _, outputParam := range prev {
+			input := types.MakeTxInputFromOutputParam(&outputParam)
+			inputs = append(inputs, *input)
+		}
+
+		for _, newOutput := range next {
+			output := types.MakeTxOutputFromOutputParam(&newOutput)
+			outputs = append(outputs, *output)
+		}
+		return inputs, outputs
+	}
+
+	txs.makeInOutFunc[types.TxTypeFSRoot] = func(info TransferTxInfo, prev []types.PrevOutputParam,
+		next []types.NextOutputParam) (inputs []types.TxInput, outputs []types.TxOutput) {
+		inputs = append(inputs, *types.MakeEmptyInput())
+		for _, newOutput := range next {
+			output := types.MakeTxOutputFromOutputParam(&newOutput)
+			outputs = append(outputs, *output)
+		}
+		return inputs, outputs
+	}
+	txs.makeInOutFunc[types.TxTypeShare] = txs.makeInOutFunc[types.TxTypeFSRoot]
+
+	txs.makeInOutFunc[types.TxTypeCoinTransfer] = func(info TransferTxInfo, prev []types.PrevOutputParam,
+		next []types.NextOutputParam) (inputs []types.TxInput, outputs []types.TxOutput) {
+		var totalCoin uint64 = 0
+		var transferCoin uint64 = 0
+		for _, outputParam := range prev {
+			input := types.MakeTxInputFromOutputParam(&outputParam)
+			inputs = append(inputs, *input)
+			totalCoin += outputParam.Vout.Value
+		}
+
+		for _, newOutput := range next {
+			output := types.MakeTxOutputFromOutputParam(&newOutput)
+			outputs = append(outputs, *output)
+			transferCoin += newOutput.TransferCoin
+		}
+
+		if totalCoin > transferCoin {
+			script := gvm.MakeLockScriptOut(info.MyWallet.MyPubKey())
+			output := types.TxOutput{
+				Addr:         info.MyWallet.MyPubKey(),
+				BrokerAddr:   info.Broker,
+				Type:         types.TxTypeCoinTransfer,
+				Value:        totalCoin - transferCoin,
+				ScriptPubKey: script,
+				ScriptSize:   uint32(len(script)),
+			}
+			outputs = append(outputs, output)
+		}
+		return inputs, outputs
+	}
+
+	return txs
 }
 
 type TransferTxInfo struct {
@@ -54,41 +114,6 @@ func (txs *TXs) MakeDataTx(logicalAddr []byte, data []byte) *types.GhostDataTran
 	return &dataTx
 }
 
-func (txs *TXs) MakeContractTx(prev types.PrevOutputParam,
-	next []types.NextOutputParam) *types.GhostTransaction {
-	dummy := make([]byte, gbytes.HashSize)
-	inputs := []types.TxInput{
-		{
-			PrevOut:    prev.VOutPoint,
-			Sequence:   0xffffffff,
-			ScriptSize: prev.Vout.ScriptSize,
-			ScriptSig:  prev.Vout.ScriptPubKey,
-		},
-	}
-
-	outputs := []types.TxOutput{}
-	for _, newScript := range next {
-		output := types.TxOutput{
-			Addr:         newScript.RecvAddr,
-			BrokerAddr:   newScript.Broker,
-			Value:        newScript.TransferCoin,
-			ScriptSize:   uint32(len(newScript.OutputScript)),
-			ScriptPubKey: newScript.OutputScript,
-		}
-		outputs = append(outputs, output)
-	}
-
-	return &types.GhostTransaction{
-		TxId: dummy,
-		Body: types.TxBody{
-			Vin:           inputs,
-			InputCounter:  uint32(len(inputs)),
-			Vout:          outputs,
-			OutputCounter: uint32(len(outputs)),
-		},
-	}
-}
-
 func (txs *TXs) MakeTransaction(info TransferTxInfo, prev map[types.TxOutputType][]types.PrevOutputParam,
 	next map[types.TxOutputType][]types.NextOutputParam) *types.GhostTransaction {
 	dummy := make([]byte, gbytes.HashSize)
@@ -97,7 +122,7 @@ func (txs *TXs) MakeTransaction(info TransferTxInfo, prev map[types.TxOutputType
 
 	// prev가 없을 수도 있다.
 	for txType, nextOutputParams := range next {
-		input, output := txs.MakeInputOutput(txType, info, prev[txType], nextOutputParams)
+		input, output := txs.makeInOutFunc[txType](info, prev[txType], nextOutputParams)
 		inputs = append(inputs, input...)
 		outputs = append(outputs, output...)
 	}
@@ -114,66 +139,4 @@ func (txs *TXs) MakeTransaction(info TransferTxInfo, prev map[types.TxOutputType
 		},
 	}
 	return tx
-}
-
-func (txs *TXs) MakeInputOutput(txType types.TxOutputType, info TransferTxInfo, prev []types.PrevOutputParam,
-	next []types.NextOutputParam) (inputs []types.TxInput, outputs []types.TxOutput) {
-	var totalCoin uint64 = 0
-	var transferCoin uint64 = 0
-
-	// for rootfs tx, it's not necessary previous tx
-	if len(prev) == 0 && txType == types.TxTypeFSRoot {
-		dummyBuf4 := make([]byte, 4)
-		dummyHash := make([]byte, gbytes.HashSize)
-		inputs = append(inputs, types.TxInput{
-			PrevOut: types.TxOutPoint{
-				TxId: dummyHash,
-			},
-			Sequence:   0xFFFFFFFF,
-			ScriptSize: uint32(len(dummyBuf4)),
-			ScriptSig:  dummyBuf4,
-		})
-	} else {
-		// for normal tx
-		for _, outputParam := range prev {
-			input := types.TxInput{
-				PrevOut:    outputParam.VOutPoint,
-				Sequence:   0xFFFFFFFF,
-				ScriptSize: outputParam.Vout.ScriptSize,
-				ScriptSig:  outputParam.Vout.ScriptPubKey, // 서명후 새로 생성된 서명으로 교체된다.
-			}
-			inputs = append(inputs, input)
-			totalCoin += outputParam.Vout.Value
-		}
-	}
-
-	for _, newOutput := range next {
-		output := types.TxOutput{
-			Addr:         newOutput.RecvAddr,
-			BrokerAddr:   newOutput.Broker,
-			Value:        newOutput.TransferCoin,
-			Type:         txType,
-			ScriptSize:   uint32(len(newOutput.OutputScript)),
-			ScriptPubKey: newOutput.OutputScript,
-			ScriptExSize: uint32(len(newOutput.OutputScriptEx)),
-			ScriptEx:     newOutput.OutputScriptEx,
-		}
-		outputs = append(outputs, output)
-		transferCoin += newOutput.TransferCoin
-	}
-
-	if txType == types.TxTypeCoinTransfer && totalCoin > transferCoin {
-		script := gvm.MakeLockScriptOut(info.MyWallet.MyPubKey())
-		output := types.TxOutput{
-			Addr:         info.MyWallet.MyPubKey(),
-			BrokerAddr:   info.Broker,
-			Type:         txType,
-			Value:        totalCoin - transferCoin,
-			ScriptPubKey: script,
-			ScriptSize:   uint32(len(script)),
-		}
-		outputs = append(outputs, output)
-	}
-
-	return inputs, outputs
 }

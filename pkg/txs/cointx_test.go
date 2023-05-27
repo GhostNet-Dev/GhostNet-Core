@@ -25,7 +25,7 @@ var (
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
+	blockContainer.BlockContainerOpen("./")
 	txInfo := TransferTxInfo{
 		MyWallet:     MyWallet,
 		ToAddr:       Recver.Get160PubKey(),

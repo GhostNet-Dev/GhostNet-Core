@@ -28,8 +28,7 @@ func (candidateBlock *CandidateBlock) DropTable() {
 
 func (candidateBlock *CandidateBlock) Reset() {
 	candidateBlock.gMergeSql.DropTable()
-	sqlOpen(candidateBlock.gMergeSql, candidateBlock.blockContainer.schemeSqlFilePath,
-		candidateBlock.blockContainer.dbFilePath, MergeDbFilename)
+	sqlOpen(candidateBlock.gMergeSql, candidateBlock.blockContainer.dbFilePath, MergeDbFilename)
 	candidateBlock.maxBlockId = 0
 }
 

@@ -5,9 +5,9 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
-func (txs *TXs) CreateDataTx(info TransferTxInfo, logicalAddr []byte,
+func (txs *TXs) CreateDataTx(info TransferTxInfo, uniqKey []byte,
 	data []byte) (*types.GhostTransaction, *types.GhostDataTransaction) {
-	dataTx := txs.MakeDataTx(logicalAddr, data)
+	dataTx := txs.MakeDataTx(uniqKey, data)
 	dataTxId := dataTx.GetHashKey()
 	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
 		types.TxTypeDataStore: {

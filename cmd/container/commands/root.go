@@ -49,8 +49,6 @@ func RootCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&cfg.RootPath, "rootpath", "", "", "Home Directory Path")
 	cmd.Flags().StringVarP(&cfg.SqlPath, "sqlpath", "", "", "Sql Db File Directory Path")
 	cmd.Flags().StringVarP(&cfg.FilePath, "filepath", "", "", "Download File Directory Path")
-	cmd.Flags().StringVarP(&cfg.DbSchemeFile, "dbscheme", "", "", "Db Scheme File Name")
-	cmd.Flags().StringVarP(&cfg.DbSchemePath, "dbschemepath", "", "", "Db Scheme File Path")
 	cmd.Flags().BoolVarP(&cfg.StandaloneMode, "standalonemode", "", false, "Single Node Mode")
 	cmd.Flags().Uint32VarP(&cfg.Id, "id", "", 0, "Container Id")
 

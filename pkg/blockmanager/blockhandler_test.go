@@ -16,7 +16,7 @@ var (
 )
 
 func TestGetHeightestBlock(t *testing.T) {
-	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
+	blockContainer.BlockContainerOpen("./")
 	defer blockContainer.Close()
 	sq := &packets.GetHeightestBlockSq{
 		Master: p2p.MakeMasterPacket(blockServer.owner.GetPubAddress(), nil, 0, blockServer.localIpAddr),

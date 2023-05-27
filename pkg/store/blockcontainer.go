@@ -20,7 +20,6 @@ type BlockContainer struct {
 	MergeTxContainer *TxContainer
 	CandidateBlk     *CandidateBlock
 
-	schemeSqlFilePath    string
 	dbFilePath           string
 	newBlockEventHandler []func(*types.PairedBlock)
 	delBlockEventHandler []func(*types.PairedBlock)
@@ -49,26 +48,25 @@ func (blockContainer *BlockContainer) RegisterBlockEvent(newBlockEvent func(*typ
 	blockContainer.delBlockEventHandler = append(blockContainer.delBlockEventHandler, delBlockEvent)
 }
 
-func (blockContainer *BlockContainer) BlockContainerOpen(schemeSqlFilePath string, dbFilePath string) {
-	sqlOpen(blockContainer.gSql, schemeSqlFilePath, dbFilePath, DbFilename)
-	sqlOpen(blockContainer.gMergeSql, schemeSqlFilePath, dbFilePath, MergeDbFilename)
+func (blockContainer *BlockContainer) BlockContainerOpen(dbFilePath string) {
+	sqlOpen(blockContainer.gSql, dbFilePath, DbFilename)
+	sqlOpen(blockContainer.gMergeSql, dbFilePath, MergeDbFilename)
 
 	blockContainer.dbFilePath = dbFilePath
-	blockContainer.schemeSqlFilePath = schemeSqlFilePath
 	blockContainer.TxContainer.Initialize()
 }
 
-func sqlOpen(gSql gsql.GSql, schemeSqlFilePath string, dbFilePath string, dbFilename string) {
+func sqlOpen(gSql gsql.GSql, dbFilePath string, dbFilename string) {
 	if err := gSql.OpenSQL(dbFilePath, dbFilename); err != nil {
 		log.Fatal(err)
 	}
-	if err := gSql.CreateTable(schemeSqlFilePath); err != nil {
+	if err := gSql.CreateTable(); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func (blockContainer *BlockContainer) Reopen() {
-	blockContainer.BlockContainerOpen(blockContainer.schemeSqlFilePath, blockContainer.dbFilePath)
+	blockContainer.BlockContainerOpen(blockContainer.dbFilePath)
 }
 
 func (blockContainer *BlockContainer) Close() {
@@ -78,7 +76,7 @@ func (blockContainer *BlockContainer) Close() {
 func (blockContainer *BlockContainer) Reset() {
 	blockContainer.gSql.DropTable()
 	blockContainer.CandidateBlk.DropTable()
-	blockContainer.BlockContainerOpen(blockContainer.schemeSqlFilePath, blockContainer.dbFilePath)
+	blockContainer.BlockContainerOpen(blockContainer.dbFilePath)
 }
 
 func (blockContainer *BlockContainer) GetBlock(blockId uint32) *types.PairedBlock {

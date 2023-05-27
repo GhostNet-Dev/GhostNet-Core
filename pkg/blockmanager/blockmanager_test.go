@@ -60,7 +60,7 @@ func init() {
 }
 
 func TestStartServer(t *testing.T) {
-	blockContainer.BlockContainerOpen("../../db.sqlite3.sql", "./")
+	blockContainer.BlockContainerOpen("./")
 	defer blockContainer.Close()
 	blockServer.BlockSync()
 }
