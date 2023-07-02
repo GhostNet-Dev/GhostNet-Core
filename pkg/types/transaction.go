@@ -17,6 +17,7 @@ const ( // tx output type
 	TxTypeFSRoot       TxOutputType = 3
 	TxTypeContract     TxOutputType = 4
 	TxTypeShare        TxOutputType = 5
+	TxTypeScript       TxOutputType = 6
 )
 
 const (
