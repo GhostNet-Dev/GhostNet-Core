@@ -87,7 +87,7 @@ func (io *BlockIoHandler) ReadData(key []byte) []byte {
 	return fileObj.Buffer
 }
 
-func (io *BlockIoHandler) WriteData(uniqKey []byte, data []byte) (key []byte) {
+func (io *BlockIoHandler) WriteData(uniqKey, data []byte) (key []byte) {
 	prevMap := map[types.TxOutputType][]types.PrevOutputParam{}
 	prevMap[types.TxTypeDataStore] = io.rootTxPtr // for mapping
 
@@ -98,6 +98,27 @@ func (io *BlockIoHandler) WriteData(uniqKey []byte, data []byte) (key []byte) {
 		Broker:    io.wallet.GetMasterNodeAddr(),
 		FeeAddr:   store.AdamsAddress(),
 		FeeBroker: io.wallet.GetMasterNodeAddr(),
+	}
+	tx, dataTx := io.blockIo.tXs.CreateDataTx(*txInfo, uniqKey, data)
+	tx = io.blockIo.tXs.InkTheContract(tx, io.wallet.GetGhostAddress())
+
+	io.blockIo.blockManager.SendDataTx(tx, dataTx, nil)
+
+	key = dataTx.TxId
+	return key
+}
+
+func (io *BlockIoHandler) WriteDataBrokerService(uniqKey, data, feeBroker []byte) (key []byte) {
+	prevMap := map[types.TxOutputType][]types.PrevOutputParam{}
+	prevMap[types.TxTypeDataStore] = io.rootTxPtr // for mapping
+
+	txInfo := &txs.TransferTxInfo{
+		Prevs:     prevMap,
+		MyWallet:  io.wallet,
+		ToAddr:    io.wallet.MyPubKey(),
+		Broker:    io.wallet.GetMasterNodeAddr(),
+		FeeAddr:   store.AdamsAddress(),
+		FeeBroker: feeBroker,
 	}
 	tx, dataTx := io.blockIo.tXs.CreateDataTx(*txInfo, uniqKey, data)
 	tx = io.blockIo.tXs.InkTheContract(tx, io.wallet.GetGhostAddress())
