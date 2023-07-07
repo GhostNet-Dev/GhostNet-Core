@@ -38,6 +38,7 @@ type DefaultFactory struct {
 	Owner            *gcrypto.GhostAddress
 	LocalIpAddr      *ptypes.GhostIp
 	BlockIo          *blockfilesystem.BlockIo
+	ScriptIo          *blockfilesystem.ScriptIo
 
 	networkFactory *NetworkFactory
 	config         *gconfig.GConfig
@@ -95,6 +96,8 @@ func NewDefaultFactory(networkFactory *NetworkFactory, bootFactory *BootFactory,
 		factory.Txs, factory.BlockContainer, factory.AccountContainer, factory.Master, factory.FileService, factory.Cloud, user, factory.glog)
 	factory.BlockIo = blockfilesystem.NewBlockIo(factory.BlockServer,
 		factory.BlockContainer, factory.Txs, factory.Cloud)
+	factory.ScriptIo = blockfilesystem.NewScriptIo(factory.BlockServer,
+		factory.BlockContainer, factory.Txs, factory.Cloud, user, bootFactory.Db)
 
 	return factory
 }

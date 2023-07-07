@@ -38,8 +38,9 @@ todo list
 3. read key ->  search key map with datatxid
 */
 
-func NewScriptIo(w *gcrypto.Wallet, liteStore *store.LiteStore, cloud *cloudservice.CloudService,
-	bc *store.BlockContainer, blkMgr *blockmanager.BlockManager, tXs *txs.TXs) *ScriptIo {
+func NewScriptIo(blkMgr *blockmanager.BlockManager,
+	bc *store.BlockContainer, tXs *txs.TXs, cloud *cloudservice.CloudService,
+	w *gcrypto.Wallet, liteStore *store.LiteStore) *ScriptIo {
 	return &ScriptIo{
 		wallet:       w,
 		liteStore:    liteStore,
