@@ -9,13 +9,13 @@ import (
 )
 
 type TXs struct {
-	gScript        *gvm.GScript
+	gScript        *gvm.GCompiler
 	gVmExe         *gvm.GVM
 	blockContainer *store.BlockContainer
 	makeInOutFunc  map[types.TxOutputType]func(TransferTxInfo, []types.PrevOutputParam, []types.NextOutputParam) ([]types.TxInput, []types.TxOutput)
 }
 
-func NewTXs(g *gvm.GScript, b *store.BlockContainer, e *gvm.GVM) *TXs {
+func NewTXs(g *gvm.GCompiler, b *store.BlockContainer, e *gvm.GVM) *TXs {
 	txs := &TXs{
 		gScript:        g,
 		blockContainer: b,
@@ -65,9 +65,9 @@ func NewTXs(g *gvm.GScript, b *store.BlockContainer, e *gvm.GVM) *TXs {
 		}
 
 		if totalCoin > transferCoin {
-			script := gvm.MakeLockScriptOut(info.MyWallet.MyPubKey())
+			script := gvm.MakeLockScriptOut(info.FromAddr)
 			output := types.TxOutput{
-				Addr:         info.MyWallet.MyPubKey(),
+				Addr:         info.FromAddr,
 				BrokerAddr:   info.Broker,
 				Type:         types.TxTypeCoinTransfer,
 				Value:        totalCoin - transferCoin,
@@ -83,7 +83,7 @@ func NewTXs(g *gvm.GScript, b *store.BlockContainer, e *gvm.GVM) *TXs {
 }
 
 type TransferTxInfo struct {
-	MyWallet     *gcrypto.Wallet
+	FromAddr     []byte
 	ToAddr       []byte
 	Broker       []byte
 	FeeAddr      []byte

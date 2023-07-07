@@ -46,6 +46,46 @@ func (txResult *TxChkResult) Error() string {
 // 1. format check
 // 2. db check
 // 3. gvm excute
+func TransactionDefaultValidation(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction,
+	gVmExe *gvm.GVM) *TxChkResult {
+	var gFuncParam []gvm.GFuncParam
+	if tx.Body.InputCounter != uint32(len(tx.Body.Vin)) {
+		return &TxChkResult{TxChkResult_CounterMismatch}
+	}
+	if tx.Body.OutputCounter != uint32(len(tx.Body.Vout)) {
+		return &TxChkResult{TxChkResult_CounterMismatch}
+	}
+
+	if tx.Body.Vout[0].Type != types.TxTypeFSRoot {
+		return &TxChkResult{TxChkResult_Success}
+	}
+
+	dummyBuf4 := make([]byte, 4)
+	input := tx.Body.Vin[0]
+	scriptSig := input.ScriptSig
+	input.ScriptSig = dummyBuf4
+	input.ScriptSize = uint32(len(dummyBuf4))
+
+	gFuncParam = append(gFuncParam, gvm.GFuncParam{
+		InputSig:      scriptSig,
+		ScriptPubbKey: tx.Body.Vout[0].ScriptPubKey,
+		TxType:        types.TxTypeFSRoot,
+	})
+
+	dummy := make([]byte, gbytes.HashSize)
+	txId := tx.TxId
+	tx.TxId = dummy
+
+	if !gVmExe.ExecuteGFunction(tx.SerializeToByte(), gFuncParam) {
+		return &TxChkResult{TxChkResult_ScriptError}
+	}
+
+	tx.TxId = txId
+
+	return &TxChkResult{TxChkResult_Success}
+
+}
+
 func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction,
 	txContainer *store.TxContainer) *TxChkResult {
 	var transferCoin, getherCoin uint64 = 0, 0

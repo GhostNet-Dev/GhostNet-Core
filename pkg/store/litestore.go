@@ -13,6 +13,7 @@ const (
 	DefaultWalletTable           = "wallet"
 	DefaultNickTable             = "nick"
 	DefaultNickInBlockChainTable = "nickinchain"
+	DefaultDataKeyMappingTable   = "DataKeyMapping"
 )
 
 var DefaultLiteTable = [...]string{

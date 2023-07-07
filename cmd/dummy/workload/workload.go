@@ -102,7 +102,7 @@ func (w *Workload) CheckAccountTx() (result bool, err error) {
 
 func (w *Workload) MakeAccountTx() {
 	txInfo := &txs.TransferTxInfo{
-		MyWallet:  w.wallet,
+		FromAddr:  w.wallet.MyPubKey(),
 		ToAddr:    w.wallet.MyPubKey(),
 		Broker:    w.wallet.GetMasterNodeAddr(),
 		FeeAddr:   store.AdamsAddress(),
@@ -125,7 +125,7 @@ func (w *Workload) MakeDataTx() {
 
 	txInfo := &txs.TransferTxInfo{
 		Prevs:     prevMap,
-		MyWallet:  w.wallet,
+		FromAddr:  w.wallet.MyPubKey(),
 		ToAddr:    w.wallet.MyPubKey(),
 		Broker:    w.wallet.GetMasterNodeAddr(),
 		FeeAddr:   store.AdamsAddress(),

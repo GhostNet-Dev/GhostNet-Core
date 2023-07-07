@@ -12,12 +12,13 @@ type TxOutputType uint32
 
 const ( // tx output type
 	None               TxOutputType = 0
-	TxTypeCoinTransfer TxOutputType = 1
-	TxTypeDataStore    TxOutputType = 2
-	TxTypeFSRoot       TxOutputType = 3
-	TxTypeContract     TxOutputType = 4
-	TxTypeShare        TxOutputType = 5
-	TxTypeScript       TxOutputType = 6
+	TxTypeCoinTransfer TxOutputType = 1 // bitcoin
+	TxTypeDataStore    TxOutputType = 2 // store user data
+	TxTypeFSRoot       TxOutputType = 3 // create user
+	TxTypeContract     TxOutputType = 4 // need change by code
+	TxTypeShare        TxOutputType = 5 // ?
+	TxTypeScript       TxOutputType = 6 // store gscript or glambda script
+	TxTypeScriptStore  TxOutputType = 7 // store data by script
 )
 
 const (
@@ -31,6 +32,13 @@ const ( //tx type
 	AliceTx  = 0
 	NormalTx = 1
 )
+
+type GScript struct {
+	Version uint32
+	Type    uint32
+	Param   string
+	Script  []byte
+}
 
 type PrevOutputParam struct {
 	TxType    TxOutputType

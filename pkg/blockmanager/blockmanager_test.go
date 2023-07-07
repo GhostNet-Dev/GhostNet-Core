@@ -34,7 +34,7 @@ var (
 
 	glog             = glogger.NewGLogger(0)
 	config           = gconfig.NewDefaultConfig()
-	gScript          = gvm.NewGScript()
+	gScript          = gvm.NewGCompiler()
 	gVm              = gvm.NewGVM()
 	blockContainer   = store.NewBlockContainer("sqlite3")
 	accountContainer = store.NewBcAccountContainer(liteStore)

@@ -2,6 +2,13 @@ syntax = "proto3";
 package ghostnet.ptypes;
 option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes";
 
+message GScript {
+	uint32 Version = 1;
+	uint32 Type = 2;
+	string Parameter = 3;
+	bytes Script = 4;
+}
+
 message TxOutPoint {
     bytes TxId = 1;
     uint32 TxOutIndex = 2;

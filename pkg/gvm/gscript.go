@@ -1,122 +1,59 @@
 package gvm
 
 import (
-	"bytes"
-	"encoding/binary"
-
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
+	"github.com/GhostNet-Dev/glambda/evaluator"
+	"github.com/GhostNet-Dev/glambda/lexer"
+	"github.com/GhostNet-Dev/glambda/object"
+	"github.com/GhostNet-Dev/glambda/parser"
 )
 
 type GScript struct {
+	param object.Hash
 }
 
 func NewGScript() *GScript {
-	return &GScript{}
+	gScript := &GScript{}
+	evaluator.AddBuiltIn("getParam", &object.Builtin{
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 0 {
+				//new err
+			}
+			return &gScript.param
+		},
+	})
+	return gScript
 }
 
-func (gScript *GScript) MakeBlockSignature(block *types.GhostNetBlock, ghostAddr *gcrypto.GhostAddress) {
-	block.Header.BlockSignature = types.SigHash{}
-	block.Header.SignatureSize = uint32(block.Header.BlockSignature.Size())
-
-	sig := makeSignature(block.Header.SerializeToByte(), ghostAddr)
-	block.Header.SignatureSize = uint32(sig.Size())
-	block.Header.BlockSignature = *sig
-}
-
-func (gScript *GScript) MakeScriptSigExecuteUnlock(tx *types.GhostTransaction, ghostAddr *gcrypto.GhostAddress) {
-	inputParam := gScript.MakeInputParam(tx.SerializeToByte(), ghostAddr)
-	for i := range tx.Body.Vin {
-		tx.Body.Vin[i].ScriptSig = inputParam
-		tx.Body.Vin[i].ScriptSize = uint32(len(tx.Body.Vin[i].ScriptSig))
+func (gScript *GScript) Eval(code string) interface{} {
+	l := lexer.NewLexer(code)
+	p := parser.NewParser(l)
+	program := p.ParseProgram()
+	env := object.NewEnvironment()
+	resultObj := evaluator.Eval(program, env)
+	switch obj := resultObj.(type) {
+	case *object.String:
+		return obj.Value
+	case *object.Integer:
+		return obj.Value
+	case *object.Identifier:
+		return obj.Value
 	}
+	return ""
 }
 
-func (gScript *GScript) MakeInputParam(buf []byte, myAddress *gcrypto.GhostAddress) []byte {
-	sig := makeSignature(buf, myAddress)
-	sigBuf := sig.SerializeToByte()
-	scriptBuf := new(bytes.Buffer)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_PUSHSIG)
-	binary.Write(scriptBuf, binary.LittleEndian, byte(len(sigBuf)))
-	resultBuf := append(scriptBuf.Bytes(), sigBuf...)
-	return resultBuf
-}
+func (gScript *GScript) ExecuteScript(tx *types.GhostTransaction) (result string) {
+	output := tx.Body.Vout[0]
+	script := output.ScriptEx
+	ret := gScript.Eval(string(script))
+	responseParam := make(map[string]string)
 
-func makeSignature(buf []byte, myAddress *gcrypto.GhostAddress) *types.SigHash {
-	signPack := gcrypto.Signer(buf, myAddress)
-	r, s := signPack.R.Bytes(), signPack.S.Bytes()
-	sig := &types.SigHash{
-		RBuf:          r,
-		SBuf:          s,
-		PubKey:        myAddress.GetSignPubKey(),
-		PubKeySize:    byte(len(myAddress.GetSignPubKey())),
-		RSize:         byte(len(r)),
-		SSize:         byte(len(s)),
-		SignatureType: SIGHASH_ALL,
+	switch obj := ret.(type) {
+	case *object.Hash:
+		for _, hashPair := range obj.Pairs {
+			responseParam[hashPair.Key.Inspect()] = hashPair.Value.Inspect()
+		}
 	}
-	sig.SignatureSize = byte(sig.SigSize())
-	return sig
-}
 
-func MakeLockScriptOut(ToAddr []byte) []byte {
-	scriptBuf := new(bytes.Buffer)
-	lockOutputScript(scriptBuf, ToAddr)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_PAY)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_RETURN)
-	return scriptBuf.Bytes()
-}
-
-func lockOutputScript(scriptBuf *bytes.Buffer, ToAddr []byte) {
-	toAddrUint8 := make([]uint8, len(ToAddr))
-	copy(toAddrUint8[:], ToAddr[:])
-	binary.Write(scriptBuf, binary.LittleEndian, OP_DUP)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_HASH160)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_PUSH)
-	binary.Write(scriptBuf, binary.LittleEndian, uint8(len(ToAddr)))
-	binary.Write(scriptBuf, binary.LittleEndian, toAddrUint8)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_EQUALVERIFY)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_CHECKSIG)
-}
-
-func MakeRootAccount(ToAddr []byte, Nickname string) []byte {
-	nickname := []byte(Nickname)
-	nickBuf := make([]uint8, len(nickname))
-	copy(nickBuf[:], nickname[:])
-	scriptBuf := new(bytes.Buffer)
-	lockOutputScript(scriptBuf, ToAddr)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_PUSH)
-	binary.Write(scriptBuf, binary.LittleEndian, uint8(len(nickBuf)))
-	binary.Write(scriptBuf, binary.LittleEndian, nickBuf)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_RETURN)
-	return scriptBuf.Bytes()
-}
-
-func MakeDataMapping(ToAddr []byte) []byte {
-	scriptBuf := new(bytes.Buffer)
-	lockOutputScript(scriptBuf, ToAddr)
-	/*
-		binary.Write(scriptBuf, binary.LittleEndian, OP_PUSHTOKEN)
-		binary.Write(scriptBuf, binary.LittleEndian, uint8(len(token)))
-		binary.Write(scriptBuf, binary.LittleEndian, token)
-		binary.Write(scriptBuf, binary.LittleEndian, OP_PUSH)
-		binary.Write(scriptBuf, binary.LittleEndian, uint8(len(dataTxId)))
-		binary.Write(scriptBuf, binary.LittleEndian, dataTxId)
-	*/
-	binary.Write(scriptBuf, binary.LittleEndian, OP_MAPPING)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_RETURN)
-	return scriptBuf.Bytes()
-}
-
-func MakeContractScript(fromPubKey, dataTxId []byte) []byte {
-	scriptBuf := new(bytes.Buffer)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_PUSHTOKEN)
-	binary.Write(scriptBuf, binary.LittleEndian, uint8(len(dataTxId)))
-	binary.Write(scriptBuf, binary.LittleEndian, dataTxId)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_PUSH)
-	binary.Write(scriptBuf, binary.LittleEndian, uint8(len(fromPubKey)))
-	binary.Write(scriptBuf, binary.LittleEndian, fromPubKey)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_MAPPING)
-	binary.Write(scriptBuf, binary.LittleEndian, OP_RETURN)
-
-	return scriptBuf.Bytes()
+	return result
 }

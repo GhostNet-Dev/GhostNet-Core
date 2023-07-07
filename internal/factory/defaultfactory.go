@@ -32,7 +32,7 @@ type DefaultFactory struct {
 	FileService      *fileservice.FileService
 	Cloud            *cloudservice.CloudService
 	BlockServer      *blockmanager.BlockManager
-	GScript          *gvm.GScript
+	GScript          *gvm.GCompiler
 	Gvm              *gvm.GVM
 	UserWallet       *gcrypto.Wallet
 	Owner            *gcrypto.GhostAddress
@@ -74,7 +74,7 @@ func NewDefaultFactory(networkFactory *NetworkFactory, bootFactory *BootFactory,
 	}
 
 	factory.glog = glog
-	factory.GScript = gvm.NewGScript()
+	factory.GScript = gvm.NewGCompiler()
 	factory.Gvm = gvm.NewGVM()
 	factory.BlockContainer = store.NewBlockContainer(config.DbName)
 	factory.AccountContainer = store.NewBcAccountContainer(bootFactory.Db)

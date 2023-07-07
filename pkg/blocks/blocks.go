@@ -9,7 +9,7 @@ import (
 type Blocks struct {
 	txs            *txs.TXs
 	blockContainer *store.BlockContainer
-	gScript        *gvm.GScript
+	gScript        *gvm.GCompiler
 	Version        uint32
 	miningFlag     bool
 }

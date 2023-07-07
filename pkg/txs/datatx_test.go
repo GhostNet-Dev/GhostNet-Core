@@ -23,7 +23,7 @@ func TestSaveDataTx(t *testing.T) {
 		},
 	}
 	txInfo := TransferTxInfo{
-		MyWallet:     MyWallet,
+		FromAddr:     MyWallet.MyPubKey(),
 		ToAddr:       Recver.Get160PubKey(),
 		Broker:       Broker.Get160PubKey(),
 		FeeAddr:      Broker.Get160PubKey(),

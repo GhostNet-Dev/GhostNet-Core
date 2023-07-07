@@ -38,7 +38,7 @@ func NewBlockIo(blkMgr *blockmanager.BlockManager,
 
 func (io *BlockIo) CreateFilesystem(w *gcrypto.Wallet) *BlockIoHandler {
 	txInfo := &txs.TransferTxInfo{
-		MyWallet:  w,
+		FromAddr:  w.MyPubKey(),
 		ToAddr:    w.MyPubKey(),
 		Broker:    w.GetMasterNodeAddr(),
 		FeeAddr:   store.AdamsAddress(),
@@ -74,8 +74,7 @@ func (io *BlockIo) OpenFilesystem(w *gcrypto.Wallet) *BlockIoHandler {
 	return nil
 }
 
-func (io *BlockIo) CloseFilesystem() {
-}
+func (io *BlockIo) CloseFilesystem() {}
 
 func (io *BlockIoHandler) ReadData(key []byte) []byte {
 	fileObj := io.blockIo.cloud.ReadFromCloudSync(fileservice.ByteToFilename(key),
@@ -93,32 +92,11 @@ func (io *BlockIoHandler) WriteData(uniqKey, data []byte) (key []byte) {
 
 	txInfo := &txs.TransferTxInfo{
 		Prevs:     prevMap,
-		MyWallet:  io.wallet,
+		FromAddr:  io.wallet.MyPubKey(),
 		ToAddr:    io.wallet.MyPubKey(),
 		Broker:    io.wallet.GetMasterNodeAddr(),
 		FeeAddr:   store.AdamsAddress(),
 		FeeBroker: io.wallet.GetMasterNodeAddr(),
-	}
-	tx, dataTx := io.blockIo.tXs.CreateDataTx(*txInfo, uniqKey, data)
-	tx = io.blockIo.tXs.InkTheContract(tx, io.wallet.GetGhostAddress())
-
-	io.blockIo.blockManager.SendDataTx(tx, dataTx, nil)
-
-	key = dataTx.TxId
-	return key
-}
-
-func (io *BlockIoHandler) WriteDataBrokerService(uniqKey, data, feeBroker []byte) (key []byte) {
-	prevMap := map[types.TxOutputType][]types.PrevOutputParam{}
-	prevMap[types.TxTypeDataStore] = io.rootTxPtr // for mapping
-
-	txInfo := &txs.TransferTxInfo{
-		Prevs:     prevMap,
-		MyWallet:  io.wallet,
-		ToAddr:    io.wallet.MyPubKey(),
-		Broker:    io.wallet.GetMasterNodeAddr(),
-		FeeAddr:   store.AdamsAddress(),
-		FeeBroker: feeBroker,
 	}
 	tx, dataTx := io.blockIo.tXs.CreateDataTx(*txInfo, uniqKey, data)
 	tx = io.blockIo.tXs.InkTheContract(tx, io.wallet.GetGhostAddress())

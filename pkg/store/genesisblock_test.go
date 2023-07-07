@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	gScript = gvm.NewGScript()
+	gScript = gvm.NewGCompiler()
 )
 
 func TestGenesisBlockLoad(t *testing.T) {

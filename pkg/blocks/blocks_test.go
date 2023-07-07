@@ -21,7 +21,7 @@ var (
 	Broker = gcrypto.GenerateKeyPair()
 	Recver = gcrypto.GenerateKeyPair()
 
-	gScript        = gvm.NewGScript()
+	gScript        = gvm.NewGCompiler()
 	gVm            = gvm.NewGVM()
 	BlockContainer = store.NewBlockContainer("sqlite3")
 	Txs            = txs.NewTXs(gScript, BlockContainer, gVm)
