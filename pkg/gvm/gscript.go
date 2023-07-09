@@ -9,23 +9,15 @@ import (
 )
 
 type GScript struct {
-	param object.Hash
 }
 
 func NewGScript() *GScript {
 	gScript := &GScript{}
-	evaluator.AddBuiltIn("getParam", &object.Builtin{
-		Fn: func(args ...object.Object) object.Object {
-			if len(args) != 0 {
-				//new err
-			}
-			return &gScript.param
-		},
-	})
+
 	return gScript
 }
 
-func (gScript *GScript) Eval(code string) interface{} {
+func Eval(code string) interface{} {
 	l := lexer.NewLexer(code)
 	p := parser.NewParser(l)
 	program := p.ParseProgram()
@@ -42,10 +34,10 @@ func (gScript *GScript) Eval(code string) interface{} {
 	return ""
 }
 
-func (gScript *GScript) ExecuteScript(tx *types.GhostTransaction) (result string) {
+func ExecuteScript(tx *types.GhostTransaction) (result string) {
 	output := tx.Body.Vout[0]
 	script := output.ScriptEx
-	ret := gScript.Eval(string(script))
+	ret := Eval(string(script))
 	responseParam := make(map[string]string)
 
 	switch obj := ret.(type) {

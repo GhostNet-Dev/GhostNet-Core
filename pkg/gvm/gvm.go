@@ -22,8 +22,9 @@ type GVMRegister struct {
 }
 
 type GVM struct {
-	Regs *GVMRegister
-	exec map[uint16]GExecuter
+	Regs    *GVMRegister
+	exec    map[uint16]GExecuter
+	gScript *GScript
 }
 
 func NewGVM() *GVM {
@@ -44,6 +45,7 @@ func NewGVM() *GVM {
 			OP_CREATE_TOKEN:   &OpCreateToken{Regs: regs},
 			OP_RETURN:         &OpReturn{Regs: regs},
 		},
+		gScript: NewGScript(),
 	}
 
 	return &gvm

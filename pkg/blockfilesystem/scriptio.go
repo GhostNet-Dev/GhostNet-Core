@@ -11,15 +11,18 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/txs"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
+	"github.com/GhostNet-Dev/glambda/evaluator"
+	"github.com/GhostNet-Dev/glambda/object"
 )
 
 type ScriptIo struct {
-	bc           *store.BlockContainer
-	cloud        *cloudservice.CloudService
-	wallet       *gcrypto.Wallet
-	blockManager *blockmanager.BlockManager
-	liteStore    *store.LiteStore
-	tXs          *txs.TXs
+	bc              *store.BlockContainer
+	cloud           *cloudservice.CloudService
+	wallet          *gcrypto.Wallet
+	blockManager    *blockmanager.BlockManager
+	liteStore       *store.LiteStore
+	tXs             *txs.TXs
+	scriptIoHandler *ScriptIoHandler
 }
 
 type ScriptIoHandler struct {
@@ -41,7 +44,7 @@ todo list
 func NewScriptIo(blkMgr *blockmanager.BlockManager,
 	bc *store.BlockContainer, tXs *txs.TXs, cloud *cloudservice.CloudService,
 	w *gcrypto.Wallet, liteStore *store.LiteStore) *ScriptIo {
-	return &ScriptIo{
+	gScriptIo := &ScriptIo{
 		wallet:       w,
 		liteStore:    liteStore,
 		cloud:        cloud,
@@ -49,6 +52,38 @@ func NewScriptIo(blkMgr *blockmanager.BlockManager,
 		blockManager: blkMgr,
 		tXs:          tXs,
 	}
+	evaluator.AddBuiltIn("loadKeyValue", &object.Builtin{
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 2 {
+				//new err
+				return &object.Null{}
+			}
+			if args[0].Type() != object.STRING_OBJ || args[1].Type() != object.STRING_OBJ {
+				return nil
+			}
+			key := args[0].(*object.String).Value
+			data := gScriptIo.scriptIoHandler.ReadScriptData([]byte(key))
+			return &object.String{Value: string(data)}
+		},
+	})
+
+	evaluator.AddBuiltIn("saveKeyValue", &object.Builtin{
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 2 {
+				//new err
+				return &object.Null{}
+			}
+			if args[0].Type() != object.STRING_OBJ || args[1].Type() != object.STRING_OBJ {
+				return nil
+			}
+			key := []byte(args[0].(*object.String).Value)
+			value := []byte(args[1].(*object.String).Value)
+			// TODO: Script 전용 tx storage가 만들어져야함
+			txId := gScriptIo.scriptIoHandler.WriteScriptData(key, value)
+			return &object.String{Value: string(txId)}
+		},
+	})
+	return gScriptIo
 }
 
 func (io *ScriptIo) CreateScript(w *gcrypto.Wallet, namespace, script string) ([]byte, bool) {
@@ -94,7 +129,7 @@ func (io *ScriptIo) OpenScript(txId []byte) *ScriptIoHandler {
 	if !dataTx.Deserialize(bytes.NewBuffer(fileObj.Buffer)).Result() {
 		return nil
 	}
-	return &ScriptIoHandler{
+	io.scriptIoHandler = &ScriptIoHandler{
 		scriptIo:      io,
 		wallet:        io.wallet,
 		toAddr:        output.Addr,
@@ -109,21 +144,18 @@ func (io *ScriptIo) OpenScript(txId []byte) *ScriptIoHandler {
 			Vout: output,
 		}},
 	}
+	return io.scriptIoHandler
 }
+
+func (io *ScriptIo) ExecuteScript() {}
 
 func (io *ScriptIo) CloseScript(handler *ScriptIoHandler) {}
 
 func (io *ScriptIoHandler) ReadScriptData(key []byte) (data []byte) {
 	// to avoid key collision
-	uniqKey := append(io.toAddr, key...)
-	dataTxId, err := io.scriptIo.liteStore.SelectEntry(store.DefaultDataKeyMappingTable, uniqKey)
-	if err != nil {
-		return nil
-	}
-
+	dataTxId := key
 	fileObj := io.scriptIo.cloud.ReadFromCloudSync(fileservice.ByteToFilename(dataTxId),
 		io.wallet.GetMasterNode().Ip.GetUdpAddr())
-
 	dataTx := &types.GhostDataTransaction{}
 	if !dataTx.Deserialize(bytes.NewBuffer(fileObj.Buffer)).Result() {
 		return nil

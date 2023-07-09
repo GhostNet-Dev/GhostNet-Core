@@ -62,11 +62,16 @@ func (worker *WorkloadScript) LoadWorker(masterNode *ptypes.GhostUser) {
 func (w *WorkloadScript) PrepareRun() {
 	w.Running = true
 	var txId []byte
-	var ok bool
+	ok := false
+	sampleCode := `
+	let key = saveKeyValue("sampleKey", "testValue");
+	let result = loadKeyValue(key);
+	result;
+	`
 
 	for {
 		if txId == nil {
-			if txId, ok = w.scriptIo.CreateScript(w.wallet, "workload", ""); !ok {
+			if txId, ok = w.scriptIo.CreateScript(w.wallet, "workload", sampleCode); !ok {
 				continue
 			}
 		}
