@@ -249,9 +249,22 @@ func (gSql *GSqlite3) SelectTxs(blockId uint32, txType uint32) []types.GhostTran
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rows.Close()
+	txs := []types.GhostTransaction{}
+	for rows.Next() {
+		tx := types.GhostTransaction{}
+		if err := rows.Scan(&tx.TxId, &tx.Body.InputCounter, &tx.Body.OutputCounter,
+			&tx.Body.Nonce, &tx.Body.LockTime); err != nil {
+			log.Fatal(err)
+		}
+		txs = append(txs, tx)
+	}
 
-	return gSql.GetTxRows(rows)
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	rows.Close()
+
+	return gSql.GetTxRows(txs)
 }
 
 // SelectTx 역시나 여긴 인터페이스 역할을하고 아래 쿼리들은 하위 클래스에 할당해야할 것 같음
@@ -527,22 +540,12 @@ func (gSql *GSqlite3) GetBlockHeight() uint32 {
 	return id
 }
 
-func (gSql *GSqlite3) GetTxRows(rows *sql.Rows) []types.GhostTransaction {
-	txs := []types.GhostTransaction{}
-	for rows.Next() {
-		tx := types.GhostTransaction{}
-		if err := rows.Scan(&tx.TxId, &tx.Body.InputCounter, &tx.Body.OutputCounter,
-			&tx.Body.Nonce, &tx.Body.LockTime); err != nil {
-			log.Fatal(err)
-		}
-		tx.Body.Vin = gSql.SelectInputs(tx.TxId, tx.Body.InputCounter)
-		tx.Body.Vout = gSql.SelectOutputs(tx.TxId, tx.Body.OutputCounter)
-		txs = append(txs, tx)
+func (gSql *GSqlite3) GetTxRows(txs []types.GhostTransaction) []types.GhostTransaction {
+	for i, tx := range txs {
+		txs[i].Body.Vin = gSql.SelectInputs(tx.TxId, tx.Body.InputCounter)
+		txs[i].Body.Vout = gSql.SelectOutputs(tx.TxId, tx.Body.OutputCounter)
 	}
 
-	if err := rows.Err(); err != nil {
-		log.Fatal(err)
-	}
 	return txs
 }
 
