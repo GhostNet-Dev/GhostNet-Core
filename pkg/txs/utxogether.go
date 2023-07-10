@@ -22,7 +22,7 @@ func (txs *TXs) CandidateUTXO(withDrawCoin uint64, account []byte) ([]types.Prev
 }
 
 func (txs *TXs) GetRootFsTx(account []byte) ([]types.PrevOutputParam, bool) {
-	outputParams := txs.blockContainer.TxContainer.GetUnusedOutputList(types.TxTypeFSRoot, account)
+	outputParams := txs.blockContainer.TxContainer.SearchOutputList(types.TxTypeFSRoot, account)
 	if len(outputParams) != 0 {
 		return outputParams, true
 	}

@@ -16,9 +16,10 @@ type GSql interface {
 	DropTable()
 	InsertTx(blockId uint32, tx *types.GhostTransaction, txType uint32, txIndexInBlock uint32)
 	InsertDataTx(blockId uint32, dataTx *types.GhostDataTransaction, txIndexInBlock uint32)
-	SelectTx(TxId []byte) (*types.GhostTransaction, uint32)
+	SelectTx(TxId []byte) (tx *types.GhostTransaction, blockId uint32)
 	SelectData(TxId []byte) *types.GhostDataTransaction
 	SelectUnusedOutputs(TxType types.TxOutputType, ToAddr []byte) []types.PrevOutputParam
+	SearchOutputs(TxType types.TxOutputType, ToAddr []byte) []types.PrevOutputParam
 	InsertBlock(pair *types.PairedBlock)
 	SelectBlock(blockId uint32) *types.PairedBlock
 	SelectBlockHeader(blockId uint32) (*types.GhostNetBlockHeader, *types.GhostNetDataBlockHeader)

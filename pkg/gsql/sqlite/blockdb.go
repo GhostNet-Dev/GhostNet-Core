@@ -360,6 +360,37 @@ func (gSql *GSqlite3) InsertQuery(query string, args ...interface{}) {
 	}
 }
 
+func (gSql *GSqlite3) SearchOutputs(txType types.TxOutputType, toAddr []byte) []types.PrevOutputParam {
+	outputs := []types.PrevOutputParam{}
+
+	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
+		outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
+		where outputs.ToAddr = ? and  outputs.Type = ?
+		order by outputs.BlockId ASC`, toAddr, txType)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		output := types.PrevOutputParam{}
+		if err = rows.Scan(&output.VOutPoint.TxId, &output.Vout.Addr, &output.Vout.BrokerAddr, &output.Vout.ScriptPubKey,
+			&output.Vout.ScriptSize, &output.Vout.Type, &output.Vout.Value, &output.VOutPoint.TxOutIndex); err == sql.ErrNoRows {
+			return nil
+		} else if err != nil {
+			log.Fatal(err)
+		}
+		output.TxType = txType
+		outputs = append(outputs, output)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return outputs
+}
+
 func (gSql *GSqlite3) SelectUnusedOutputs(txType types.TxOutputType, toAddr []byte) []types.PrevOutputParam {
 	outputs := []types.PrevOutputParam{}
 

@@ -116,6 +116,9 @@ func (io *ScriptIo) CreateScript(w *gcrypto.Wallet, namespace, script string) ([
 
 func (io *ScriptIo) OpenScript(txId []byte) *ScriptIoHandler {
 	tx, _ := io.bc.TxContainer.GetTx(txId)
+	if tx == nil {
+		return nil
+	}
 	output := tx.Body.Vout[0]
 	if output.Type != types.TxTypeScript {
 		return nil

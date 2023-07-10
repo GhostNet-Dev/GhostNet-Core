@@ -36,6 +36,8 @@ func NewTXs(g *gvm.GCompiler, b *store.BlockContainer, e *gvm.GVM) *TXs {
 		}
 		return inputs, outputs
 	}
+	txs.makeInOutFunc[types.TxTypeScript] = txs.makeInOutFunc[types.TxTypeDataStore]
+	txs.makeInOutFunc[types.TxTypeScriptStore] = txs.makeInOutFunc[types.TxTypeDataStore]
 
 	txs.makeInOutFunc[types.TxTypeFSRoot] = func(info TransferTxInfo, prev []types.PrevOutputParam,
 		next []types.NextOutputParam) (inputs []types.TxInput, outputs []types.TxOutput) {
