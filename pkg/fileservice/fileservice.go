@@ -111,7 +111,7 @@ func (fileService *FileService) loadFileToMemory(filename string) *FileObject {
 
 	buf, err := ioutil.ReadFile(fileFullPath)
 	if err != nil {
-		log.Fatal(err)
+		fileService.glog.DebugOutput(fileService, err.Error(), glogger.Default)
 		return nil
 	}
 	return fileService.fileObjManager.CreateFileObj(filename, buf, uint64(len(buf)), nil, nil)
