@@ -21,7 +21,12 @@ func (dataTx *GhostDataTransaction) Size() uint32 {
 }
 
 func (dataTx *GhostDataTransaction) GetHashKey() []byte {
+	dummy := make([]byte, gbytes.HashSize)
+	backup := dataTx.TxId
+	dataTx.TxId = dummy
 	hash := sha256.New()
 	hash.Write(dataTx.SerializeToByte())
-	return hash.Sum(nil)
+	hashKey := hash.Sum(nil)
+	dataTx.TxId = backup
+	return hashKey
 }

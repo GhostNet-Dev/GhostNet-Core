@@ -127,6 +127,9 @@ func (io *ScriptIo) OpenScript(txId []byte) *ScriptIoHandler {
 
 	fileObj := io.cloud.ReadFromCloudSync(fileservice.ByteToFilename(dataTxId),
 		io.wallet.GetMasterNode().Ip.GetUdpAddr())
+	if fileObj == nil {
+		return nil
+	}
 
 	dataTx := &types.GhostDataTransaction{}
 	if !dataTx.Deserialize(bytes.NewBuffer(fileObj.Buffer)).Result() {

@@ -36,7 +36,7 @@ func (blocks *Blocks) blockValidation(pairedBlock *types.PairedBlock, prevPaired
 	// merkle tree check
 	hashs := make([][]byte, len(txs))
 	for i, tx := range txs {
-		hashs[i] = tx.GetHashKey()
+		hashs[i] = tx.TxId
 	}
 	merkleRoot := CreateMerkleRoot(hashs)
 	if !bytes.Equal(header.MerkleRoot, merkleRoot) {

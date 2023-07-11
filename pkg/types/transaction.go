@@ -136,9 +136,14 @@ func (tx *GhostTransaction) Size() uint32 {
 }
 
 func (tx *GhostTransaction) GetHashKey() []byte {
+	dummy := make([]byte, gbytes.HashSize)
+	backup := tx.TxId
+	tx.TxId = dummy
 	hash := sha256.New()
 	hash.Write(tx.SerializeToByte())
-	return hash.Sum(nil)
+	hashKey := hash.Sum(nil)
+	tx.TxId = backup
+	return hashKey
 }
 
 func (tx *GhostTransaction) TxCopy() (copy GhostTransaction) {

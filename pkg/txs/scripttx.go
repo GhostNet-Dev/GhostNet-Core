@@ -8,7 +8,7 @@ import (
 func (txs *TXs) CreateScriptTx(info TransferTxInfo, uniqKey []byte,
 	data []byte) (*types.GhostTransaction, *types.GhostDataTransaction) {
 	dataTx := txs.MakeDataTx(uniqKey, data)
-	dataTxId := dataTx.GetHashKey()
+	dataTxId := dataTx.TxId
 	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
 		types.TxTypeScript: {
 			{
@@ -34,7 +34,7 @@ func (txs *TXs) CreateScriptTx(info TransferTxInfo, uniqKey []byte,
 func (txs *TXs) CreateScriptDataTx(info TransferTxInfo, uniqKey []byte,
 	data []byte) (*types.GhostTransaction, *types.GhostDataTransaction) {
 	dataTx := txs.MakeDataTx(uniqKey, data)
-	dataTxId := dataTx.GetHashKey()
+	dataTxId := dataTx.TxId
 	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{
 		types.TxTypeScriptStore: {
 			{

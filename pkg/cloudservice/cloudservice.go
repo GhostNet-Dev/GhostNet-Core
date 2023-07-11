@@ -3,6 +3,7 @@ package cloudservice
 import (
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileservice"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
@@ -44,8 +45,13 @@ func (cloud *CloudService) ReadFromCloudSync(filename string, ipAddr *net.UDPAdd
 
 	cloud.fileService.SendGetFile(filename, ipAddr, cloud.DownloadDone, nil)
 
-	fileObj := <-cloud.streamId[filename]
-	return fileObj
+	select {
+	case fileObj := <-cloud.streamId[filename]:
+		return fileObj
+	case <-time.After(time.Second * 8):
+		cloud.glog.DebugOutput(cloud, fmt.Sprint("timeout download = ", filename), glogger.Default)
+		return nil
+	}
 }
 
 func (cloud *CloudService) DownloadDone(fileObj *fileservice.FileObject, context interface{}) {
