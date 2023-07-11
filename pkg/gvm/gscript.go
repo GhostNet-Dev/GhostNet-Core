@@ -1,6 +1,8 @@
 package gvm
 
 import (
+	"fmt"
+
 	"github.com/GhostNet-Dev/glambda/evaluator"
 	"github.com/GhostNet-Dev/glambda/lexer"
 	"github.com/GhostNet-Dev/glambda/object"
@@ -42,6 +44,12 @@ func ExecuteScript(code string) (result string) {
 		for _, hashPair := range obj.Pairs {
 			responseParam[hashPair.Key.Inspect()] = hashPair.Value.Inspect()
 		}
+	case *object.String:
+		result = obj.Value
+	case string:
+		result = obj
+	case int64:
+		result = fmt.Sprint(obj)
 	}
 
 	return result

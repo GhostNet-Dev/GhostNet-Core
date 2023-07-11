@@ -88,6 +88,16 @@ func (gSql *GSqlite3) DeleteBlock(blockId uint32) {
 	}
 }
 
+func (gSql *GSqlite3) DeleteTx(txId []byte) {
+	tables := []string{"transactions", "inputs", "outputs"}
+	for _, table := range tables {
+		_, err := gSql.db.Exec(fmt.Sprint("delete from ", table, " where TxId == ", txId))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 func (gSql *GSqlite3) DeleteAfterTargetId(blockId uint32) {
 	gSql.deletePairedBlockAfterTargetId(blockId)
 
@@ -179,6 +189,10 @@ func (gSql *GSqlite3) SelectBlock(blockId uint32) *types.PairedBlock {
 			Header:      *dataHeader,
 			Transaction: gSql.SelectDataTxs(header.Id),
 		},
+	}
+	if pair.Block.Alice == nil || pair.Block.Transaction == nil {
+		gSql.DeleteBlock(pair.BlockId())
+		return nil
 	}
 	return &pair
 }
@@ -292,8 +306,16 @@ func (gSql *GSqlite3) SelectTx(TxId []byte) (tx *types.GhostTransaction, blockId
 		log.Fatal(err)
 	}
 
-	tx.Body.Vin = gSql.SelectInputs(TxId, tx.Body.InputCounter)
-	tx.Body.Vout = gSql.SelectOutputs(TxId, tx.Body.OutputCounter)
+	input := gSql.SelectInputs(TxId, tx.Body.InputCounter)
+	if input == nil {
+		return nil, 0
+	}
+	tx.Body.Vin = input
+	output := gSql.SelectOutputs(TxId, tx.Body.OutputCounter)
+	if output == nil {
+		return nil, 0
+	}
+	tx.Body.Vout = output
 
 	return tx, blockId
 }
@@ -309,7 +331,9 @@ func (gSql *GSqlite3) SelectInputs(TxId []byte, count uint32) []types.TxInput {
 	defer rows.Close()
 
 	for i, input := range inputs {
-		rows.Next()
+		if !rows.Next() {
+			return nil
+		}
 		var prev_TxId []byte
 		var prev_OutIndex uint32
 		if err = rows.Scan(&prev_TxId, &prev_OutIndex, &input.Sequence, &input.ScriptSize,
@@ -338,7 +362,9 @@ func (gSql *GSqlite3) SelectOutputs(TxId []byte, count uint32) []types.TxOutput 
 	defer rows.Close()
 
 	for i, output := range outputs {
-		rows.Next()
+		if !rows.Next() {
+			return nil
+		}
 		if err = rows.Scan(&output.Addr, &output.BrokerAddr, &output.ScriptPubKey, &output.ScriptSize,
 			&output.ScriptEx, &output.ScriptExSize, &output.Type, &output.Value); err != nil {
 			log.Fatal(err)
@@ -573,8 +599,16 @@ func (gSql *GSqlite3) GetBlockHeight() uint32 {
 
 func (gSql *GSqlite3) GetTxRows(txs []types.GhostTransaction) []types.GhostTransaction {
 	for i, tx := range txs {
-		txs[i].Body.Vin = gSql.SelectInputs(tx.TxId, tx.Body.InputCounter)
-		txs[i].Body.Vout = gSql.SelectOutputs(tx.TxId, tx.Body.OutputCounter)
+		input := gSql.SelectInputs(tx.TxId, tx.Body.InputCounter)
+		if input == nil {
+			return nil
+		}
+		txs[i].Body.Vin = input
+		output := gSql.SelectOutputs(tx.TxId, tx.Body.OutputCounter)
+		if output == nil {
+			return nil
+		}
+		txs[i].Body.Vout = output
 	}
 
 	return txs

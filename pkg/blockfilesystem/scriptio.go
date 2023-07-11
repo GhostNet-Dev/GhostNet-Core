@@ -2,6 +2,7 @@ package blockfilesystem
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"sync"
 
@@ -61,10 +62,15 @@ func NewScriptIo(blkMgr *blockmanager.BlockManager,
 				//new err
 				return &object.Null{}
 			}
-			if args[0].Type() != object.STRING_OBJ || args[1].Type() != object.STRING_OBJ {
-				return nil
+			var key string
+			switch arg := args[0].(type) {
+			case *object.String:
+				key = arg.Value
+			case *object.Identifier:
+				key = arg.Value.(*object.String).Value
+			case *object.Integer:
+				key = fmt.Sprint(arg.Value)
 			}
-			key := args[0].(*object.String).Value
 			data := gScriptIo.scriptIoHandler.ReadScriptData([]byte(key))
 			return &object.String{Value: string(data)}
 		},

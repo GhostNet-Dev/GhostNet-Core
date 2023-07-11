@@ -63,7 +63,7 @@ func (con *Consensus) GetMaxTransactionCount(height uint32) uint32 {
 	maxTransactionCnt := uint32(INIT_MAX_TRANSACTION_COUNT)
 	slot := height / CREATE_BLOCK_INTERVAL
 
-	if _, ok := maxTxCountDic[slot]; ok {
+	if _, ok := maxTxCountDic[slot]; !ok {
 		maxTransactionCnt = calculateMaxTransactionCount(con.blockContainer, height)
 		maxTxCountDic[slot] = maxTransactionCnt
 	} else {

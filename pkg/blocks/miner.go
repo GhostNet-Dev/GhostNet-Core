@@ -40,7 +40,7 @@ func (blocks *Blocks) MakeNewBlock(miner *gcrypto.GhostAddress, creator []byte,
 	newUsedTxPool := blocks.blockContainer.TxContainer.MakeCandidateTrPool(newId, minimumRequiredTxCount)
 	if newUsedTxPool == nil {
 		return nil
-	}
+	} 
 	dataBlock := blocks.CreateGhostNetDataBlock(newId, prevDataHash, newUsedTxPool.DataTxCandidate)
 	block := blocks.CreateGhostNetBlock(newId, prevHash, dataBlock.GetHashKey(), miner, creator,
 		newUsedTxPool.TxCandidate)
@@ -92,7 +92,7 @@ func (blocks *Blocks) CreateGhostNetDataBlock(newBlockId uint32, prevBlockHash [
 	newTxList []types.GhostDataTransaction) *types.GhostNetDataBlock {
 	hashs := make([][]byte, len(newTxList))
 	for i, tx := range newTxList {
-		hashs[i] = tx.TxId
+		hashs[i] = tx.GetHashKey()
 	}
 	return &types.GhostNetDataBlock{
 		Header: types.GhostNetDataBlockHeader{
