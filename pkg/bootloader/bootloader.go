@@ -33,7 +33,7 @@ func NewBootLoader(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory,
 func (b *BootLoader) BootLoading(user *ptypes.GhostUser, passwdHash []byte) *gcrypto.Wallet {
 	// Load Wallet
 	w, err := b.wallet.OpenWallet(user.Nickname, passwdHash)
-	if err != nil {
+	if w == nil || err != nil {
 		w = b.wallet.CreateWallet(user.Nickname, passwdHash)
 		b.wallet.SaveWallet(w, passwdHash)
 	}

@@ -11,7 +11,6 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -46,19 +45,6 @@ func (worker *WorkloadScript) CheckRunning() bool {
 	return worker.Running
 }
 
-func (worker *WorkloadScript) LoadWorker(masterNode *ptypes.GhostUser) {
-	username := worker.workerName
-	cipherText := gcrypto.PasswordToSha256(password)
-
-	w, err := worker.loadWallet.OpenWallet(username, cipherText)
-	if err != nil {
-		w = worker.loadWallet.CreateWallet(username, cipherText)
-		worker.loadWallet.SaveWallet(w, cipherText)
-	}
-	worker.wallet = w
-	worker.wallet.SetMasterNode(masterNode)
-}
-
 func (w *WorkloadScript) PrepareRun() {
 	w.Running = true
 	var txId []byte
@@ -72,28 +58,31 @@ func (w *WorkloadScript) PrepareRun() {
 	for {
 		if txId == nil {
 			if txId, ok = w.scriptIo.CreateScript(w.wallet, "workload", sampleCode); !ok {
+				time.Sleep(time.Second * 3)
 				continue
 			}
 		}
 		if w.scriptIoHandler = w.scriptIo.OpenScript(txId); w.scriptIoHandler == nil {
 			time.Sleep(time.Second * 3)
 			continue
+		} else {
+			w.scriptIoHandler.ExecuteScript()
+			break
 		}
-
-		w.scriptIoHandler.WriteScriptData([]byte("worker1"), w.MakeDummyFile())
-		time.Sleep(time.Second * 3)
 	}
 }
 
 func (w *WorkloadScript) Run() {
 	//w.Running = false
 	time.Sleep(time.Second * 3)
-	w.scriptIoHandler.WriteScriptData([]byte("worker1"), w.MakeDummyFile())
+	//w.scriptIoHandler.WriteScriptData([]byte(w.wallet.GetNickname()), w.MakeDummyFile())
+	result := w.scriptIoHandler.ExecuteScript()
+	w.glog.DebugOutput(w, result, glogger.Default)
 }
 
 func (w *WorkloadScript) CheckAccountTx() (result bool, err error) {
 	eventChannel := make(chan bool, 1)
-	w.blockMgr.RequestCheckExistFsRoot([]byte(w.workerName), func(result bool) {
+	w.blockMgr.RequestCheckExistFsRoot([]byte(w.wallet.GetNickname()), func(result bool) {
 		eventChannel <- result
 	})
 

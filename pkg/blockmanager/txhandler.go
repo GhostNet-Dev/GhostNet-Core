@@ -18,9 +18,13 @@ func (blockMgr *BlockManager) SendTransactionSq(header *packets.Header, from *ne
 
 	filename := fileservice.ByteToFilename(sq.TxId)
 	fileObj := blockMgr.cloud.ReadFromCloudSync(filename, from)
-	txValidate := blockMgr.DownloadTransaction(fileObj, nil)
-	if !txValidate {
-		blockMgr.fileService.DeleteFile(filename)
+	txValidate := false
+
+	if fileObj != nil {
+		txValidate = blockMgr.DownloadTransaction(fileObj, nil)
+		if !txValidate {
+			blockMgr.fileService.DeleteFile(filename)
+		}
 	}
 
 	//master.blockHandler.SendTransaction(sq.TxId)
@@ -85,12 +89,18 @@ func (blockMgr *BlockManager) SendDataTransactionSq(header *packets.Header, from
 	dataTxFilename := fileservice.ByteToFilename(sq.DataTxId)
 	txFileObj := blockMgr.cloud.ReadFromCloudSync(txFilename, from)
 	dataTxFileObj := blockMgr.cloud.ReadFromCloudSync(dataTxFilename, from)
+	result := false
 
-	if !blockMgr.DownloadDataTransaction(txFileObj.Buffer, dataTxFileObj.Buffer) {
-		blockMgr.fileService.DeleteFile(txFilename)
+	if txFileObj != nil && dataTxFileObj != nil {
+		if !blockMgr.DownloadDataTransaction(txFileObj.Buffer, dataTxFileObj.Buffer) {
+			blockMgr.fileService.DeleteFile(txFilename)
+		} else {
+			result = true
+		}
 	}
 	cq := packets.SendDataTransactionCq{
 		Master: p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, blockMgr.localIpAddr),
+		Result: result,
 	}
 
 	cqData, err := proto.Marshal(&cq)

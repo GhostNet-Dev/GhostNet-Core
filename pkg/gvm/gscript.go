@@ -1,7 +1,6 @@
 package gvm
 
 import (
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 	"github.com/GhostNet-Dev/glambda/evaluator"
 	"github.com/GhostNet-Dev/glambda/lexer"
 	"github.com/GhostNet-Dev/glambda/object"
@@ -34,10 +33,8 @@ func Eval(code string) interface{} {
 	return ""
 }
 
-func ExecuteScript(tx *types.GhostTransaction) (result string) {
-	output := tx.Body.Vout[0]
-	script := output.ScriptEx
-	ret := Eval(string(script))
+func ExecuteScript(code string) (result string) {
+	ret := Eval(code)
 	responseParam := make(map[string]string)
 
 	switch obj := ret.(type) {

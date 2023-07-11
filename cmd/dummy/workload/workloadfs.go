@@ -11,7 +11,6 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -46,18 +45,20 @@ func (worker *WorkloadFs) CheckRunning() bool {
 	return worker.Running
 }
 
+/*
 func (worker *WorkloadFs) LoadWorker(masterNode *ptypes.GhostUser) {
 	username := worker.workerName
 	cipherText := gcrypto.PasswordToSha256(password)
 
 	w, err := worker.loadWallet.OpenWallet(username, cipherText)
-	if err != nil {
+	if w == nil || err != nil {
 		w = worker.loadWallet.CreateWallet(username, cipherText)
 		worker.loadWallet.SaveWallet(w, cipherText)
 	}
 	worker.wallet = w
 	worker.wallet.SetMasterNode(masterNode)
 }
+*/
 
 func (w *WorkloadFs) PrepareRun() {
 	w.Running = true
@@ -71,7 +72,7 @@ func (w *WorkloadFs) PrepareRun() {
 			if w.blockIoHandler == nil {
 				continue
 			}
-			w.blockIoHandler.WriteData([]byte("worker1"), w.MakeDummyFile())
+			w.blockIoHandler.WriteData([]byte(w.wallet.GetNickname()), w.MakeDummyFile())
 			break
 		}
 		time.Sleep(time.Second * 3)
@@ -81,12 +82,12 @@ func (w *WorkloadFs) PrepareRun() {
 func (w *WorkloadFs) Run() {
 	//w.Running = false
 	time.Sleep(time.Second * 3)
-	w.blockIoHandler.WriteData([]byte("worker1"), w.MakeDummyFile())
+	w.blockIoHandler.WriteData([]byte(w.wallet.GetNickname()), w.MakeDummyFile())
 }
 
 func (w *WorkloadFs) CheckAccountTx() (result bool, err error) {
 	eventChannel := make(chan bool, 1)
-	w.blockMgr.RequestCheckExistFsRoot([]byte(w.workerName), func(result bool) {
+	w.blockMgr.RequestCheckExistFsRoot([]byte(w.wallet.GetNickname()), func(result bool) {
 		eventChannel <- result
 	})
 

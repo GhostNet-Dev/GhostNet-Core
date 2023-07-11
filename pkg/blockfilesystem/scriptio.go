@@ -2,12 +2,14 @@ package blockfilesystem
 
 import (
 	"bytes"
+	"log"
 	"sync"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blockmanager"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/cloudservice"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileservice"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gvm"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/txs"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
@@ -32,6 +34,7 @@ type ScriptIoHandler struct {
 	brokerAddr    []byte
 	feeBrokerAddr []byte
 	scriptTxPtr   []types.PrevOutputParam
+	code          string
 }
 
 /*
@@ -54,7 +57,7 @@ func NewScriptIo(blkMgr *blockmanager.BlockManager,
 	}
 	evaluator.AddBuiltIn("loadKeyValue", &object.Builtin{
 		Fn: func(args ...object.Object) object.Object {
-			if len(args) != 2 {
+			if len(args) != 1 {
 				//new err
 				return &object.Null{}
 			}
@@ -128,6 +131,7 @@ func (io *ScriptIo) OpenScript(txId []byte) *ScriptIoHandler {
 	fileObj := io.cloud.ReadFromCloudSync(fileservice.ByteToFilename(dataTxId),
 		io.wallet.GetMasterNode().Ip.GetUdpAddr())
 	if fileObj == nil {
+		log.Print("could not found file: ", fileObj.Filename)
 		return nil
 	}
 
@@ -149,19 +153,26 @@ func (io *ScriptIo) OpenScript(txId []byte) *ScriptIoHandler {
 			},
 			Vout: output,
 		}},
+		code: string(dataTx.Data),
 	}
 	return io.scriptIoHandler
 }
 
-func (io *ScriptIo) ExecuteScript() {}
-
 func (io *ScriptIo) CloseScript(handler *ScriptIoHandler) {}
+
+func (io *ScriptIoHandler) ExecuteScript() string {
+	return gvm.ExecuteScript(io.code)
+}
 
 func (io *ScriptIoHandler) ReadScriptData(key []byte) (data []byte) {
 	// to avoid key collision
 	dataTxId := key
 	fileObj := io.scriptIo.cloud.ReadFromCloudSync(fileservice.ByteToFilename(dataTxId),
 		io.wallet.GetMasterNode().Ip.GetUdpAddr())
+	if fileObj == nil {
+		log.Print("could not found file: ", fileObj.Filename)
+		return nil
+	}
 	dataTx := &types.GhostDataTransaction{}
 	if !dataTx.Deserialize(bytes.NewBuffer(fileObj.Buffer)).Result() {
 		return nil
