@@ -69,6 +69,25 @@ func (liteStore *LiteStore) Close() error {
 	return liteStore.db.Close()
 }
 
+func (liteStore *LiteStore) CreateBucket(parentTable, table []byte) error {
+	err := liteStore.db.Update(func(tx *bolt.Tx) error {
+		root, err := tx.CreateBucketIfNotExists(parentTable)
+		if err != nil {
+			return fmt.Errorf("could not create root bucket: %v", err)
+		}
+		_, err = root.CreateBucketIfNotExists(table)
+		if err != nil {
+			return fmt.Errorf("could not create %v bucket: %v", table, err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("could not set up buckets, %v", err)
+	}
+	return nil
+}
+
 // 대량으로 선택한다.
 func (liteStore *LiteStore) LoadEntry(table string) (key, result [][]byte, err error) {
 	err = liteStore.db.View(func(tx *bolt.Tx) error {
