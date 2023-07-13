@@ -57,7 +57,7 @@ func NewScriptIo(blkMgr *blockmanager.BlockManager,
 		tXs:          tXs,
 	}
 	evaluator.AddBuiltIn("loadKeyValue", &object.Builtin{
-		Fn: func(args ...object.Object) object.Object {
+		Fn: func(env interface{}, args ...object.Object) object.Object {
 			if len(args) != 1 {
 				//new err
 				return &object.Null{}
@@ -77,7 +77,7 @@ func NewScriptIo(blkMgr *blockmanager.BlockManager,
 	})
 
 	evaluator.AddBuiltIn("saveKeyValue", &object.Builtin{
-		Fn: func(args ...object.Object) object.Object {
+		Fn: func(env interface{}, args ...object.Object) object.Object {
 			if len(args) != 2 {
 				//new err
 				return &object.Null{}
