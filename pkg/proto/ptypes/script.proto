@@ -1,0 +1,20 @@
+syntax = "proto3";
+package ghostnet.ptypes;
+option go_package = "github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes";
+
+enum ScriptType {
+    Default = 0;
+    Reserved0 = 1;
+    Reserved1 = 2;
+    Reserved2 = 3;
+    Reserved3 = 4;
+    Reserved4 = 5;
+}
+
+message ScriptHeader {
+    ScriptType Type = 1;
+    int32 Version = 2;
+    int32 reserved0 = 3;
+    int32 reserved1 = 4;
+    string Script = 5;
+}

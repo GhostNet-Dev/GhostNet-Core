@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/cmd/dummy/common"
+	"github.com/GhostNet-Dev/GhostNet-Core/internal/common"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blockfilesystem"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/blockmanager"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"

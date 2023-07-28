@@ -11,9 +11,10 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/rpc"
 )
 
-// cli(GrpcClient) -> cli(rpc.GApiClient) ->
-// ghostd(GrpcServer) -> ghostd(GrpcDeamonHandler) -> container(GrpcClient) ->
-// container(GrpcServer) -> container(GhostContainerApi)
+// cli(GrpcClient) -> cli(proto.rpc.GApiClient) ->
+// ghostd(grpc.GrpcServer) -> ghostd(manager.GrpcDeamonHandler) ->
+// container(grpc.GrpcClient) ->
+// container(grpc.GrpcServer) -> container(gapi.GhostContainerApi)
 type GrpcDeamonHandler struct {
 	loadWallet *bootloader.LoadWallet
 	genesis    *bootloader.LoadGenesis

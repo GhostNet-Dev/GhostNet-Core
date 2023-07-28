@@ -1,35 +1,35 @@
 package commands
 
 import (
+	"io/ioutil"
 	"log"
 	"time"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/factory"
-	"github.com/GhostNet-Dev/GhostNet-Core/internal/gconfig"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
-	"github.com/GhostNet-Dev/GhostNet-Core/pkg/grpc"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/spf13/cobra"
 )
 
 var (
-	cfg = gconfig.NewDefaultConfig()
+	executeScript = false
+	codeFilepath  = "./sample.gs"
 )
 
-func UserAddCommand() *cobra.Command {
+func ScriptCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "useradd",
-		Short: `stop a GhostNet Server`,
+		Use:   "script",
+		Short: `Register script in blockchain`,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// You can bind cobra and viper in a few locations, but PersistencePreRunE on the root command works well
 			return initializeConfig(cmd)
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			// Working with OutOrStdout/OutOrStderr allows us to unit test our command easier
-			if createUserAccountCommand(username, password) {
-				userAddExecuteCommand(username, password)
+			if registerScriptCommand(username, password) {
+				log.Println("Regist Complete")
 			}
 		},
 	}
@@ -38,27 +38,24 @@ func UserAddCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&rpcPort, "rpc", "r", "50229", "GRPC Port Number")
 	cmd.Flags().StringVarP(&username, "username", "u", "", "Ghost Account Nickname")
 	cmd.Flags().StringVarP(&password, "password", "p", "", "Ghost Account Password")
+	cmd.Flags().StringVarP(&codeFilepath, "code", "c", "", "script file path")
 	cmd.Flags().Uint32VarP(&id, "id", "", 0, "Container Id, if not select, show all container")
 	cmd.Flags().Uint32VarP(&timeout, "timeout", "t", 3, "rpc connection timeout")
+	cmd.Flags().BoolVarP(&executeScript, "exe", "e", false, "execute script")
 
 	cmd.MarkFlagRequired("username")
 	cmd.MarkFlagRequired("password")
 	return cmd
 }
 
-func userAddExecuteCommand(username, password string) {
-	grpcClient := grpc.NewGrpcClient(host, rpcPort, timeout)
-	grpcClient.ConnectServer()
-	defer grpcClient.CloseServer()
-
-	ret := grpcClient.CreateAccount(username, password)
-	log.Printf("Create User: %s= %t", username, ret)
-}
-
-func createUserAccountCommand(username, password string) bool {
+func registerScriptCommand(username, password string) bool {
 	cfg.Username = username
 	// for encrypt passwd
 	cfg.Password = gcrypto.PasswordToSha256(password)
+	sampleCode, err := ioutil.ReadFile(codeFilepath)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	user := &ptypes.GhostUser{
 		Nickname: cfg.Username,
@@ -86,18 +83,24 @@ func createUserAccountCommand(username, password string) bool {
 	defaultFactory.FactoryOpen()
 	go func() { defaultFactory.BlockServer.BlockServer() }()
 
-	if blockIoHandler := defaultFactory.BlockIo.OpenFilesystem(w); blockIoHandler == nil {
-		defaultFactory.BlockIo.CreateFilesystem(w)
-	} else {
-		log.Println("Already Exist Username = ", username)
-		return false
-	}
-
+	var txId []byte
+	ok := false
 	for {
-		if blockIoHandler := defaultFactory.BlockIo.OpenFilesystem(w); blockIoHandler != nil {
+		if txId == nil {
+			if txId, ok = defaultFactory.ScriptIo.CreateScript(w, "workload", string(sampleCode)); !ok {
+				time.Sleep(time.Second * 3)
+				continue
+			}
+		}
+		if scriptIoHandler := defaultFactory.ScriptIo.OpenScript(txId); scriptIoHandler == nil {
+			time.Sleep(time.Second * 3)
+			continue
+		} else if executeScript {
+			scriptIoHandler.ExecuteScript()
+			break
+		} else {
 			break
 		}
-		<-time.After(time.Second * time.Duration(timeout))
 	}
 	return true
 }

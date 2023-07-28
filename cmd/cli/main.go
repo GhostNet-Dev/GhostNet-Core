@@ -44,6 +44,7 @@ func main() {
 		cmd.GetAccountListCommand(),
 		cmd.LoginCommand(),
 		cmd.ReadTxFileCommand(),
+		cmd.ScriptCommand(),
 	)
 
 	if err := startCmd.Execute(); err != nil {

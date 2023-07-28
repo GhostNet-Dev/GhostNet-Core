@@ -3,8 +3,8 @@ package dummyfactory
 import (
 	"fmt"
 
-	"github.com/GhostNet-Dev/GhostNet-Core/cmd/dummy/common"
 	"github.com/GhostNet-Dev/GhostNet-Core/cmd/dummy/workload"
+	"github.com/GhostNet-Dev/GhostNet-Core/internal/common"
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/factory"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
