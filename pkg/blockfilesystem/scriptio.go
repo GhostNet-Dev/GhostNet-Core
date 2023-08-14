@@ -95,7 +95,7 @@ func NewScriptIo(blkMgr *blockmanager.BlockManager,
 	return gScriptIo
 }
 
-func (io *ScriptIo) CreateScript(w *gcrypto.Wallet, namespace, script string) ([]byte, bool) {
+func (io *ScriptIo) CreateScript(scriptType ptypes.ScriptType, w *gcrypto.Wallet, namespace, script string) ([]byte, bool) {
 	outputParams, ok := io.tXs.GetRootFsTx(w.MyPubKey())
 	if !ok {
 		return nil, false
@@ -110,7 +110,7 @@ func (io *ScriptIo) CreateScript(w *gcrypto.Wallet, namespace, script string) ([
 		FeeAddr:   store.AdamsAddress(),
 		FeeBroker: w.GetMasterNodeAddr(),
 	}
-	scriptHeader := &ptypes.ScriptHeader{Type: ptypes.ScriptType_Default, Version: 0, Script: script}
+	scriptHeader := &ptypes.ScriptHeader{Type: scriptType, Version: 0, Script: script}
 	scriptData, err := proto.Marshal(scriptHeader)
 	if err != nil {
 		log.Fatal(err)

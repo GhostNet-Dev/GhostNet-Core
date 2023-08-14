@@ -42,6 +42,8 @@ github.com/GhostNet-Dev/glambda v0.0.0-20230630011620-f576fd6b3f8c h1:d1izQq3Qe8
 github.com/GhostNet-Dev/glambda v0.0.0-20230630011620-f576fd6b3f8c/go.mod h1:rAewPKa6EbMtvbW4J6iBbLOJVB9c1haKKycERat4lP4=
 github.com/GhostNet-Dev/glambda v0.0.0-20230713052003-571e3ea81bf9 h1:sC/PsMsEYe8X1hB6DVyH+UkjXqZaCK2bAuVg6VSwLVs=
 github.com/GhostNet-Dev/glambda v0.0.0-20230713052003-571e3ea81bf9/go.mod h1:rAewPKa6EbMtvbW4J6iBbLOJVB9c1haKKycERat4lP4=
+github.com/GhostNet-Dev/glambda v0.0.0-20230729005006-788bb332482d h1:COy6CWnx966JDd1HzSew74m7nH6kpVvJjl0WwhR/CqA=
+github.com/GhostNet-Dev/glambda v0.0.0-20230729005006-788bb332482d/go.mod h1:rAewPKa6EbMtvbW4J6iBbLOJVB9c1haKKycERat4lP4=
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
 github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=

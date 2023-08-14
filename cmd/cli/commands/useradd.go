@@ -29,6 +29,7 @@ func UserAddCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			// Working with OutOrStdout/OutOrStderr allows us to unit test our command easier
 			if createUserAccountCommand(username, password) {
+				log.Printf("Create User: %s", username)
 				userAddExecuteCommand(username, password)
 			}
 		},
@@ -59,6 +60,9 @@ func createUserAccountCommand(username, password string) bool {
 	cfg.Username = username
 	// for encrypt passwd
 	cfg.Password = gcrypto.PasswordToSha256(password)
+	cfg.Ip = host
+	cfg.Port = port
+	cfg.GrpcPort = rpcPort
 
 	user := &ptypes.GhostUser{
 		Nickname: cfg.Username,

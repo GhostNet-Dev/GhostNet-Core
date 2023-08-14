@@ -1,12 +1,14 @@
 package commands
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"time"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/internal/factory"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileservice"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -16,6 +18,7 @@ import (
 var (
 	executeScript = false
 	codeFilepath  = "./sample.gs"
+	scriptType    = 0
 )
 
 func ScriptCommand() *cobra.Command {
@@ -41,6 +44,7 @@ func ScriptCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&codeFilepath, "code", "c", "", "script file path")
 	cmd.Flags().Uint32VarP(&id, "id", "", 0, "Container Id, if not select, show all container")
 	cmd.Flags().Uint32VarP(&timeout, "timeout", "t", 3, "rpc connection timeout")
+	cmd.Flags().IntVarP(&scriptType, "script_type", "", 0, "script type")
 	cmd.Flags().BoolVarP(&executeScript, "exe", "e", false, "execute script")
 
 	cmd.MarkFlagRequired("username")
@@ -87,7 +91,7 @@ func registerScriptCommand(username, password string) bool {
 	ok := false
 	for {
 		if txId == nil {
-			if txId, ok = defaultFactory.ScriptIo.CreateScript(w, "workload", string(sampleCode)); !ok {
+			if txId, ok = defaultFactory.ScriptIo.CreateScript(ptypes.ScriptType(scriptType), w, "workload", string(sampleCode)); !ok {
 				time.Sleep(time.Second * 3)
 				continue
 			}
@@ -102,5 +106,6 @@ func registerScriptCommand(username, password string) bool {
 			break
 		}
 	}
+	ioutil.WriteFile(fmt.Sprint("./", fileservice.ByteToFilename(txId)), txId, 0)
 	return true
 }

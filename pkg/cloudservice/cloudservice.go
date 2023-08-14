@@ -2,6 +2,7 @@ package cloudservice
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"time"
 
@@ -28,6 +29,9 @@ func NewCloudService(fileService *fileservice.FileService,
 }
 
 func (cloud *CloudService) ReleaseChannel(filename string) {
+	if _, exist := cloud.streamId[filename]; !exist {
+		log.Fatal("already released stream = ", filename)
+	}
 	close(cloud.streamId[filename])
 	delete(cloud.streamId, filename)
 }

@@ -3,7 +3,7 @@ module github.com/GhostNet-Dev/GhostNet-Core
 go 1.19
 
 require (
-	github.com/GhostNet-Dev/glambda v0.0.0-20230713052003-571e3ea81bf9
+	github.com/GhostNet-Dev/glambda v0.0.0-20230729005006-788bb332482d
 	github.com/boltdb/bolt v1.3.1
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/kelindar/bitmap v1.5.1

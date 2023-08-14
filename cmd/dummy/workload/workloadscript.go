@@ -11,6 +11,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/bootloader"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
+	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
@@ -57,7 +58,7 @@ func (w *WorkloadScript) PrepareRun() {
 
 	for {
 		if txId == nil {
-			if txId, ok = w.scriptIo.CreateScript(w.wallet, "workload", sampleCode); !ok {
+			if txId, ok = w.scriptIo.CreateScript(ptypes.ScriptType_Default, w.wallet, "workload", sampleCode); !ok {
 				time.Sleep(time.Second * 3)
 				continue
 			}
