@@ -403,7 +403,7 @@ func (gSql *GSqlite3) SearchOutputs(txType types.TxOutputType, toAddr []byte) []
 	outputs := []types.PrevOutputParam{}
 
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
-		outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
+		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
 		where outputs.ToAddr = ? and  outputs.Type = ?
 		order by outputs.BlockId ASC`, toAddr, txType)
 	if err != nil {
@@ -414,7 +414,7 @@ func (gSql *GSqlite3) SearchOutputs(txType types.TxOutputType, toAddr []byte) []
 	for rows.Next() {
 		output := types.PrevOutputParam{}
 		if err = rows.Scan(&output.VOutPoint.TxId, &output.Vout.Addr, &output.Vout.BrokerAddr, &output.Vout.ScriptPubKey,
-			&output.Vout.ScriptSize, &output.Vout.Type, &output.Vout.Value, &output.VOutPoint.TxOutIndex); err == sql.ErrNoRows {
+			&output.Vout.ScriptSize, &output.Vout.ScriptEx, &output.Vout.ScriptExSize, &output.Vout.Type, &output.Vout.Value, &output.VOutPoint.TxOutIndex); err == sql.ErrNoRows {
 			return nil
 		} else if err != nil {
 			log.Fatal(err)
