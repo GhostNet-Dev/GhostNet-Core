@@ -45,6 +45,10 @@ func (txContainer *TxContainer) GetTx(txId []byte) (*types.GhostTransaction, uin
 	return txContainer.gSql.SelectTx(txId)
 }
 
+func (txContainer *TxContainer) GetDataTx(txId []byte) *types.GhostDataTransaction {
+	return txContainer.gSql.SelectData(txId)
+}
+
 func (txContainer *TxContainer) CheckRefExist(refTxId []byte, outIndex uint32, notTxId []byte) bool {
 	return txContainer.gSql.CheckExistRefOutput(refTxId, outIndex, notTxId)
 }

@@ -17,7 +17,7 @@ import (
 
 var (
 	executeScript = false
-	codeFilepath  = "./sample.gs"
+	codeFilepath  = "./code.gs"
 	scriptType    = 0
 )
 
@@ -56,6 +56,8 @@ func registerScriptCommand(username, password string) bool {
 	cfg.Username = username
 	// for encrypt passwd
 	cfg.Password = gcrypto.PasswordToSha256(password)
+	cfg.Ip = host
+	cfg.Port = port
 	sampleCode, err := ioutil.ReadFile(codeFilepath)
 	if err != nil {
 		log.Fatal(err)
