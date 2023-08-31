@@ -21,6 +21,14 @@ func (txs *TXs) CandidateUTXO(withDrawCoin uint64, account []byte) ([]types.Prev
 	return outputParams, checkBalance
 }
 
+func (txs *TXs) TotalUTXO(account []byte) uint64 {
+	getherCoin := uint64(0)
+	for _, outputParam := range txs.blockContainer.TxContainer.GetUnusedOutputList(types.TxTypeCoinTransfer, account) {
+		getherCoin += outputParam.Vout.Value
+	}
+	return getherCoin
+}
+
 func (txs *TXs) GetRootFsTx(account []byte) ([]types.PrevOutputParam, bool) {
 	outputParams := txs.blockContainer.TxContainer.SearchOutputList(types.TxTypeFSRoot, account)
 	if len(outputParams) != 0 {

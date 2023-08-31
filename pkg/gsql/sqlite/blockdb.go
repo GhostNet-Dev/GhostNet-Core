@@ -311,7 +311,7 @@ func (gSql *GSqlite3) SelectTx(TxId []byte) (tx *types.GhostTransaction, blockId
 		return nil, 0
 	}
 	tx.Body.Vin = input
-	output := gSql.SelectOutputs(TxId, tx.Body.OutputCounter)
+	output := gSql.selectOutputs(TxId, tx.Body.OutputCounter)
 	if output == nil {
 		return nil, 0
 	}
@@ -351,7 +351,7 @@ func (gSql *GSqlite3) SelectInputs(TxId []byte, count uint32) []types.TxInput {
 	return inputs
 }
 
-func (gSql *GSqlite3) SelectOutputs(TxId []byte, count uint32) []types.TxOutput {
+func (gSql *GSqlite3) selectOutputs(TxId []byte, count uint32) []types.TxOutput {
 	outputs := make([]types.TxOutput, count)
 
 	rows, err := gSql.db.Query(`select ToAddr, BrokerAddr, Script, ScriptSize, ScriptEx, ScriptExSize, Type, Value from outputs 
@@ -399,13 +399,44 @@ func (gSql *GSqlite3) InsertQuery(query string, args ...interface{}) {
 	}
 }
 
+func (gSql *GSqlite3) SelectOutputs(txType types.TxOutputType, count int) []types.PrevOutputParam {
+	outputs := []types.PrevOutputParam{}
+
+	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
+		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
+		where outputs.Type = ?
+		order by outputs.BlockId DESC limit 0, ?`, txType, count)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		output := types.PrevOutputParam{}
+		if err = rows.Scan(&output.VOutPoint.TxId, &output.Vout.Addr, &output.Vout.BrokerAddr, &output.Vout.ScriptPubKey,
+			&output.Vout.ScriptSize, &output.Vout.ScriptEx, &output.Vout.ScriptExSize, &output.Vout.Type, &output.Vout.Value, &output.VOutPoint.TxOutIndex); err == sql.ErrNoRows {
+			return nil
+		} else if err != nil {
+			log.Fatal(err)
+		}
+		output.TxType = txType
+		outputs = append(outputs, output)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return outputs
+}
+
 func (gSql *GSqlite3) SearchOutputs(txType types.TxOutputType, toAddr []byte) []types.PrevOutputParam {
 	outputs := []types.PrevOutputParam{}
 
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
 		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
 		where outputs.ToAddr = ? and  outputs.Type = ?
-		order by outputs.BlockId DESC`, toAddr, txType)
+		order by outputs.BlockId ASC`, toAddr, txType)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -604,7 +635,7 @@ func (gSql *GSqlite3) GetTxRows(txs []types.GhostTransaction) []types.GhostTrans
 			return nil
 		}
 		txs[i].Body.Vin = input
-		output := gSql.SelectOutputs(tx.TxId, tx.Body.OutputCounter)
+		output := gSql.selectOutputs(tx.TxId, tx.Body.OutputCounter)
 		if output == nil {
 			return nil
 		}
