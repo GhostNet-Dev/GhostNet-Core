@@ -405,7 +405,7 @@ func (gSql *GSqlite3) SearchOutputs(txType types.TxOutputType, toAddr []byte) []
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
 		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
 		where outputs.ToAddr = ? and  outputs.Type = ?
-		order by outputs.BlockId ASC`, toAddr, txType)
+		order by outputs.BlockId DESC`, toAddr, txType)
 	if err != nil {
 		log.Fatal(err)
 	}
