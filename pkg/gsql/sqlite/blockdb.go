@@ -399,13 +399,13 @@ func (gSql *GSqlite3) InsertQuery(query string, args ...interface{}) {
 	}
 }
 
-func (gSql *GSqlite3) SelectOutputs(txType types.TxOutputType, count int) []types.PrevOutputParam {
+func (gSql *GSqlite3) SelectOutputs(txType types.TxOutputType, start, count int) []types.PrevOutputParam {
 	outputs := []types.PrevOutputParam{}
 
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
 		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
 		where outputs.Type = ?
-		order by outputs.BlockId DESC limit 0, ?`, txType, count)
+		order by outputs.BlockId DESC limit ?, ?`, txType, start, count)
 	if err != nil {
 		log.Fatal(err)
 	}

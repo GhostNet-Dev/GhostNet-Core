@@ -36,9 +36,10 @@ func (txContainer *TxContainer) GetUnusedOutputList(txType types.TxOutputType, t
 func (txContainer *TxContainer) SearchOutputList(txType types.TxOutputType, toAddr []byte) []types.PrevOutputParam {
 	return txContainer.gSql.SearchOutputs(txType, toAddr)
 }
+
 // to find the latest account
-func (txContainer *TxContainer) SelectOutputList(txType types.TxOutputType, count int) []types.PrevOutputParam {
-	return txContainer.gSql.SelectOutputs(txType, count)
+func (txContainer *TxContainer) SelectOutputList(txType types.TxOutputType, start, count int) []types.PrevOutputParam {
+	return txContainer.gSql.SelectOutputs(txType, start, count)
 }
 func (txContainer *TxContainer) CheckExistTxId(txId []byte) bool {
 	return txContainer.gSql.CheckExistTxId(txId)
