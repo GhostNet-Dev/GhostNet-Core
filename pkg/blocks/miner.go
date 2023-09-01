@@ -40,7 +40,7 @@ func (blocks *Blocks) MakeNewBlock(miner *gcrypto.GhostAddress, creator []byte,
 	newUsedTxPool := blocks.blockContainer.TxContainer.MakeCandidateTrPool(newId, minimumRequiredTxCount)
 	if newUsedTxPool == nil {
 		return nil
-	} 
+	}
 	dataBlock := blocks.CreateGhostNetDataBlock(newId, prevDataHash, newUsedTxPool.DataTxCandidate)
 	block := blocks.CreateGhostNetBlock(newId, prevHash, dataBlock.GetHashKey(), miner, creator,
 		newUsedTxPool.TxCandidate)
@@ -142,6 +142,7 @@ func (blocks *Blocks) MakeAliceCoin(blockId uint32, adamsAddr []byte,
 		outputs = append(outputs, types.TxOutput{
 			Addr:         pubKey,
 			BrokerAddr:   pubKey,
+			Type:         types.TxTypeCoinTransfer,
 			Value:        coin,
 			ScriptPubKey: baseScript,
 			ScriptSize:   uint32(len(baseScript)),
