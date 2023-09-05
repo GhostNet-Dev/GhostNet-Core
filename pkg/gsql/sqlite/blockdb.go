@@ -439,6 +439,7 @@ func (gSql *GSqlite3) SearchOutput(txType types.TxOutputType, toAddr, uniqKey []
 		order by outputs.BlockId ASC`, toAddr, txType, uniqKey)
 	if err != nil {
 		log.Print(err)
+		return nil
 	}
 	defer rows.Close()
 
@@ -449,17 +450,18 @@ func (gSql *GSqlite3) SearchOutput(txType types.TxOutputType, toAddr, uniqKey []
 			return nil
 		} else if err != nil {
 			log.Print(err)
+			return nil
 		}
 		output.TxType = txType
 		outputs = append(outputs, output)
 	}
 
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return nil
 	}
 
 	return outputs
-
 }
 
 func (gSql *GSqlite3) SearchOutputs(txType types.TxOutputType, toAddr []byte) []types.PrevOutputParam {
