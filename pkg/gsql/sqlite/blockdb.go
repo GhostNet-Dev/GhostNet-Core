@@ -438,7 +438,7 @@ func (gSql *GSqlite3) SearchOutput(txType types.TxOutputType, toAddr, uniqKey []
 		where outputs.ToAddr = ? and  outputs.Type = ? and output.Script = ?
 		order by outputs.BlockId ASC`, toAddr, txType, uniqKey)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 	defer rows.Close()
 
@@ -448,7 +448,7 @@ func (gSql *GSqlite3) SearchOutput(txType types.TxOutputType, toAddr, uniqKey []
 			&output.Vout.ScriptSize, &output.Vout.ScriptEx, &output.Vout.ScriptExSize, &output.Vout.Type, &output.Vout.Value, &output.VOutPoint.TxOutIndex); err == sql.ErrNoRows {
 			return nil
 		} else if err != nil {
-			log.Fatal(err)
+			log.Print(err)
 		}
 		output.TxType = txType
 		outputs = append(outputs, output)
