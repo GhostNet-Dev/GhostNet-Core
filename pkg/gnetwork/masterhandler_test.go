@@ -21,7 +21,7 @@ var (
 		Port: "8888",
 	}
 	TestTables     = []string{"nodes", "wallet"}
-	liteStore      = store.NewLiteStore("./", "litestore.db", TestTables)
+	liteStore      = store.NewLiteStore("./", "litestore.db", TestTables, 3)
 	gAccount       = NewGhostAccount(liteStore)
 	packetFactory  = p2p.NewPacketFactory()
 	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glogger.NewGLogger(0))

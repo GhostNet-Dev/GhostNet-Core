@@ -3,6 +3,7 @@ package store
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/boltdb/bolt"
 )
@@ -29,18 +30,21 @@ type LiteStore struct {
 	tables     []string
 	dbPath     string
 	dbFilename string
+	timeout    int
 }
 
-func NewLiteStore(dbPath string, dbFilename string, tables []string) *LiteStore {
+func NewLiteStore(dbPath, dbFilename string, tables []string, timeout int) *LiteStore {
 	return &LiteStore{
 		dbPath:     dbPath,
 		tables:     tables,
 		dbFilename: dbFilename,
+		timeout:    timeout,
 	}
 }
 
 func (liteStore *LiteStore) OpenStore() error {
-	db, err := bolt.Open(liteStore.dbPath+liteStore.dbFilename, 0600, nil)
+	db, err := bolt.Open(liteStore.dbPath+liteStore.dbFilename, 0600, 
+		&bolt.Options{Timeout: time.Duration(liteStore.timeout) * time.Second})
 	if err != nil {
 		return fmt.Errorf("could not open bolt db = %v", err)
 	}

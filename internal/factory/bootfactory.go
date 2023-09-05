@@ -20,7 +20,7 @@ type BootFactory struct {
 }
 
 func NewBootFactory(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory, config *gconfig.GConfig, glog *glogger.GLogger) *BootFactory {
-	db := store.NewLiteStore(config.SqlPath, config.LiteStoreFilename, store.DefaultLiteTable[:])
+	db := store.NewLiteStore(config.SqlPath, config.LiteStoreFilename, store.DefaultLiteTable[:], 3)
 	if err := db.OpenStore(); err != nil {
 		log.Fatal(err)
 	}
