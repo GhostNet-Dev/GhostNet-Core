@@ -430,6 +430,38 @@ func (gSql *GSqlite3) SelectOutputs(txType types.TxOutputType, start, count int)
 	return outputs
 }
 
+func (gSql *GSqlite3) SearchOutput(txType types.TxOutputType, toAddr, uniqKey []byte) []types.PrevOutputParam {
+	outputs := []types.PrevOutputParam{}
+
+	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
+		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
+		where outputs.ToAddr = ? and  outputs.Type = ? and output.Script = ?
+		order by outputs.BlockId ASC`, toAddr, txType, uniqKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		output := types.PrevOutputParam{}
+		if err = rows.Scan(&output.VOutPoint.TxId, &output.Vout.Addr, &output.Vout.BrokerAddr, &output.Vout.ScriptPubKey,
+			&output.Vout.ScriptSize, &output.Vout.ScriptEx, &output.Vout.ScriptExSize, &output.Vout.Type, &output.Vout.Value, &output.VOutPoint.TxOutIndex); err == sql.ErrNoRows {
+			return nil
+		} else if err != nil {
+			log.Fatal(err)
+		}
+		output.TxType = txType
+		outputs = append(outputs, output)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return outputs
+
+}
+
 func (gSql *GSqlite3) SearchOutputs(txType types.TxOutputType, toAddr []byte) []types.PrevOutputParam {
 	outputs := []types.PrevOutputParam{}
 

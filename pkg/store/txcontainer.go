@@ -37,6 +37,10 @@ func (txContainer *TxContainer) SearchOutputList(txType types.TxOutputType, toAd
 	return txContainer.gSql.SearchOutputs(txType, toAddr)
 }
 
+func (txContainer *TxContainer) SearchOutput(txType types.TxOutputType, toAddr, uniqKey []byte) []types.PrevOutputParam {
+	return txContainer.gSql.SearchOutput(txType, toAddr, uniqKey)
+}
+
 // to find the latest account
 func (txContainer *TxContainer) SelectOutputList(txType types.TxOutputType, start, count int) []types.PrevOutputParam {
 	return txContainer.gSql.SelectOutputs(txType, start, count)
