@@ -53,6 +53,10 @@ func (s *DownloadCheckState) RecvBlockHash(from string, masterHash []byte, block
 	hash := s.blockMachine.LoadHashFromTempDb(blockIdx)
 	if hash == nil || !bytes.Equal(hash, masterHash) {
 		s.blockMachine.BlockServer.RequestGetBlock(from, blockIdx)
+	} else if blockIdx == s.targetBlockId {
+		s.blockMachine.SetTargetHeight(s.targetBlockId)
+		s.blockMachine.SetStartBlockId(s.startBlockId)
+		s.blockMachine.setState(s.blockMachine.blockMergeState)
 	} else {
 		s.reqBlockId = blockIdx + 1
 		s.blockMachine.BlockServer.RequestGetBlockHash(from, s.reqBlockId)
