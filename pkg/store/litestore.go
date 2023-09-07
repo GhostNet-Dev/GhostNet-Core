@@ -43,7 +43,7 @@ func NewLiteStore(dbPath, dbFilename string, tables []string, timeout int) *Lite
 }
 
 func (liteStore *LiteStore) OpenStore() error {
-	db, err := bolt.Open(liteStore.dbPath+liteStore.dbFilename, 0600, 
+	db, err := bolt.Open(liteStore.dbPath+liteStore.dbFilename, 0600,
 		&bolt.Options{Timeout: time.Duration(liteStore.timeout) * time.Second})
 	if err != nil {
 		return fmt.Errorf("could not open bolt db = %v", err)
@@ -161,6 +161,14 @@ func (liteStore *LiteStore) SelectEntry(table string, key []byte) (result []byte
 func (liteStore *LiteStore) SaveEntry(table string, k, v []byte) error {
 	err := liteStore.db.Update(func(tx *bolt.Tx) error {
 		err := tx.Bucket([]byte("litestore")).Bucket([]byte(table)).Put(k, v)
+		return err
+	})
+	return err
+}
+
+func (liteStore *LiteStore) DelEntry(table string, k []byte) error {
+	err := liteStore.db.Update(func(tx *bolt.Tx) error {
+		err := tx.Bucket([]byte("litestore")).Bucket([]byte(table)).Delete(k)
 		return err
 	})
 	return err
