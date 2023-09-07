@@ -128,6 +128,7 @@ func (io *ScriptIo) CreateScript(scriptType ptypes.ScriptType, w *gcrypto.Wallet
 	return tx.TxId, result
 }
 
+
 func (io *ScriptIo) OpenScript(txId []byte) *ScriptIoHandler {
 	tx, _ := io.bc.TxContainer.GetTx(txId)
 	if tx == nil {
@@ -138,18 +139,11 @@ func (io *ScriptIo) OpenScript(txId []byte) *ScriptIoHandler {
 		return nil
 	}
 	dataTxId := output.ScriptEx
-
-	fileObj := io.cloud.ReadFromCloudSync(fileservice.ByteToFilename(dataTxId),
-		io.wallet.GetMasterNode().Ip.GetUdpAddr())
-	if fileObj == nil {
-		log.Print("could not found file: ", fileObj.Filename)
+	dataTx := io.loadDataTx(dataTxId)
+	if dataTx == nil {
 		return nil
 	}
 
-	dataTx := &types.GhostDataTransaction{}
-	if !dataTx.Deserialize(bytes.NewBuffer(fileObj.Buffer)).Result() {
-		return nil
-	}
 	scriptHeader := &ptypes.ScriptHeader{}
 	if err := proto.Unmarshal(dataTx.Data, scriptHeader); err != nil {
 		log.Fatal(err)
@@ -182,14 +176,8 @@ func (io *ScriptIoHandler) ExecuteScript() string {
 func (io *ScriptIoHandler) ReadScriptData(key []byte) (data []byte) {
 	// to avoid key collision
 	dataTxId := key
-	fileObj := io.scriptIo.cloud.ReadFromCloudSync(fileservice.ByteToFilename(dataTxId),
-		io.wallet.GetMasterNode().Ip.GetUdpAddr())
-	if fileObj == nil {
-		log.Print("could not found file: ", fileObj.Filename)
-		return nil
-	}
-	dataTx := &types.GhostDataTransaction{}
-	if !dataTx.Deserialize(bytes.NewBuffer(fileObj.Buffer)).Result() {
+	dataTx := io.scriptIo.loadDataTx(dataTxId)
+	if dataTx == nil {
 		return nil
 	}
 	return dataTx.Data
@@ -214,4 +202,22 @@ func (io *ScriptIoHandler) WriteScriptData(uniqKey, data []byte) (key []byte) {
 
 	key = dataTx.TxId
 	return key
+}
+
+func (io *ScriptIo) loadDataTx(dataTxId []byte) *types.GhostDataTransaction {
+	dataTx := io.bc.TxContainer.GetDataTx(dataTxId)
+	if dataTx == nil {
+		fileObj := io.cloud.ReadFromCloudSync(fileservice.ByteToFilename(dataTxId),
+			io.wallet.GetMasterNode().Ip.GetUdpAddr())
+		if fileObj == nil {
+			log.Print("could not found file: ", fileObj.Filename)
+			return nil
+		}
+
+		dataTx = &types.GhostDataTransaction{}
+		if !dataTx.Deserialize(bytes.NewBuffer(fileObj.Buffer)).Result() {
+			return nil
+		}
+	}
+	return dataTx
 }
