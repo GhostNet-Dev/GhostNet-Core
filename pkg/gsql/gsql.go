@@ -20,6 +20,7 @@ type GSql interface {
 	SelectData(TxId []byte) *types.GhostDataTransaction
 	SelectUnusedOutputs(TxType types.TxOutputType, ToAddr []byte) []types.PrevOutputParam
 	SelectOutputs(TxType types.TxOutputType, start, count int) []types.PrevOutputParam
+	SearchStringOutputs(txType types.TxOutputType, toAddr, keyword []byte) []types.PrevOutputParam
 	SearchOutputs(TxType types.TxOutputType, ToAddr []byte) []types.PrevOutputParam
 	SearchOutput(TxType types.TxOutputType, ToAddr, UniqKey []byte) []types.PrevOutputParam
 	InsertBlock(pair *types.PairedBlock)

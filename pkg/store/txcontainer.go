@@ -33,6 +33,11 @@ func (txContainer *TxContainer) GetUnusedOutputList(txType types.TxOutputType, t
 	return txContainer.gSql.SelectUnusedOutputs(txType, toAddr)
 }
 
+func (txContainer *TxContainer) SearchStringOutputList(txType types.TxOutputType,
+	toAddr, searchText []byte) []types.PrevOutputParam {
+	return txContainer.gSql.SearchStringOutputs(txType, toAddr, searchText)
+}
+
 func (txContainer *TxContainer) SearchOutputList(txType types.TxOutputType, toAddr []byte) []types.PrevOutputParam {
 	return txContainer.gSql.SearchOutputs(txType, toAddr)
 }
