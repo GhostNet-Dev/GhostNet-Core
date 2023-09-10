@@ -528,13 +528,14 @@ func (gSql *GSqlite3) SearchStringOutputs(txType types.TxOutputType,
 	return outputs
 }
 func (gSql *GSqlite3) SelectOutputLatests(txType types.TxOutputType,
-	toAddr []byte, start, count int) []types.PrevOutputParam {
+	toAddr, keyword []byte, start, count int) []types.PrevOutputParam {
 	outputs := []types.PrevOutputParam{}
 
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
 		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
 		where outputs.Type = ? and outputs.ToAddr = ?
-		order by outputs.Script DESC limit ?, ?`, txType, toAddr, start, count)
+		and outputs.Script like '%'||?
+		order by outputs.Script DESC limit ?, ?`, txType, toAddr, keyword, start, count)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -30,8 +30,8 @@ func TestSqlLatest(t *testing.T) {
 	addr := outputs[0]
 
 	newOutputs := gSql.SelectOutputLatests(types.TxTypeScriptStore, addr.Vout.Addr,
-		0, 2)
-	if len(newOutputs) != 2 {
+		[]byte("member"), 0, 2)
+	if len(newOutputs) == 0 {
 		t.Error("there is no output = ", string(addr.Vout.ScriptPubKey))
 	}
 }

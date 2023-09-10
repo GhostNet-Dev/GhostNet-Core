@@ -51,8 +51,8 @@ func (txContainer *TxContainer) SelectOutputList(txType types.TxOutputType, star
 	return txContainer.gSql.SelectOutputs(txType, start, count)
 }
 func (txContainer *TxContainer) SelectOutputLatests(txType types.TxOutputType,
-	toAddr []byte, start, count int) []types.PrevOutputParam {
-	return txContainer.gSql.SelectOutputLatests(txType, toAddr, start, count)
+	toAddr, keyword []byte, start, count int) []types.PrevOutputParam {
+	return txContainer.gSql.SelectOutputLatests(txType, toAddr, keyword, start, count)
 }
 func (txContainer *TxContainer) CheckExistTxId(txId []byte) bool {
 	return txContainer.gSql.CheckExistTxId(txId)
