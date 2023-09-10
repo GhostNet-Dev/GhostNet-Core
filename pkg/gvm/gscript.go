@@ -22,7 +22,7 @@ func Eval(code string) interface{} {
 	l := lexer.NewLexer(code)
 	p := parser.NewParser(l)
 	program := p.ParseProgram()
-	env := object.NewEnvironment()
+	env := object.NewEnvironment(nil)
 	resultObj := evaluator.Eval(program, env)
 	switch obj := resultObj.(type) {
 	case *object.String:
