@@ -2,7 +2,6 @@ package blockfilesystem
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"sync"
 
@@ -15,8 +14,6 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/txs"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
-	"github.com/GhostNet-Dev/glambda/evaluator"
-	"github.com/GhostNet-Dev/glambda/object"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -58,40 +55,6 @@ func NewScriptIo(blkMgr *blockmanager.BlockManager,
 		blockManager: blkMgr,
 		tXs:          tXs,
 	}
-	evaluator.AddBuiltIn("loadKeyValue", &object.Builtin{
-		Fn: func(env interface{}, args ...object.Object) object.Object {
-			if len(args) != 1 {
-				return object.NewError("wrong number of arguments. got=%d, want=1", len(args))
-			}
-			var key string
-			switch arg := args[0].(type) {
-			case *object.String:
-				key = arg.Value
-			case *object.Identifier:
-				key = arg.Value.(*object.String).Value
-			case *object.Integer:
-				key = fmt.Sprint(arg.Value)
-			}
-			data := gScriptIo.scriptIoHandler.ReadScriptData([]byte(key))
-			return &object.String{Value: string(data)}
-		},
-	})
-
-	evaluator.AddBuiltIn("saveKeyValue", &object.Builtin{
-		Fn: func(env interface{}, args ...object.Object) object.Object {
-			if len(args) != 2 {
-				return object.NewError("wrong number of arguments. got=%d, want=2", len(args))
-			}
-			if args[0].Type() != object.STRING_OBJ || args[1].Type() != object.STRING_OBJ {
-				return object.NewError("argument to 'saveKeyValue' must be string type. got=%s", args[0].Type())
-			}
-			key := []byte(args[0].(*object.String).Value)
-			value := []byte(args[1].(*object.String).Value)
-			// TODO: Script 전용 tx storage가 만들어져야함
-			txId := gScriptIo.scriptIoHandler.WriteScriptData(key, value)
-			return &object.String{Value: string(txId)}
-		},
-	})
 	return gScriptIo
 }
 
@@ -127,7 +90,6 @@ func (io *ScriptIo) CreateScript(scriptType ptypes.ScriptType, w *gcrypto.Wallet
 	wg.Wait()
 	return tx.TxId, result
 }
-
 
 func (io *ScriptIo) OpenScript(txId []byte) *ScriptIoHandler {
 	tx, _ := io.bc.TxContainer.GetTx(txId)
@@ -184,6 +146,27 @@ func (io *ScriptIoHandler) ReadScriptData(key []byte) (data []byte) {
 }
 
 func (io *ScriptIoHandler) WriteScriptData(uniqKey, data []byte) (key []byte) {
+	prevMap := map[types.TxOutputType][]types.PrevOutputParam{}
+	prevMap[types.TxTypeScriptStore] = io.scriptTxPtr // for mapping
+
+	txInfo := &txs.TransferTxInfo{
+		Prevs:     prevMap,
+		FromAddr:  io.wallet.MyPubKey(),
+		ToAddr:    io.toAddr,
+		Broker:    io.wallet.GetMasterNodeAddr(),
+		FeeAddr:   store.AdamsAddress(),
+		FeeBroker: io.feeBrokerAddr,
+	}
+	tx, dataTx := io.scriptIo.tXs.CreateScriptDataTx(*txInfo, uniqKey, data)
+	tx = io.scriptIo.tXs.InkTheContract(tx, io.wallet.GetGhostAddress())
+
+	io.scriptIo.blockManager.SendDataTx(tx, dataTx, nil)
+
+	key = dataTx.TxId
+	return key
+}
+
+func (io *ScriptIoHandler) UpdateScriptData(uniqKey, data []byte) (key []byte) {
 	prevMap := map[types.TxOutputType][]types.PrevOutputParam{}
 	prevMap[types.TxTypeScriptStore] = io.scriptTxPtr // for mapping
 

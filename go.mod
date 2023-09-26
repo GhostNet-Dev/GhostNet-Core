@@ -1,9 +1,9 @@
 module github.com/GhostNet-Dev/GhostNet-Core
 
-go 1.19
+go 1.21.1
 
 require (
-	github.com/GhostNet-Dev/glambda v0.0.0-20230910000640-54e82f84ff91
+	github.com/GhostNet-Dev/gscript v0.0.0-20230916225534-18da2b1cccc4
 	github.com/boltdb/bolt v1.3.1
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/kelindar/bitmap v1.5.1
@@ -23,7 +23,6 @@ require (
 	github.com/kelindar/simd v1.1.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	golang.org/x/net v0.12.0 // indirect
-	google.golang.org/genproto v0.0.0-20230706204954-ccb25ca9f130 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
 )
 

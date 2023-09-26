@@ -3,10 +3,10 @@ package gvm
 import (
 	"fmt"
 
-	"github.com/GhostNet-Dev/glambda/evaluator"
-	"github.com/GhostNet-Dev/glambda/lexer"
-	"github.com/GhostNet-Dev/glambda/object"
-	"github.com/GhostNet-Dev/glambda/parser"
+	"github.com/GhostNet-Dev/gscript/evaluator"
+	"github.com/GhostNet-Dev/gscript/lexer"
+	"github.com/GhostNet-Dev/gscript/object"
+	"github.com/GhostNet-Dev/gscript/parser"
 )
 
 type GScript struct {

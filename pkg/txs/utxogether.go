@@ -36,3 +36,7 @@ func (txs *TXs) GetRootFsTx(account []byte) ([]types.PrevOutputParam, bool) {
 	}
 	return nil, false
 }
+
+func (txs *TXs) GetDataTx(key, toAddr []byte) ([]types.PrevOutputParam, bool) {
+	return nil, false
+}

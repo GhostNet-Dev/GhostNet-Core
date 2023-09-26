@@ -467,6 +467,7 @@ func (gSql *GSqlite3) SearchOutput(txType types.TxOutputType, toAddr, uniqKey []
 func (gSql *GSqlite3) SearchOutputs(txType types.TxOutputType, toAddr []byte) []types.PrevOutputParam {
 	outputs := []types.PrevOutputParam{}
 
+	// account를 찾는 데 사용하기 때문에 unuse 여부를 판단하지 않는다.
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
 		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
 		where outputs.ToAddr = ? and  outputs.Type = ?
@@ -501,7 +502,8 @@ func (gSql *GSqlite3) SearchStringOutputs(txType types.TxOutputType,
 
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
 		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
-		where outputs.ToAddr = ? and  outputs.Type = ? 
+		left outer join inputs  on inputs.prev_TxId = outputs.TxId and inputs.prev_OutIndex = outputs.OutputIndex 
+		where outputs.ToAddr = ? and  outputs.Type = ?  and inputs.Id is NULL
 		and outputs.Script like '%'||?
 		order by outputs.BlockId DESC, outputs.Script DESC`, toAddr, txType, keyword)
 	if err != nil {
@@ -533,7 +535,8 @@ func (gSql *GSqlite3) SelectOutputLatests(txType types.TxOutputType,
 
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
 		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
-		where outputs.Type = ? and outputs.ToAddr = ?
+		left outer join inputs  on inputs.prev_TxId = outputs.TxId and inputs.prev_OutIndex = outputs.OutputIndex 
+		where outputs.Type = ? and outputs.ToAddr = ? and inputs.Id is NULL
 		and outputs.Script like '%'||?
 		order by outputs.Script DESC limit ?, ?`, txType, toAddr, keyword, start, count)
 	if err != nil {
