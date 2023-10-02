@@ -24,6 +24,10 @@ var (
 	password = "pass"
 )
 
+func TestSeatchFile(t *testing.T) {
+	SearchFiles("../../", "test")
+}
+
 func TestOpenWallet(t *testing.T) {
 	err := db.OpenStore()
 	defer db.Close()

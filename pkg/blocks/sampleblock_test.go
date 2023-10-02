@@ -2,7 +2,6 @@ package blocks
 
 import (
 	"bytes"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -79,7 +78,7 @@ func TestMakeGenesisFileIo(t *testing.T) {
 	if err := os.Mkdir("./samples", os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
-	if err := ioutil.WriteFile(blockFilePath, genesisBuf, 0); err != nil {
+	if err := os.WriteFile(blockFilePath, genesisBuf, 0); err != nil {
 		log.Fatal(err)
 	}
 	/*
@@ -102,12 +101,12 @@ func TestMakeGenesisFileIo(t *testing.T) {
 			log.Fatal(err)
 		}
 		cipherPivateKey := gcrypto.Encryption(gcrypto.PasswordToSha256(password), data)
-		if err := ioutil.WriteFile("./samples/"+filename, cipherPivateKey, 0); err != nil {
+		if err := os.WriteFile("./samples/"+filename, cipherPivateKey, 0); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	loadedGenesis, err := ioutil.ReadFile(blockFilePath)
+	loadedGenesis, err := os.ReadFile(blockFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}

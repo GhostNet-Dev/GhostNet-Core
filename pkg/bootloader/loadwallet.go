@@ -3,6 +3,9 @@ package bootloader
 import (
 	"errors"
 	"log"
+	"os"
+	"path/filepath"
+	"regexp"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gcrypto"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
@@ -28,7 +31,11 @@ func (loadWallet *LoadWallet) CreateWallet(nickname string, password []byte) *gc
 func (loadWallet *LoadWallet) OpenWallet(nickname string, password []byte) (*gcrypto.Wallet, error) {
 	cipherPivateKey, err := loadWallet.db.SelectEntry(loadWallet.table, []byte(nickname))
 	if err != nil || cipherPivateKey == nil {
-		return nil, err
+		if filename := SearchFiles("./", nickname); filename != "" {
+			cipherPivateKey, _ = os.ReadFile("./" + filename)
+		} else {
+			return nil, err
+		}
 	}
 	der := gcrypto.Decryption(password, cipherPivateKey)
 	if der == nil {
@@ -59,7 +66,11 @@ func (loadWallet *LoadWallet) SaveWallet(w *gcrypto.Wallet, password []byte) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	filename := nickname + "@" + w.GetGhostAddress().GetPubAddress() + ".ghost"
 	cipherPivateKey := gcrypto.Encryption(password, data)
+	if err := os.WriteFile("./"+filename, cipherPivateKey, 0); err != nil {
+		log.Fatal(err)
+	}
 	loadWallet.db.SaveEntry(loadWallet.table, []byte(nickname), cipherPivateKey)
 }
 
@@ -73,4 +84,46 @@ func (loadWallet *LoadWallet) GetWalletList() (nicknames []string) {
 		log.Print(err)
 	}
 	return nil
+}
+
+func SearchFiles(rootPath, nickname string) (result string) {
+	files, err := os.ReadDir(rootPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	reg, err2 := regexp.Compile("^" + nickname + "@")
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
+	for _, file := range files {
+		if filepath.Ext(file.Name()) != ".ghost" {
+			continue
+		}
+		if reg.MatchString(file.Name()) {
+			result = file.Name()
+			break
+		}
+	}
+
+	/*
+		err = filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				log.Print(err)
+				return nil
+			}
+			reg, err2 := regexp.Compile("^" + nickname)
+			if err2 != nil {
+				return err2
+			}
+			if reg.MatchString(info.Name()) {
+				result = info.Name()
+			}
+			return nil
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+	*/
+	return result
 }
