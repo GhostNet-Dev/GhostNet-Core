@@ -43,6 +43,7 @@ type BlockManager struct {
 	packetCqHandler map[packets.PacketThirdType]func(*packets.Header, *net.UDPAddr)
 	callback        func(bool)
 	newBlockTrigger bool
+	blockControl    bool
 }
 
 func NewBlockManager(blockTick int, con *consensus.Consensus,
@@ -85,15 +86,37 @@ func NewBlockManager(blockTick int, con *consensus.Consensus,
 			blockMgr.UnsaveExtraInformation(pairedBlock)
 		})
 
+	blockMgr.BlockPlay()
 	return blockMgr
 }
 
 func (blockMgr *BlockManager) BlockServer() {
 	blockMgr.glog.DebugOutput(blockMgr, "Block Server Start.", glogger.Default)
 	blockMgr.BlockSync()
-	for range time.Tick(time.Second * time.Duration(blockMgr.BlockTick)) {
+	ticker := time.NewTicker(time.Second * time.Duration(blockMgr.BlockTick))
+	defer ticker.Stop()
+
+	for range ticker.C {
 		blockMgr.BlockSync()
+		if !blockMgr.blockControl {
+			return
+		}
 	}
+}
+
+func (blockMgr *BlockManager) BlockPlay() bool {
+	blockMgr.blockControl = true
+	return true
+}
+
+func (blockMgr *BlockManager) BlockStop() bool {
+	blockMgr.blockControl = false
+	return true
+}
+
+func (blockMgr *BlockManager) BlockPause() bool {
+	blockMgr.blockControl = false
+	return true
 }
 
 func (blockMgr *BlockManager) BlockSync() bool {
