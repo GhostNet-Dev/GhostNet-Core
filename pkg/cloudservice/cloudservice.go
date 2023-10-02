@@ -31,6 +31,7 @@ func NewCloudService(fileService *fileservice.FileService,
 func (cloud *CloudService) ReleaseChannel(filename string) {
 	if _, exist := cloud.streamId[filename]; !exist {
 		log.Print("already released stream = ", filename)
+		return
 	}
 	close(cloud.streamId[filename])
 	delete(cloud.streamId, filename)
@@ -52,7 +53,7 @@ func (cloud *CloudService) ReadFromCloudSync(filename string, ipAddr *net.UDPAdd
 	select {
 	case fileObj := <-cloud.streamId[filename]:
 		return fileObj
-	case <-time.After(time.Second * 8):
+	case <-time.After(time.Second * time.Duration(16)):
 		cloud.glog.DebugOutput(cloud, fmt.Sprint("timeout download = ", filename), glogger.Default)
 		return nil
 	}
