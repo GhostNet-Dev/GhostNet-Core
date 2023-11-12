@@ -65,6 +65,7 @@ func (s *VerificationState) RecvBlock(pairedBlock *types.PairedBlock, pubKey str
 }
 
 func (s *VerificationState) TimerExpired(context interface{}) bool {
+	s.glog.DebugOutput(s, fmt.Sprint("Timeout - ", s), glogger.BlockConsensus)
 	return false
 }
 

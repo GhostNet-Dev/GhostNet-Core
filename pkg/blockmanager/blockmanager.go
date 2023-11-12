@@ -92,6 +92,7 @@ func NewBlockManager(blockTick int, con *consensus.Consensus,
 
 func (blockMgr *BlockManager) BlockServer() {
 	blockMgr.glog.DebugOutput(blockMgr, "Block Server Start.", glogger.Default)
+	blockMgr.fsm.CheckBlock()
 	blockMgr.BlockSync()
 	ticker := time.NewTicker(time.Second * time.Duration(blockMgr.BlockTick))
 	defer ticker.Stop()

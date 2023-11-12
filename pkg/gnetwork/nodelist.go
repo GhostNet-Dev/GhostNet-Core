@@ -3,6 +3,8 @@ package gnetwork
 import (
 	"log"
 	"strings"
+	"sync"
+	"sync/atomic"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/store"
@@ -10,9 +12,11 @@ import (
 )
 
 type GhostAccount struct {
+	masterNodeList   *sync.Map
+	masterNodeLen    *atomic.Uint32
 	nodeList         map[string]*ptypes.GhostUser
-	masterNodeList   map[string]*ptypes.GhostUser
 	nicknameToPubKey map[string]*ptypes.GhostUser
+	nodeLock         *sync.RWMutex
 	liteStore        *store.LiteStore
 }
 
@@ -21,9 +25,11 @@ const MaxGetherNodeList = 10
 // TODO: Warning!! give me Refactoring!!!
 func NewGhostAccount(liteStore *store.LiteStore) *GhostAccount {
 	account := &GhostAccount{
+		masterNodeList:   new(sync.Map),
+		masterNodeLen:    &atomic.Uint32{},
 		nodeList:         make(map[string]*ptypes.GhostUser),
-		masterNodeList:   make(map[string]*ptypes.GhostUser),
 		nicknameToPubKey: make(map[string]*ptypes.GhostUser),
+		nodeLock:         &sync.RWMutex{},
 		liteStore:        liteStore,
 	}
 
@@ -33,29 +39,42 @@ func NewGhostAccount(liteStore *store.LiteStore) *GhostAccount {
 	return account
 }
 
+func (account *GhostAccount) StoreMasterNode(node *ptypes.GhostUser) {
+	account.masterNodeList.Store(node.PubKey, node)
+	account.masterNodeLen.Add(1)
+}
+
 func (account *GhostAccount) AddUserNode(node *ptypes.GhostUser) {
+	account.nodeLock.Lock()
 	account.nodeList[node.PubKey] = node
 	account.nicknameToPubKey[node.Nickname] = node
+	account.nodeLock.Unlock()
 	account.saveToDb(store.DefaultNickTable, node)
 }
 
 func (account *GhostAccount) AddMasterNode(node *ptypes.GhostUser) {
 	log.Print("Add Master = ", node.Nickname)
-	account.masterNodeList[node.PubKey] = node
+	account.StoreMasterNode(node)
+
+	account.nodeLock.Lock()
 	account.nicknameToPubKey[node.Nickname] = node
+	account.nodeLock.Unlock()
+
 	account.saveToDb(store.DefaultNickTable, node)
 	account.saveToDb(store.DefaultMastersTable, node)
 }
 
 func (account *GhostAccount) AddMasterUserList(userList []*ptypes.GhostUser) {
 	for _, user := range userList {
-		account.masterNodeList[user.PubKey] = user
+		account.StoreMasterNode(user)
 		log.Print("Add Master = ", user.Nickname)
 		account.saveToDb(store.DefaultMastersTable, user)
 	}
 }
 
 func (account *GhostAccount) GetUserNode(pubKey string) *ptypes.GhostUser {
+	account.nodeLock.RLock()
+	defer account.nodeLock.RUnlock()
 	find, exist := account.nodeList[pubKey]
 	if !exist {
 		log.Fatal("pubkey not found")
@@ -64,17 +83,21 @@ func (account *GhostAccount) GetUserNode(pubKey string) *ptypes.GhostUser {
 }
 
 func (account *GhostAccount) GetNodeInfo(pubKey string) *ptypes.GhostUser {
-	find, exist := account.masterNodeList[pubKey]
+	find, exist := account.masterNodeList.Load(pubKey)
 	if !exist {
+		account.nodeLock.RLock()
+		defer account.nodeLock.RUnlock()
 		if find, exist = account.nodeList[pubKey]; !exist {
 			return nil
 		}
 	}
-	return find
+	return find.(*ptypes.GhostUser)
 }
 
 func (account *GhostAccount) GetNodeByNickname(nickname string) *ptypes.GhostUser {
+	account.nodeLock.RLock()
 	find, exist := account.nicknameToPubKey[nickname]
+	account.nodeLock.RUnlock()
 	if !exist {
 		if node, err := account.loadFromDb(nickname); err == nil && node != nil {
 			ghostNode := node
@@ -89,7 +112,7 @@ func (account *GhostAccount) GetNodeByNickname(nickname string) *ptypes.GhostUse
 func (account *GhostAccount) GetMasterNodeUserList(startIndex uint32) ([]*ptypes.GhostUser, uint32) {
 	startItem := startIndex * MaxGetherNodeList
 	endItem := startIndex + MaxGetherNodeList
-	totalItem := uint32(len(account.masterNodeList))
+	totalItem := account.masterNodeLen.Load()
 	if startItem > totalItem {
 		return nil, 0
 	}
@@ -101,48 +124,55 @@ func (account *GhostAccount) GetMasterNodeUserList(startIndex uint32) ([]*ptypes
 	//TODO: need to load from database
 	i := uint32(0)
 	userList := []*ptypes.GhostUser{}
-	for _, item := range account.masterNodeList {
+	account.masterNodeList.Range(func(key, value any) bool {
 		if i >= startItem || i < endItem {
-			userList = append(userList, item)
+			userList = append(userList, value.(*ptypes.GhostUser))
 		}
 		i++
-	}
+		return true
+	})
 	return userList, totalItem
 }
 
 func (account *GhostAccount) GetMasterNodeList() []*ptypes.GhostUser {
 	userList := []*ptypes.GhostUser{}
-	for _, item := range account.masterNodeList {
-		userList = append(userList, item)
-	}
+	account.masterNodeList.Range(func(key, value any) bool {
+		userList = append(userList, value.(*ptypes.GhostUser))
+		return true
+	})
 	return userList
 }
 
 func (account *GhostAccount) GetMasterNodeSearch(pubKey string) []*ptypes.GhostUser {
 	userList := []*ptypes.GhostUser{}
-	for _, item := range account.masterNodeList {
-		if strings.HasPrefix(item.PubKey, pubKey) {
-			userList = append(userList, item)
+	account.masterNodeList.Range(func(key, value any) bool {
+		if strings.HasPrefix(value.(*ptypes.GhostUser).PubKey, pubKey) {
+			userList = append(userList, value.(*ptypes.GhostUser))
 		}
-	}
+		return true
+	})
 	return userList
 }
 
-func (account *GhostAccount) GetMasterNodeSearchPick(pubKey string) *ptypes.GhostUser {
-	for _, item := range account.masterNodeList {
-		if strings.HasPrefix(item.PubKey, pubKey) {
-			return item
+func (account *GhostAccount) GetMasterNodeSearchPick(pubKey string) (ret *ptypes.GhostUser) {
+	ret = nil
+	account.masterNodeList.Range(func(key, value any) bool {
+		if strings.HasPrefix(value.(*ptypes.GhostUser).PubKey, pubKey) {
+			ret = value.(*ptypes.GhostUser)
+			return false
 		}
-	}
-	return nil
+		return true
+	})
+	return ret
 }
 
 func (account *GhostAccount) loadNodeList(table string) {
-	if _, v, err := account.liteStore.LoadEntry(table); err == nil {
-		for _, nodeByte := range v {
+	if k, v, err := account.liteStore.LoadEntry(table); err == nil {
+		for idx, nodeByte := range v {
 			masterNode := &ptypes.GhostUser{}
 			if err := proto.Unmarshal(nodeByte, masterNode); err != nil {
 				log.Fatal(err)
+				account.liteStore.DelEntry(table, k[idx])
 			}
 			if table == store.DefaultMastersTable {
 				account.AddMasterNode(masterNode)

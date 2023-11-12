@@ -228,6 +228,9 @@ func (master *MasterNetwork) makeForwadingPacket(routingType packets.RoutingType
 
 	userList := master.tTreeMap.GetLevelMasterList(level)
 	for _, user := range userList {
+		if user.PubKey == master.owner.GetPubAddress() {
+			continue
+		}
 		ghostUser := user
 		from, _ := net.ResolveUDPAddr("udp", ghostUser.Ip.Ip+":"+ghostUser.Ip.Port)
 		packetList = append(packetList, p2p.ResponseHeaderInfo{

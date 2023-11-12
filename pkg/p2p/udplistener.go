@@ -10,6 +10,7 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/packets"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/proto/ptypes"
+	"github.com/btcsuite/btcutil/base58"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -121,7 +122,7 @@ func (udp *UdpServer) Start(netChannel chan RequestPacketInfo, ip, port string) 
 					return
 				}
 				udp.glog.DebugOutput(udp,
-					fmt.Sprint("Recv from ", packetInfo.Addr, ", ",
+					fmt.Sprint("[", base58.CheckEncode(recvPacket.RequestId, 0), "]", "Recv from ", packetInfo.Addr, ", ",
 						packets.PacketSecondType_name[int32(recvPacket.SecondType)],
 						" => ", packets.PacketThirdType_name[int32(recvPacket.ThirdType)], " SQ: ",
 						recvPacket.SqFlag), glogger.PacketLog)
@@ -224,14 +225,14 @@ func (udp *UdpServer) SendUdpPacket(sendInfo *ResponseHeaderInfo, to *net.UDPAdd
 	}
 	udp.RawSendPacket(to, sendData)
 	udp.glog.DebugOutput(udp,
-		fmt.Sprint("Send to ", to, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
+		fmt.Sprint("[", base58.CheckEncode(sendInfo.RequestId, 0), "]", "Send to ", to, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
 			" => ", packets.PacketThirdType_name[int32(sendInfo.ThirdType)], " SQ: ",
 			sendInfo.SqFlag), glogger.PacketLog)
 }
 
 func (udp *UdpServer) SendResponse(sendInfo *ResponseHeaderInfo) {
 	udp.glog.DebugOutput(udp,
-		fmt.Sprint("Response to ", sendInfo.ToAddr, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
+		fmt.Sprint("[", base58.CheckEncode(sendInfo.RequestId, 0), "]", "Response to ", sendInfo.ToAddr, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
 			" => ", packets.PacketThirdType_name[int32(sendInfo.ThirdType)], " SQ: ",
 			sendInfo.SqFlag), glogger.PacketLog)
 
@@ -248,7 +249,7 @@ func (udp *UdpServer) SendResponse(sendInfo *ResponseHeaderInfo) {
 
 func (udp *UdpServer) SendRetry(sendInfo *ResponseHeaderInfo) {
 	udp.glog.DebugOutput(udp,
-		fmt.Sprint("Retry to ", sendInfo.ToAddr, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
+		fmt.Sprint("[", base58.CheckEncode(sendInfo.RequestId, 0), "]", "Retry to ", sendInfo.ToAddr, ", ", packets.PacketSecondType_name[int32(sendInfo.SecondType)],
 			" => ", packets.PacketThirdType_name[int32(sendInfo.ThirdType)], " SQ: ",
 			sendInfo.SqFlag), glogger.PacketLog)
 

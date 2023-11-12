@@ -1,6 +1,8 @@
 package states
 
 import (
+	"fmt"
+
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
@@ -41,6 +43,7 @@ func (s *BlockMergeState) RecvBlock(pairedBlock *types.PairedBlock, pubKey strin
 }
 
 func (s *BlockMergeState) TimerExpired(context interface{}) bool {
+	s.glog.DebugOutput(s, fmt.Sprint("Timeout - ", s), glogger.BlockConsensus)
 	return false
 }
 

@@ -80,6 +80,10 @@ func (fsm *BlockMachine) CheckAcceptDownloadBlock() bool {
 	return fsm.currentState == fsm.downloadCheckState
 }
 
+func (fsm *BlockMachine) CheckBlock() {
+	fsm.setState(fsm.recheckState)
+}
+
 func (fsm *BlockMachine) setState(s IBlockState) {
 	fsm.glog.DebugOutput(fsm, fmt.Sprintf("Change State %s -> %s",
 		glogger.GetType(fsm.currentState), glogger.GetType(s)), glogger.BlockConsensus)

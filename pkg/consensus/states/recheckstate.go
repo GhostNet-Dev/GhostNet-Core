@@ -1,8 +1,6 @@
 package states
 
 import (
-	"fmt"
-
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
@@ -20,8 +18,9 @@ func (s *RecheckState) BlockCheckTask() {
 	if s.blockMachine.LocalBlockCheckProcess() {
 		s.blockMachine.BlockServer.BlockServerInitStart()
 		s.blockMachine.setState(s.blockMachine.miningState)
-		s.glog.DebugOutput(s, fmt.Sprint("-- "), glogger.BlockConsensus)
+		s.glog.DebugOutput(s, "block check complete", glogger.BlockConsensus)
 	} else {
+		s.glog.DebugOutput(s, "block check error!!", glogger.BlockConsensus)
 		s.blockMachine.setState(s.blockMachine.getHeightestState)
 		s.blockMachine.BlockServer.BroadcastBlockChainNotification()
 	}
