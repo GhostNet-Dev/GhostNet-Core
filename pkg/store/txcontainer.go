@@ -74,6 +74,10 @@ func (txContainer *TxContainer) CheckExistFsRoot(nickname []byte) bool {
 	return txContainer.gSql.CheckExistFsRoot(nickname)
 }
 
+func (txContainer *TxContainer) ValidateFsRoot(nickname, txId []byte) bool {
+	return txContainer.gSql.CheckExistFsRootWithoutCurrentTx(nickname, txId)
+}
+
 func (txContainer *TxContainer) GetMaxLogicalAddress(owner []byte) (uint64, error) {
 	return txContainer.gSql.GetMaxLogicalAddress(owner)
 }

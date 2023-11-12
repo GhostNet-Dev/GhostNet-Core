@@ -105,7 +105,7 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 		input.ScriptSig = dummyBuf4
 		input.ScriptSize = uint32(len(dummyBuf4))
 		nickname := string(tx.Body.Vout[0].ScriptEx)
-		if txContainer.CheckExistFsRoot([]byte(nickname)) {
+		if txContainer.ValidateFsRoot([]byte(nickname), tx.TxId) {
 			return &TxChkResult{TxChkResult_AlreadyExist}
 		}
 

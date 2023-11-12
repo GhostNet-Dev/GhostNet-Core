@@ -714,6 +714,23 @@ func (gSql *GSqlite3) CheckExistFsRoot(nickname []byte) bool {
 	return count > 0
 }
 
+func (gSql *GSqlite3) CheckExistFsRootWithoutCurrentTx(nickname, txId []byte) bool {
+	var count uint32
+	query, err := gSql.db.Prepare(`select count(*) from outputs where 
+		ScriptEx == ? and TxId != ?`)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	if err := query.QueryRow(nickname, txId).Scan(&count); err == sql.ErrNoRows {
+		return false
+	} else if err != nil {
+		log.Print(err)
+	}
+	return count > 0
+}
+
 func (gSql *GSqlite3) GetBlockHeight() uint32 {
 	var id uint32
 	query, err := gSql.db.Prepare(`select Id from paired_block order by Id desc limit 0, 1`)
