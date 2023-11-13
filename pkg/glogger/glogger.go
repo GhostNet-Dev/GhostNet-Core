@@ -83,7 +83,7 @@ func (l *GLogger) Output(obj interface{}, s string, level LogLevel, depth int) e
 	case PacketLog:
 		l.buf = append(l.buf, Purple...)
 	case BlockConsensus:
-		l.buf = append(l.buf, Blue...)
+		l.buf = append(l.buf, Yellow...)
 	}
 	l.buf = append(l.buf, s...)
 	l.buf = append(l.buf, Reset...)
