@@ -151,10 +151,13 @@ func (blockMgr *BlockManager) TriggerNewBlock() {
 		blockMgr.glog.DebugOutput(blockMgr, "Fail to Make New Block", glogger.BlockConsensus)
 		return
 	}
+	blockFilename := newPairBlock.GetBlockFilename()
+	blockMgr.fileService.CreateFile(blockFilename, newPairBlock.SerializeToByte(), nil, nil)
 	blockMgr.glog.DebugOutput(blockMgr, fmt.Sprint("Create Block Id = ", newPairBlock.BlockId()), glogger.BlockConsensus)
+
 	sq := packets.NewBlockSq{
 		Master:        p2p.MakeMasterPacket(blockMgr.owner.GetPubAddress(), nil, 0, blockMgr.localIpAddr),
-		BlockFilename: newPairBlock.GetBlockFilename(),
+		BlockFilename: blockFilename,
 	}
 	sendData, err := proto.Marshal(&sq)
 	if err != nil {
