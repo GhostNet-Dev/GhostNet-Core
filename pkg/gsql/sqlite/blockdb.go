@@ -596,7 +596,7 @@ func (gSql *GSqlite3) SelectUnusedOutputs(txType types.TxOutputType, toAddr []by
 }
 
 func (gSql *GSqlite3) GetNicknameToAddress(nickname []byte) (toAddr []byte) {
-	query, err := gSql.db.Prepare("select outputs.ToAddr from transactions where Type = ? and ScriptEx = ?")
+	query, err := gSql.db.Prepare("select outputs.ToAddr from outputs where Type = ? and ScriptEx = ?")
 	if err != nil {
 		log.Printf("%s", err)
 	}
