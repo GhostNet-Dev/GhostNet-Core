@@ -91,6 +91,10 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 	var transferCoin, getherCoin uint64 = 0, 0
 	var gFuncParam []gvm.GFuncParam
 
+	if checkTx, _ := txContainer.GetTx(tx.TxId); checkTx != nil {
+		return &TxChkResult{TxChkResult_AlreadyExist}
+	}
+
 	if tx.Body.InputCounter != uint32(len(tx.Body.Vin)) {
 		return &TxChkResult{TxChkResult_CounterMismatch}
 	}
