@@ -149,6 +149,10 @@ func (io *ScriptIoHandler) WriteScriptData(uniqKey, data []byte) (key []byte) {
 	prevMap := map[types.TxOutputType][]types.PrevOutputParam{}
 	prevMap[types.TxTypeScriptStore] = io.scriptTxPtr // for mapping
 
+	if ref := io.scriptIo.loadRefTx(key, io.toAddr); len(ref) != 0 {
+		prevMap[types.TxTypeScriptStore] = ref
+	}
+
 	txInfo := &txs.TransferTxInfo{
 		Prevs:     prevMap,
 		FromAddr:  io.wallet.MyPubKey(),
@@ -185,6 +189,11 @@ func (io *ScriptIoHandler) UpdateScriptData(uniqKey, data []byte) (key []byte) {
 
 	key = dataTx.TxId
 	return key
+}
+
+func (io *ScriptIo) loadRefTx(key, toAddr []byte) (ret []types.PrevOutputParam) {
+	ret = io.bc.TxContainer.SelectOutputLatests(types.TxTypeScriptStore, toAddr, key, 0, 1)
+	return  ret
 }
 
 func (io *ScriptIo) loadDataTx(dataTxId []byte) *types.GhostDataTransaction {
