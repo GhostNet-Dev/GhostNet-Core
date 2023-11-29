@@ -22,12 +22,12 @@ type FileObject struct {
 }
 
 type FileObjManager struct {
-	FileObjs map[string]*FileObject
+	FileObjs *sync.Map//map[string]*FileObject
 }
 
 func NewFileObjManager() *FileObjManager {
 	return &FileObjManager{
-		FileObjs: make(map[string]*FileObject),
+		FileObjs: &sync.Map{},
 	}
 }
 
@@ -52,7 +52,7 @@ func (fileManager *FileObjManager) CreateFileObj(filename string, buffer []byte,
 		DownloadBitmap:  bitmap.Bitmap{},
 		CompleteDone:    completeDone,
 	}
-	fileManager.FileObjs[filename] = fileObj
+	fileManager.FileObjs.Store(filename, fileObj)
 	return fileObj
 }
 
@@ -66,12 +66,12 @@ func (fileManager *FileObjManager) AllocBuffer(filename string, fileLength uint6
 }
 
 func (fileManager *FileObjManager) GetFileObject(filename string) (*FileObject, bool) {
-	obj, ok := fileManager.FileObjs[filename]
-	return obj, ok
+	obj, ok := fileManager.FileObjs.Load(filename)
+	return obj.(*FileObject), ok
 }
 
 func (fileManager *FileObjManager) DeleteObject(filename string) {
-	delete(fileManager.FileObjs, filename)
+	fileManager.FileObjs.Delete(filename)
 }
 
 func (fileObj *FileObject) UpdateFileImage(offset uint64, bufSize uint64) bool {
