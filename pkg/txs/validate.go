@@ -87,11 +87,15 @@ func TransactionDefaultValidation(tx *types.GhostTransaction, dataTx *types.Ghos
 }
 
 func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction,
-	txContainer *store.TxContainer) *TxChkResult {
+	txContainer *store.TxContainer, blockId uint32) *TxChkResult {
 	var transferCoin, getherCoin uint64 = 0, 0
 	var gFuncParam []gvm.GFuncParam
 
-	if checkTx, _ := txContainer.GetTx(tx.TxId); checkTx != nil {
+	if blockId == 0 {
+		blockId = txs.blockContainer.BlockHeight() + 1
+	}
+
+	if checkTx := txContainer.CheckExistTxBefore(tx.TxId, blockId); checkTx {
 		return &TxChkResult{TxChkResult_AlreadyExist}
 	}
 
@@ -181,10 +185,13 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 }
 
 func (txs *TXs) TransactionMergeValidation(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction,
-	txContainer *store.TxContainer, mergeTxContainer *store.TxContainer) *TxChkResult {
+	txContainer *store.TxContainer, mergeTxContainer *store.TxContainer, blockId uint32) *TxChkResult {
 	var transferCoin, getherCoin uint64 = 0, 0
 	var gFuncParam []gvm.GFuncParam
 
+	if checkTx := txContainer.CheckExistTxBefore(tx.TxId, blockId); checkTx {
+		return &TxChkResult{TxChkResult_AlreadyExist}
+	}
 	if tx.Body.InputCounter != uint32(len(tx.Body.Vin)) {
 		return &TxChkResult{TxChkResult_CounterMismatch}
 	}

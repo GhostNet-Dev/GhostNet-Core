@@ -53,13 +53,13 @@ func (blocks *Blocks) blockValidation(pairedBlock *types.PairedBlock, prevPaired
 
 	for _, tx := range txs {
 		if mergeTxContainer == nil {
-			if txChkResult := blocks.txs.TransactionValidation(&tx, nil, txContainer); !txChkResult.Result() {
+			if txChkResult := blocks.txs.TransactionValidation(&tx, nil, txContainer, pairedBlock.BlockId()); !txChkResult.Result() {
 				blocks.blockContainer.TxContainer.DeleteCandidateTx(tx.TxId)
 				log.Print("remain candidate count = ", blocks.blockContainer.TxContainer.GetCandidateTxCount())
 				return false
 			}
 		} else {
-			if txChkResult := blocks.txs.TransactionMergeValidation(&tx, nil, txContainer, mergeTxContainer); !txChkResult.Result() {
+			if txChkResult := blocks.txs.TransactionMergeValidation(&tx, nil, txContainer, mergeTxContainer, pairedBlock.BlockId()); !txChkResult.Result() {
 				return false
 			}
 		}

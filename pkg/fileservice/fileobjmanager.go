@@ -22,7 +22,7 @@ type FileObject struct {
 }
 
 type FileObjManager struct {
-	FileObjs *sync.Map//map[string]*FileObject
+	FileObjs *sync.Map //map[string]*FileObject
 }
 
 func NewFileObjManager() *FileObjManager {
@@ -66,8 +66,11 @@ func (fileManager *FileObjManager) AllocBuffer(filename string, fileLength uint6
 }
 
 func (fileManager *FileObjManager) GetFileObject(filename string) (*FileObject, bool) {
-	obj, ok := fileManager.FileObjs.Load(filename)
-	return obj.(*FileObject), ok
+	if obj, ok := fileManager.FileObjs.Load(filename); ok {
+		return obj.(*FileObject), ok
+	}
+
+	return nil, false
 }
 
 func (fileManager *FileObjManager) DeleteObject(filename string) {

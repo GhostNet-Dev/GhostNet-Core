@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "embed"
 
@@ -596,7 +597,7 @@ func (gSql *GSqlite3) SelectUnusedOutputs(txType types.TxOutputType, toAddr []by
 }
 
 func (gSql *GSqlite3) GetNicknameToAddress(nickname []byte) (toAddr []byte) {
-	query, err := gSql.db.Prepare("select outputs.ToAddr from outputs where Type = ? and ScriptEx = ?")
+	query, err := gSql.RetryDbAccess("select outputs.ToAddr from outputs where Type = ? and ScriptEx = ?")
 	if err != nil {
 		log.Printf("%s", err)
 	}
@@ -632,7 +633,7 @@ func (gSql *GSqlite3) GetMaxLogicalAddress(toAddr []byte) (maxLogicalAddr uint64
 
 func (gSql *GSqlite3) GetIssuedCoin(blockId uint32) uint64 {
 	var coin uint64
-	query, err := gSql.db.Prepare(`select sum(Value) from outputs 
+	query, err := gSql.RetryDbAccess(`select sum(Value) from outputs 
 	left outer join transactions on outputs.TxId = transactions.TxId
 	where transactions.Type = ? and transactions.BlockId = ?`)
 	if err != nil {
@@ -650,7 +651,7 @@ func (gSql *GSqlite3) GetIssuedCoin(blockId uint32) uint64 {
 
 func (gSql *GSqlite3) CheckExistBlockId(blockId uint32) bool {
 	var count uint32
-	query, err := gSql.db.Prepare("select count(*) from paired_block where Id = ?")
+	query, err := gSql.RetryDbAccess("select count(*) from paired_block where Id = ?")
 	if err != nil {
 		log.Printf("%s", err)
 	}
@@ -666,7 +667,7 @@ func (gSql *GSqlite3) CheckExistBlockId(blockId uint32) bool {
 
 func (gSql *GSqlite3) CheckExistTxId(txId []byte) bool {
 	var count uint32
-	query, err := gSql.db.Prepare("select count(*) from transactions where TxId = ?")
+	query, err := gSql.RetryDbAccess("select count(*) from transactions where TxId = ?")
 	if err != nil {
 		log.Printf("%s", err)
 	}
@@ -680,9 +681,24 @@ func (gSql *GSqlite3) CheckExistTxId(txId []byte) bool {
 	return count > 0
 }
 
+func (gSql *GSqlite3) CheckExistTxBefore(txId []byte, curBlockId uint32) bool {
+	var count uint32
+	query, err := gSql.RetryDbAccess("select count(*) from transactions where TxId = ? and BlockId < ?")
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	defer query.Close()
+
+	if err := query.QueryRow(txId, curBlockId).Scan(&count); err == sql.ErrNoRows {
+		return false
+	} else if err != nil {
+		log.Print(err)
+	}
+	return count > 0
+}
 func (gSql *GSqlite3) CheckExistRefOutput(refTxId []byte, outIndex uint32, notTxId []byte) bool {
 	var count uint32
-	query, err := gSql.db.Prepare(`select count(*) from outputs where 
+	query, err := gSql.RetryDbAccess(`select count(*) from outputs where 
 		TxId == ? and OutputIndex == ?`)
 	if err != nil {
 		log.Printf("%s", err)
@@ -699,7 +715,7 @@ func (gSql *GSqlite3) CheckExistRefOutput(refTxId []byte, outIndex uint32, notTx
 
 func (gSql *GSqlite3) CheckExistFsRoot(nickname []byte) bool {
 	var count uint32
-	query, err := gSql.db.Prepare(`select count(*) from outputs where 
+	query, err := gSql.RetryDbAccess(`select count(*) from outputs where 
 		ScriptEx == ?`)
 	if err != nil {
 		log.Printf("%s", err)
@@ -716,7 +732,7 @@ func (gSql *GSqlite3) CheckExistFsRoot(nickname []byte) bool {
 
 func (gSql *GSqlite3) CheckExistFsRootWithoutCurrentTx(nickname, txId []byte) bool {
 	var count uint32
-	query, err := gSql.db.Prepare(`select count(*) from outputs where 
+	query, err := gSql.RetryDbAccess(`select count(*) from outputs where 
 		ScriptEx == ? and TxId != ?`)
 	if err != nil {
 		log.Printf("%s", err)
@@ -733,10 +749,11 @@ func (gSql *GSqlite3) CheckExistFsRootWithoutCurrentTx(nickname, txId []byte) bo
 
 func (gSql *GSqlite3) GetBlockHeight() uint32 {
 	var id uint32
-	query, err := gSql.db.Prepare(`select Id from paired_block order by Id desc limit 0, 1`)
+	query, err := gSql.RetryDbAccess(`select Id from paired_block order by Id desc limit 0, 1`)
 	if err != nil {
 		log.Printf("%s", err)
 	}
+
 	defer query.Close()
 
 	if err := query.QueryRow().Scan(&id); err == sql.ErrNoRows {
@@ -778,4 +795,16 @@ func (gSql *GSqlite3) GetDataTxRows(rows *sql.Rows) []types.GhostDataTransaction
 		log.Fatal(err)
 	}
 	return dataTxs
+}
+
+func (gSql *GSqlite3) RetryDbAccess(queryString string) (*sql.Stmt, error) {
+	for {
+		query, err := gSql.db.Prepare(queryString)
+		if err != nil {
+			log.Printf("%s", err)
+			<-time.After(10 * time.Millisecond)
+			continue
+		}
+		return query, err
+	}
 }

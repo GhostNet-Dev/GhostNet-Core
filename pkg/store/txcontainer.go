@@ -57,7 +57,9 @@ func (txContainer *TxContainer) SelectOutputLatests(txType types.TxOutputType,
 func (txContainer *TxContainer) CheckExistTxId(txId []byte) bool {
 	return txContainer.gSql.CheckExistTxId(txId)
 }
-
+func (txContainer *TxContainer) CheckExistTxBefore(txId []byte, curBlockId uint32) bool {
+	return txContainer.gSql.CheckExistTxBefore(txId, curBlockId)
+}
 func (txContainer *TxContainer) GetTx(txId []byte) (*types.GhostTransaction, uint32) {
 	return txContainer.gSql.SelectTx(txId)
 }

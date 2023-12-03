@@ -71,13 +71,13 @@ func (fileService *FileService) CheckFileExist(filename string) bool {
 func (fileService *FileService) CreateFile(filename string, data []byte,
 	callback DoneHandler, context interface{}) *FileObject {
 	fileFullPath := fileService.localFilePath + filename
-	ioutil.WriteFile(fileFullPath, data, os.FileMode(644))
+	os.WriteFile(fileFullPath, data, os.FileMode(0644))
 	return fileService.fileObjManager.CreateFileObj(filename, data, uint64(len(data)), callback, context)
 }
 
 func (fileService *FileService) commitFile(fileObj *FileObject) {
 	fileFullPath := fileService.localFilePath + fileObj.Filename
-	ioutil.WriteFile(fileFullPath, fileObj.Buffer, os.FileMode(644))
+	os.WriteFile(fileFullPath, fileObj.Buffer, os.FileMode(0644))
 }
 
 func (fileService *FileService) SendGetFile(filename string, ipAddr *net.UDPAddr, callback DoneHandler, context interface{}) {

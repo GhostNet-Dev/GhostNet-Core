@@ -204,7 +204,7 @@ func (blockMgr *BlockManager) DownloadDataTransaction(txByte []byte, dataTxByte 
 		blockMgr.glog.DebugOutput(blockMgr, "Already candidate Tx", glogger.Default)
 		return false
 	}
-	if !blockMgr.tXs.TransactionValidation(tx, dataTx, blockMgr.blockContainer.TxContainer).Result() {
+	if !blockMgr.tXs.TransactionValidation(tx, dataTx, blockMgr.blockContainer.TxContainer, 0).Result() {
 		blockMgr.glog.DebugOutput(blockMgr, "Tx with data Validation Fail", glogger.Default)
 		return false
 	}
@@ -224,7 +224,7 @@ func (blockMgr *BlockManager) DownloadTransaction(obj *fileservice.FileObject, c
 		blockMgr.glog.DebugOutput(blockMgr, "Already candidate Tx", glogger.Default)
 		return false
 	}
-	if !blockMgr.tXs.TransactionValidation(tx, nil, blockMgr.blockContainer.TxContainer).Result() {
+	if !blockMgr.tXs.TransactionValidation(tx, nil, blockMgr.blockContainer.TxContainer, 0).Result() {
 		blockMgr.glog.DebugOutput(blockMgr, "Tx Validation Fail", glogger.Default)
 		return false
 	}
