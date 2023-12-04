@@ -149,7 +149,7 @@ func (io *ScriptIoHandler) WriteScriptData(uniqKey, data []byte) (key []byte) {
 	prevMap := map[types.TxOutputType][]types.PrevOutputParam{}
 	prevMap[types.TxTypeScriptStore] = io.scriptTxPtr // for mapping
 
-	if ref := io.scriptIo.loadRefTx(key, io.toAddr); len(ref) != 0 {
+	if ref := io.scriptIo.loadRefTx(uniqKey, io.toAddr); len(ref) != 0 {
 		prevMap[types.TxTypeScriptStore] = ref
 	}
 
