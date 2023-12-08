@@ -157,7 +157,7 @@ func (io *ScriptIoHandler) WriteScriptData(uniqKey, data []byte) (key []byte) {
 		Prevs:     prevMap,
 		FromAddr:  io.wallet.MyPubKey(),
 		ToAddr:    io.toAddr,
-		Broker:    io.wallet.GetMasterNodeAddr(),
+		Broker:    io.brokerAddr,
 		FeeAddr:   store.AdamsAddress(),
 		FeeBroker: io.feeBrokerAddr,
 	}
