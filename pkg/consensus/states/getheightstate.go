@@ -55,18 +55,21 @@ func (s *GetHeigtestState) RecvBlockHash(from string, masterHash []byte, blockId
 func (s *GetHeigtestState) RecvBlock(pairedBlock *types.PairedBlock, pubKey string) {
 
 }
+func (s *GetHeigtestState) GetValidNode(candidatePool map[uint32][]string) {
+
+}
 
 func (s *GetHeigtestState) TimerExpired(context interface{}) bool {
 	<-time.After(time.Second * 8)
 
 	curBlockHeight := s.blockMachine.blockContainer.BlockHeight()
-	if s.maxHeight > curBlockHeight && s.maxHeight != 0 {
-		candiList := s.candidatePool[s.maxHeight]
+	pubKey, candiList, maxHeight := s.blockMachine.BlockServer.CheckValidNode(s.candidatePool, s.maxHeight)
+	if maxHeight > curBlockHeight && maxHeight != 0 {
 		s.blockMachine.SetHeighestCandidatePool(candiList)
-		s.blockMachine.SetTargetHeight(s.maxHeight)
+		s.blockMachine.SetTargetHeight(maxHeight)
 		s.blockMachine.setState(s.blockMachine.verificationState)
-		s.blockMachine.BlockServer.RequestGetBlockHash(candiList[0], curBlockHeight)
-		s.glog.DebugOutput(s, fmt.Sprint("-> GetBlockState maxHeight = ", s.maxHeight, " / Request to ", s.selectNode), glogger.BlockConsensus)
+		s.blockMachine.BlockServer.RequestGetBlockHash(pubKey, curBlockHeight)
+		s.glog.DebugOutput(s, fmt.Sprint("-> GetBlockState maxHeight = ", s.maxHeight, "(", maxHeight, ") / Request to ", s.selectNode), glogger.BlockConsensus)
 	} else {
 		s.blockMachine.BlockServer.BlockServerInitStart()
 		s.blockMachine.setState(s.blockMachine.miningState)

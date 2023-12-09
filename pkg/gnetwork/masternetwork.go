@@ -99,6 +99,13 @@ func (master *MasterNetwork) getGhostUser() *ptypes.GhostUser {
 	}
 }
 
+func (master *MasterNetwork) CheckNodeInfo(pubKey string) bool {
+	if node := master.account.GetNodeInfo(pubKey); node == nil {
+		return false
+	}
+	return true
+}
+
 func (master *MasterNetwork) RequestGhostNetVersion() {
 	if master.masterInfo == nil {
 		return

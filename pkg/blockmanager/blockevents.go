@@ -79,3 +79,19 @@ func (blockMgr *BlockManager) CheckHeightForRebuild(neighborHeight uint32) bool 
 
 	return currHeight < neighborHeight
 }
+
+func (blockMgr *BlockManager) CheckValidNode(candidatePool map[uint32][]string, maxHeight uint32) (string, []string, uint32) {
+	trycount := len(candidatePool)
+	i := 0
+	for target := maxHeight; i < trycount; target-- {
+		if candiList, exist := candidatePool[target]; exist {
+			for _, pubKey := range candiList {
+				if blockMgr.master.CheckNodeInfo(pubKey) {
+					return pubKey, candiList, target
+				}
+				i++
+			}
+		}
+	}
+	return "", nil, 0
+}
