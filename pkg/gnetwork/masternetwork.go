@@ -180,7 +180,7 @@ func (master *MasterNetwork) sendMasterUserInfo(secondType packets.PacketSecondT
 func (master *MasterNetwork) SendToMasterNodeSq(third packets.PacketThirdType, pubKey string, packet []byte, reqId []byte) {
 	node := master.account.GetNodeInfo(pubKey)
 	if node == nil {
-		log.Fatal("node key not found")
+		log.Fatal("node key not found = ", pubKey)
 	}
 	headerInfo := &p2p.ResponseHeaderInfo{
 		ToAddr:     node.Ip.GetUdpAddr(),

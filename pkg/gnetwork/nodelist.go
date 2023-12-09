@@ -14,9 +14,8 @@ import (
 type GhostAccount struct {
 	masterNodeList   *sync.Map
 	masterNodeLen    *atomic.Uint32
-	nodeList         map[string]*ptypes.GhostUser
-	nicknameToPubKey map[string]*ptypes.GhostUser
-	nodeLock         *sync.RWMutex
+	nodeList         *sync.Map
+	nicknameToPubKey *sync.Map
 	liteStore        *store.LiteStore
 }
 
@@ -27,9 +26,8 @@ func NewGhostAccount(liteStore *store.LiteStore) *GhostAccount {
 	account := &GhostAccount{
 		masterNodeList:   new(sync.Map),
 		masterNodeLen:    &atomic.Uint32{},
-		nodeList:         make(map[string]*ptypes.GhostUser),
-		nicknameToPubKey: make(map[string]*ptypes.GhostUser),
-		nodeLock:         &sync.RWMutex{},
+		nodeList:         new(sync.Map),
+		nicknameToPubKey: new(sync.Map),
 		liteStore:        liteStore,
 	}
 
@@ -45,10 +43,8 @@ func (account *GhostAccount) StoreMasterNode(node *ptypes.GhostUser) {
 }
 
 func (account *GhostAccount) AddUserNode(node *ptypes.GhostUser) {
-	account.nodeLock.Lock()
-	account.nodeList[node.PubKey] = node
-	account.nicknameToPubKey[node.Nickname] = node
-	account.nodeLock.Unlock()
+	account.nodeList.Store(node.PubKey, node)
+	account.nicknameToPubKey.Store(node.Nickname, node)
 	account.saveToDb(store.DefaultNickTable, node)
 }
 
@@ -56,9 +52,7 @@ func (account *GhostAccount) AddMasterNode(node *ptypes.GhostUser) {
 	log.Print("Add Master = ", node.Nickname)
 	account.StoreMasterNode(node)
 
-	account.nodeLock.Lock()
-	account.nicknameToPubKey[node.Nickname] = node
-	account.nodeLock.Unlock()
+	account.nicknameToPubKey.Store(node.Nickname, node)
 
 	account.saveToDb(store.DefaultNickTable, node)
 	account.saveToDb(store.DefaultMastersTable, node)
@@ -73,21 +67,17 @@ func (account *GhostAccount) AddMasterUserList(userList []*ptypes.GhostUser) {
 }
 
 func (account *GhostAccount) GetUserNode(pubKey string) *ptypes.GhostUser {
-	account.nodeLock.RLock()
-	defer account.nodeLock.RUnlock()
-	find, exist := account.nodeList[pubKey]
+	find, exist := account.nodeList.Load(pubKey)
 	if !exist {
 		log.Fatal("pubkey not found")
 	}
-	return find
+	return find.(*ptypes.GhostUser)
 }
 
 func (account *GhostAccount) GetNodeInfo(pubKey string) *ptypes.GhostUser {
 	find, exist := account.masterNodeList.Load(pubKey)
 	if !exist {
-		account.nodeLock.RLock()
-		defer account.nodeLock.RUnlock()
-		if find, exist = account.nodeList[pubKey]; !exist {
+		if find, exist = account.nodeList.Load(pubKey); !exist {
 			return nil
 		}
 	}
@@ -95,9 +85,7 @@ func (account *GhostAccount) GetNodeInfo(pubKey string) *ptypes.GhostUser {
 }
 
 func (account *GhostAccount) GetNodeByNickname(nickname string) *ptypes.GhostUser {
-	account.nodeLock.RLock()
-	find, exist := account.nicknameToPubKey[nickname]
-	account.nodeLock.RUnlock()
+	find, exist := account.nicknameToPubKey.Load(nickname)
 	if !exist {
 		if node, err := account.loadFromDb(nickname); err == nil && node != nil {
 			ghostNode := node
@@ -106,7 +94,7 @@ func (account *GhostAccount) GetNodeByNickname(nickname string) *ptypes.GhostUse
 		}
 		log.Print("nickname not found = ", nickname)
 	}
-	return find
+	return find.(*ptypes.GhostUser)
 }
 
 func (account *GhostAccount) GetMasterNodeUserList(startIndex uint32) ([]*ptypes.GhostUser, uint32) {
