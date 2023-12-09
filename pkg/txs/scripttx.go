@@ -49,7 +49,7 @@ func (txs *TXs) CreateScriptDataTx(info TransferTxInfo, uniqKey []byte,
 				TxType:       types.TxTypeCoinTransfer,
 				RecvAddr:     info.FeeAddr,
 				Broker:       info.FeeBroker,
-				OutputScript: nil,
+				OutputScript: gvm.MakeLockScriptOut(info.FeeAddr),
 				TransferCoin: 0, // 현재는 free
 			},
 		},
