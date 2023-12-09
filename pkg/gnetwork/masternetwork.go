@@ -180,7 +180,12 @@ func (master *MasterNetwork) sendMasterUserInfo(secondType packets.PacketSecondT
 func (master *MasterNetwork) SendToMasterNodeSq(third packets.PacketThirdType, pubKey string, packet []byte, reqId []byte) {
 	node := master.account.GetNodeInfo(pubKey)
 	if node == nil {
-		log.Fatal("node key not found = ", pubKey)
+		/*
+			forwarding 하다보면 node에 없는 정보가 올 수 있다.
+			문제가 발생했던 case는 height의 broadcast시 다른 네트워크의 노드가 응답해왔기 때문이다.
+		*/
+		log.Print("node key not found = ", pubKey)
+		return
 	}
 	headerInfo := &p2p.ResponseHeaderInfo{
 		ToAddr:     node.Ip.GetUdpAddr(),
