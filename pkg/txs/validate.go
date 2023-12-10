@@ -155,6 +155,10 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 				getherCoin += prevOutput.Value
 			}
 
+			if prevOutput.Type == types.TxTypeScriptStore {
+				// script가 없다. 
+				continue
+			}
 			scriptSig := input.ScriptSig
 			input.ScriptSig = prevOutput.ScriptPubKey
 			input.ScriptSize = prevOutput.ScriptSize
@@ -253,6 +257,11 @@ func (txs *TXs) TransactionMergeValidation(tx *types.GhostTransaction, dataTx *t
 			// check only transfer coin
 			if prevOutput.Type == types.TxTypeCoinTransfer {
 				getherCoin += prevOutput.Value
+			}
+
+			if prevOutput.Type == types.TxTypeScriptStore {
+				// script가 없다. 
+				continue
 			}
 
 			scriptSig := input.ScriptSig

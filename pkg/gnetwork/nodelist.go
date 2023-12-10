@@ -159,7 +159,7 @@ func (account *GhostAccount) loadNodeList(table string) {
 		for idx, nodeByte := range v {
 			masterNode := &ptypes.GhostUser{}
 			if err := proto.Unmarshal(nodeByte, masterNode); err != nil {
-				log.Fatal(err)
+				//log.Fatal(err)
 				account.liteStore.DelEntry(table, k[idx])
 			}
 			if table == store.DefaultMastersTable {
