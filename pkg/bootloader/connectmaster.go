@@ -95,10 +95,20 @@ func (conn *ConnectMaster) LoadMasterNode() *ptypes.GhostUser {
 		return nil
 	}
 	randPick := rand.Uint32() % uint32(len(nodes))
-	node := nodes[randPick]
 	ghostUser := &ptypes.GhostUser{}
-	if err := proto.Unmarshal(node, ghostUser); err != nil {
-		log.Fatal(err)
+	for i := 0; i < len(nodes); i++ {
+		node := nodes[randPick]
+		randPick = (randPick + 1) % uint32(len(nodes))
+		if err := proto.Unmarshal(node, ghostUser); err != nil {
+			log.Fatal(err)
+		}
+		if ghostUser.PubKey == conn.wallet.GetPubAddress() {
+			continue
+		}
+		break
+	}
+	if !ghostUser.Validate() {
+		return nil
 	}
 	return ghostUser
 }

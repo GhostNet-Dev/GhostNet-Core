@@ -38,11 +38,17 @@ func NewGhostAccount(liteStore *store.LiteStore) *GhostAccount {
 }
 
 func (account *GhostAccount) StoreMasterNode(node *ptypes.GhostUser) {
+	if !node.Validate() {
+		return
+	}
 	account.masterNodeList.Store(node.PubKey, node)
 	account.masterNodeLen.Add(1)
 }
 
 func (account *GhostAccount) AddUserNode(node *ptypes.GhostUser) {
+	if !node.Validate() {
+		return
+	}
 	account.nodeList.Store(node.PubKey, node)
 	account.nicknameToPubKey.Store(node.Nickname, node)
 	account.saveToDb(store.DefaultNickTable, node)
@@ -50,6 +56,9 @@ func (account *GhostAccount) AddUserNode(node *ptypes.GhostUser) {
 
 func (account *GhostAccount) AddMasterNode(node *ptypes.GhostUser) {
 	log.Print("Add Master = ", node.Nickname)
+	if !node.Validate() {
+		return
+	}
 	account.StoreMasterNode(node)
 
 	account.nicknameToPubKey.Store(node.Nickname, node)
