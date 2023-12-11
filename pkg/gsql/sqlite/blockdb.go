@@ -405,7 +405,8 @@ func (gSql *GSqlite3) SelectOutputs(txType types.TxOutputType, start, count int)
 
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
 		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
-		where outputs.Type = ?
+		left outer join inputs  on inputs.prev_TxId = outputs.TxId and inputs.prev_OutIndex = outputs.OutputIndex 
+		where outputs.Type = ? and inputs.Id is NULL 
 		order by outputs.BlockId DESC limit ?, ?`, txType, start, count)
 	if err != nil {
 		log.Fatal(err)
@@ -436,7 +437,8 @@ func (gSql *GSqlite3) SearchOutput(txType types.TxOutputType, toAddr, uniqKey []
 
 	rows, err := gSql.db.Query(`select outputs.TxId, outputs.ToAddr, outputs.BrokerAddr, outputs.Script, outputs.ScriptSize, 
 		outputs.ScriptEx, outputs.ScriptExSize, outputs.Type, outputs.Value, outputs.OutputIndex from outputs 
-		where outputs.ToAddr = ? and  outputs.Type = ? and outputs.Script = ?
+		left outer join inputs  on inputs.prev_TxId = outputs.TxId and inputs.prev_OutIndex = outputs.OutputIndex 
+		where outputs.ToAddr = ? and  outputs.Type = ? and inputs.Id is NULL and outputs.Script = ?
 		order by outputs.BlockId DESC`, toAddr, txType, uniqKey)
 	if err != nil {
 		log.Print(err)
