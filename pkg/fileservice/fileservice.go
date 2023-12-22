@@ -263,6 +263,9 @@ func (fileService *FileService) saveToFileObject(filename string, startPos uint6
 	if !exist {
 		fileObj = fileService.fileObjManager.CreateFileObj(filename, nil, fileLength, nil, nil)
 	}
+	if len(fileObj.Buffer) > int(startPos)+int(bufSize) {
+		log.Fatal(fileObj)
+	}
 	copy(fileObj.Buffer[startPos:startPos+uint64(bufSize)], buffer[:])
 	fileObj.UpdateFileImage(startPos, uint64(bufSize))
 	if fileObj.CheckComplete() {

@@ -240,7 +240,8 @@ func (master *MasterNetwork) makeForwadingPacket(routingType packets.RoutingType
 
 	userList := master.tTreeMap.GetLevelMasterList(level)
 	for _, user := range userList {
-		if user.PubKey == master.owner.GetPubAddress() {
+		if user.PubKey == master.owner.GetPubAddress() ||
+			(user.Ip.Ip == master.localGhostIp.Ip && user.Ip.Port == master.localGhostIp.Port) {
 			continue
 		}
 		ghostUser := user
