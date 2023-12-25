@@ -262,6 +262,8 @@ func (fileService *FileService) saveToFileObject(filename string, startPos uint6
 	fileObj, exist := fileService.fileObjManager.GetFileObject(filename)
 	if !exist {
 		fileObj = fileService.fileObjManager.CreateFileObj(filename, nil, fileLength, nil, nil)
+	} else if fileObj.FileLength == 0 {
+		fileObj = fileService.fileObjManager.AllocBuffer(filename, fileLength)
 	}
 	if len(fileObj.Buffer) < int(startPos)+int(bufSize) {
 		log.Fatal(fileObj, startPos, bufSize)

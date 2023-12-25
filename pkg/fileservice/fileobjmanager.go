@@ -60,6 +60,9 @@ func (fileManager *FileObjManager) AllocBuffer(filename string, fileLength uint6
 	if fileObj, exist := fileManager.GetFileObject(filename); exist {
 		fileObj.FileLength = fileLength
 		fileObj.Buffer = make([]byte, fileLength)
+		fileObj.FileWrittenSize = 0
+		fileObj.DownloadBitmap = bitmap.Bitmap{}
+		fileObj.CompleteDone = false
 		return fileObj
 	}
 	return nil
