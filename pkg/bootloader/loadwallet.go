@@ -32,7 +32,10 @@ func (loadWallet *LoadWallet) OpenWallet(nickname string, password []byte) (*gcr
 	cipherPivateKey, err := loadWallet.db.SelectEntry(loadWallet.table, []byte(nickname))
 	if err != nil || cipherPivateKey == nil {
 		if filename := SearchFiles("./", nickname); filename != "" {
-			cipherPivateKey, _ = os.ReadFile("./" + filename)
+			cipherPivateKey, err = os.ReadFile("./" + filename)
+			if err != nil {
+				log.Fatal(err)
+			}
 		} else {
 			return nil, err
 		}
