@@ -32,7 +32,7 @@ var (
 	TestTables = []string{"nodes", "wallet"}
 	liteStore  = store.NewLiteStore("./", "litestore.db", TestTables, 3)
 
-	glog             = glogger.NewGLogger(0)
+	glog             = glogger.NewGLogger(0, glogger.GetFullLogger())
 	config           = gconfig.NewDefaultConfig()
 	gScript          = gvm.NewGCompiler()
 	gVm              = gvm.NewGVM()

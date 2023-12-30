@@ -69,7 +69,7 @@ func createUserAccountCommand(username, password string) bool {
 		Ip:       &ptypes.GhostIp{Ip: cfg.Ip, Port: cfg.Port},
 	}
 
-	glog := glogger.NewGLogger(0)
+	glog := glogger.NewGLogger(0, glogger.GetFullLogger())
 	// network factory initialize
 	netFactory := factory.NewNetworkFactory(cfg, glog)
 

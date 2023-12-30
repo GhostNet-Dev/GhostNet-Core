@@ -45,7 +45,7 @@ func RootCommand() *cobra.Command {
 
 func ExecuteContainer() {
 	log.Println("Initialize Component")
-	glog := glogger.NewGLogger(0)
+	glog := glogger.NewGLogger(0, glogger.GetFullLogger())
 	// for encrypt passwd
 	cfg.Password = gcrypto.PasswordToSha256(password)
 

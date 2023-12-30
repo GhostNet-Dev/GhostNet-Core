@@ -34,6 +34,7 @@ func (fileService *FileService) RequestFileSq(requestHeaderInfo *p2p.RequestHead
 			Result:      exist,
 		}
 
+		fileService.FileLogger(cq)
 		sendData, err := proto.Marshal(cq)
 		if err != nil {
 			log.Fatal(err)
@@ -72,6 +73,7 @@ func (fileService *FileService) RequestFileCq(requestHeaderInfo *p2p.RequestHead
 			StartOffset: 0,
 		}
 
+		fileService.FileLogger(sq)
 		sendData, err := proto.Marshal(sq)
 		if err != nil {
 			log.Fatal(err)
@@ -104,6 +106,7 @@ func (fileService *FileService) ResponseFileSq(requestHeaderInfo *p2p.RequestHea
 		Result: true,
 	}
 
+	fileService.FileLogger(cq)
 	sendData, err := proto.Marshal(cq)
 	if err != nil {
 		log.Fatal(err)
@@ -126,6 +129,7 @@ func (fileService *FileService) ResponseFileSq(requestHeaderInfo *p2p.RequestHea
 			Filename:    sq.Filename,
 			StartOffset: sq.StartPos + Buffer_Size,
 		}
+		fileService.FileLogger(newSq)
 		newSqData, err := proto.Marshal(newSq)
 		if err != nil {
 			log.Fatal(err)

@@ -38,7 +38,7 @@ type DefaultFactory struct {
 	Owner            *gcrypto.GhostAddress
 	LocalIpAddr      *ptypes.GhostIp
 	BlockIo          *blockfilesystem.BlockIo
-	ScriptIo          *blockfilesystem.ScriptIo
+	ScriptIo         *blockfilesystem.ScriptIo
 
 	networkFactory *NetworkFactory
 	config         *gconfig.GConfig

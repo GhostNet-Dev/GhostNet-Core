@@ -27,11 +27,11 @@ var (
 		Ip:   "127.0.0.2",
 		Port: "8888",
 	}
-	glog          = glogger.NewGLogger(0)
+	glog          = glogger.NewGLogger(0, glogger.GetFullLogger())
 	from, _       = net.ResolveUDPAddr("udp", ipAddr.Ip+":"+ipAddr.Port)
 	to, _         = net.ResolveUDPAddr("udp", toIpAddr.Ip+":"+toIpAddr.Port)
 	packetFactory = p2p.NewPacketFactory()
-	udp           = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port, packetFactory, glogger.NewGLogger(0))
+	udp           = p2p.NewUdpServer(ipAddr.Ip, ipAddr.Port, packetFactory, glogger.NewGLogger(0, glogger.GetFullLogger()))
 	owner         = gcrypto.GenerateKeyPair()
 	fileService   = NewFileServer(udp, packetFactory, owner, ipAddr, "./", glog)
 )

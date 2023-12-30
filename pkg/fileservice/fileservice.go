@@ -1,7 +1,7 @@
 package fileservice
 
 import (
-	"io/ioutil"
+	"encoding/json"
 	"log"
 	"net"
 	"os"
@@ -15,6 +15,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+type LogMode int
+
 const Buffer_Size = 1024
 
 type FileService struct {
@@ -24,6 +26,7 @@ type FileService struct {
 	localFilePath  string
 	fileObjManager *FileObjManager
 	glog           *glogger.GLogger
+	loggerHandler  func(string)
 
 	packetSqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
 	packetCqHandler map[packets.PacketSecondType]p2p.FuncPacketHandler
@@ -37,6 +40,7 @@ func NewFileServer(udp *p2p.UdpServer, packetFactory *p2p.PacketFactory,
 		localAddr:      ipAddr,
 		localFilePath:  filePath,
 		glog:           glog,
+		loggerHandler:  nil,
 		fileObjManager: NewFileObjManager(),
 	}
 	fileService.RegisterHandler(packetFactory)
@@ -57,8 +61,20 @@ func (fileService *FileService) RegisterHandler(packetFactory *p2p.PacketFactory
 	packetFactory.RegisterPacketHandler(packets.PacketType_FileTransfer, fileService.packetSqHandler, fileService.packetCqHandler)
 }
 
+func (fileService *FileService) RegisterFileDebugger(logger func(string)) {
+	fileService.loggerHandler = logger
+}
+
 func ByteToFilename(filename []byte) string {
 	return base58.CheckEncode(filename, 0)
+}
+
+func (fileService *FileService) FileLogger(obj interface{}) {
+	if fileService.loggerHandler == nil {
+		return
+	}
+	msg, _ := json.Marshal(obj)
+	fileService.loggerHandler(string(msg))
 }
 
 func (fileService *FileService) CheckFileExist(filename string) bool {
@@ -109,7 +125,7 @@ func (fileService *FileService) loadFileToMemory(filename string) *FileObject {
 		return fileObj
 	}
 
-	buf, err := ioutil.ReadFile(fileFullPath)
+	buf, err := os.ReadFile(fileFullPath)
 	if err != nil {
 		fileService.glog.DebugOutput(fileService, err.Error(), glogger.Default)
 		return nil
@@ -125,6 +141,7 @@ func (fileService *FileService) sendGetFileInfo(filename string, ipAddr *net.UDP
 		RequestType: packets.FileRequestType_GetFileInfo,
 		Filename:    filename,
 	}
+	fileService.FileLogger(sq)
 
 	sendData, err := proto.Marshal(sq)
 	if err != nil {
@@ -165,6 +182,7 @@ func (fileService *FileService) makeFileInfo(sq *packets.RequestFilePacketSq, ip
 		cq.FileLength = fileObj.FileLength
 	}
 
+	fileService.FileLogger(cq)
 	sendData, err := proto.Marshal(cq)
 	if err != nil {
 		log.Fatal(err)
@@ -241,6 +259,7 @@ func (fileService *FileService) sendFileData(filename string, startPos uint64, s
 		FileLength:  fileSize,
 		SequenceNum: sequenceNum,
 	}
+	fileService.FileLogger(sq)
 
 	sendData, err := proto.Marshal(sq)
 	if err != nil {

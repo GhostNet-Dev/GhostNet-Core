@@ -60,7 +60,7 @@ func ExecuteContainer() {
 		Ip:       &ptypes.GhostIp{Ip: cfg.Ip, Port: cfg.Port},
 	}
 
-	glog := glogger.NewGLogger(0)
+	glog := glogger.NewGLogger(0, glogger.GetFullLogger())
 	// for encrypt passwd
 	cfg.Password = gcrypto.PasswordToSha256(password)
 

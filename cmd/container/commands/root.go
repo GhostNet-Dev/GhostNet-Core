@@ -35,7 +35,7 @@ func RootCmd() *cobra.Command {
 			cfg.Password = gcrypto.PasswordToSha256(password)
 
 			fmt.Printf("Start GhostNet Node Addr = %s:%s", cfg.Ip, cfg.Port)
-			glog := glogger.NewGLogger(cfg.Id)
+			glog := glogger.NewGLogger(cfg.Id, glogger.GetFullLogger())
 			networkFactory := factory.NewNetworkFactory(cfg, glog)
 			bootFactory := factory.NewBootFactory(networkFactory.Udp, networkFactory.PacketFactory, cfg, glog)
 			container := maincontainer.NewMainContainer(networkFactory, bootFactory, cfg)

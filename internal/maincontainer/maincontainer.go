@@ -30,7 +30,7 @@ type MainContainer struct {
 
 func NewMainContainer(networkFactory *factory.NetworkFactory, bootFactory *factory.BootFactory,
 	config *gconfig.GConfig) *MainContainer {
-	glog := glogger.NewGLogger(config.Id)
+	glog := glogger.NewGLogger(config.Id, glogger.GetFullLogger())
 
 	return &MainContainer{
 		config:         config,

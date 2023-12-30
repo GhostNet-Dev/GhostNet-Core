@@ -12,9 +12,10 @@ import (
 type LogLevel int32
 
 type GLogger struct {
-	id  uint32
-	out io.Writer // destination for output
-	buf []byte    // for accumulating text to write
+	id     uint32
+	out    io.Writer // destination for output
+	buf    []byte    // for accumulating text to write
+	loging map[LogLevel]bool
 }
 
 const (
@@ -35,14 +36,27 @@ const (
 	MasterListSync  LogLevel = 2
 	ForwardingTrace LogLevel = 3
 	PacketLog       LogLevel = 4
+	Fileservice     LogLevel = 5
 )
 
-var globalGlog = NewGLogger(0)
+var globalGlog = NewGLogger(0, GetFullLogger())
 
-func NewGLogger(id uint32) *GLogger {
+func NewGLogger(id uint32, loging map[LogLevel]bool) *GLogger {
 	return &GLogger{
-		id:  id,
-		out: os.Stderr,
+		id:     id,
+		out:    os.Stdout,
+		loging: loging,
+	}
+}
+
+func GetFullLogger() map[LogLevel]bool {
+	return map[LogLevel]bool{
+		Default:         true,
+		BlockConsensus:  true,
+		MasterListSync:  true,
+		ForwardingTrace: true,
+		PacketLog:       true,
+		Fileservice:     true,
 	}
 }
 
@@ -96,6 +110,9 @@ func (l *GLogger) Output(obj interface{}, s string, level LogLevel, depth int) e
 }
 
 func (l *GLogger) DebugOutput(obj interface{}, s string, level LogLevel) error {
+	if enable, exist := l.loging[level]; !enable || !exist {
+		return nil
+	}
 	return l.Output(obj, s, level, 2)
 }
 

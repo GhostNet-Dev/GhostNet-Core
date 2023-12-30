@@ -24,7 +24,7 @@ var (
 	liteStore      = store.NewLiteStore("./", "litestore.db", TestTables, 3)
 	gAccount       = NewGhostAccount(liteStore)
 	packetFactory  = p2p.NewPacketFactory()
-	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glogger.NewGLogger(0))
+	udp            = p2p.NewUdpServer(ghostIp.Ip, ghostIp.Port, packetFactory, glogger.NewGLogger(0, glogger.GetFullLogger()))
 	blockContainer = store.NewBlockContainer("sqlite3")
 	from, _        = net.ResolveUDPAddr("udp", ghostIp.Ip+":"+ghostIp.Port)
 	owner          = gcrypto.GenerateKeyPair()

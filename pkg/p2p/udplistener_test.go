@@ -16,7 +16,7 @@ func TestUdpDefault(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	netChannel := make(chan RequestPacketInfo)
-	srv := NewUdpServer("127.0.0.1", "8888", NewPacketFactory(), glogger.NewGLogger(0))
+	srv := NewUdpServer("127.0.0.1", "8888", NewPacketFactory(), glogger.NewGLogger(0, glogger.GetFullLogger()))
 	srv.Start(netChannel, "", "")
 
 	go func() {
@@ -68,7 +68,7 @@ func TestPacketHandler(t *testing.T) {
 	GlobalWg.Add(1)
 	TestResult = false
 
-	srv := NewUdpServer("127.0.0.1", "8889", NewPacketFactory(), glogger.NewGLogger(0))
+	srv := NewUdpServer("127.0.0.1", "8889", NewPacketFactory(), glogger.NewGLogger(0, glogger.GetFullLogger()))
 	srv.Start(nil, "", "")
 	srv.Pf.SingleRegisterPacketHandler(packets.PacketType_MasterNetwork,
 		packets.PacketSecondType_NotificationMasterNode,
