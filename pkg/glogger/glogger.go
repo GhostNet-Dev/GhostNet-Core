@@ -49,6 +49,10 @@ func NewGLogger(id uint32, loging map[LogLevel]bool) *GLogger {
 	}
 }
 
+func (log *GLogger) RegisterLoggerMap(logMap map[LogLevel]bool) {
+	log.loging = logMap
+}
+
 func GetFullLogger() map[LogLevel]bool {
 	return map[LogLevel]bool{
 		Default:         true,
