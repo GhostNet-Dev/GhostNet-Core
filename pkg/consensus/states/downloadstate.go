@@ -83,7 +83,7 @@ func (s *DownloadCheckState) RecvBlock(pairedBlock *types.PairedBlock, pubKey st
 	s.glog.DebugOutput(s, fmt.Sprint("- recv GetBlock ", pairedBlock.BlockId(),
 		" target block id = ", s.targetBlockId), glogger.BlockConsensus)
 
-	result := s.blockMachine.CheckAndSave(pairedBlock)
+	result := s.blockMachine.CheckAndSave(s.startBlockId, pairedBlock)
 	if !result {
 		s.blockMachine.BlockServer.MergeErrorNotification(pubKey, result)
 		s.glog.DebugOutput(s, fmt.Sprint("-- Merge Error", result), glogger.BlockConsensus)

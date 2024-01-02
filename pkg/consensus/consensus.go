@@ -98,7 +98,7 @@ func (con *Consensus) LoadHashFromTempDb(blockId uint32) []byte {
 	return pairedBlock.Block.GetHashKey()
 }
 
-func (con *Consensus) CheckAndSave(candidatePair *types.PairedBlock) bool {
+func (con *Consensus) CheckAndSave(startBlockId uint32, candidatePair *types.PairedBlock) bool {
 	blockId := candidatePair.BlockId()
 	if checkSaveRetryBlock := con.blockContainer.CandidateBlk.GetBlock(blockId); checkSaveRetryBlock != nil {
 		if bytes.Compare(checkSaveRetryBlock.Block.GetHashKey(),
@@ -113,7 +113,7 @@ func (con *Consensus) CheckAndSave(candidatePair *types.PairedBlock) bool {
 	if prevPairedBlock == nil {
 		return false
 	}
-	if con.block.BlockMergeCheck(candidatePair, prevPairedBlock) == false {
+	if con.block.BlockMergeCheck(startBlockId, candidatePair, prevPairedBlock) == false {
 		return false
 	}
 	con.blockContainer.CandidateBlk.AddBlock(candidatePair)

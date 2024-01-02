@@ -123,8 +123,8 @@ func (fsm *BlockMachine) LoadHashFromTempDb(blockId uint32) []byte {
 	return fsm.con.LoadHashFromTempDb(blockId)
 }
 
-func (fsm *BlockMachine) CheckAndSave(candidatePair *types.PairedBlock) bool {
-	return fsm.con.CheckAndSave(candidatePair)
+func (fsm *BlockMachine) CheckAndSave(startBlockId uint32, candidatePair *types.PairedBlock) bool {
+	return fsm.con.CheckAndSave(startBlockId, candidatePair)
 }
 
 func (fsm *BlockMachine) MergeExecute() {

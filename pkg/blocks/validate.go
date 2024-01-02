@@ -8,16 +8,16 @@ import (
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/types"
 )
 
-func (blocks *Blocks) BlockMergeCheck(pairedBlock *types.PairedBlock, prevPairedBlock *types.PairedBlock) bool {
-	return blocks.blockValidation(pairedBlock, prevPairedBlock,
+func (blocks *Blocks) BlockMergeCheck(startBlockId uint32, pairedBlock *types.PairedBlock, prevPairedBlock *types.PairedBlock) bool {
+	return blocks.blockValidation(startBlockId, pairedBlock, prevPairedBlock,
 		blocks.blockContainer.TxContainer, blocks.blockContainer.MergeTxContainer)
 }
 
 func (blocks *Blocks) BlockValidation(pairedBlock *types.PairedBlock, prevPairedBlock *types.PairedBlock) bool {
-	return blocks.blockValidation(pairedBlock, prevPairedBlock, blocks.blockContainer.TxContainer, nil)
+	return blocks.blockValidation(0, pairedBlock, prevPairedBlock, blocks.blockContainer.TxContainer, nil)
 }
 
-func (blocks *Blocks) blockValidation(pairedBlock *types.PairedBlock, prevPairedBlock *types.PairedBlock,
+func (blocks *Blocks) blockValidation(startBlockId uint32, pairedBlock *types.PairedBlock, prevPairedBlock *types.PairedBlock,
 	txContainer *store.TxContainer, mergeTxContainer *store.TxContainer) bool {
 	header := pairedBlock.Block.Header
 	txs := pairedBlock.Block.Transaction
@@ -59,7 +59,7 @@ func (blocks *Blocks) blockValidation(pairedBlock *types.PairedBlock, prevPaired
 				return false
 			}
 		} else {
-			if txChkResult := blocks.txs.TransactionMergeValidation(&tx, nil, txContainer, mergeTxContainer, pairedBlock.BlockId()); !txChkResult.Result() {
+			if txChkResult := blocks.txs.TransactionMergeValidation(&tx, nil, txContainer, mergeTxContainer, pairedBlock.BlockId(), startBlockId); !txChkResult.Result() {
 				return false
 			}
 		}

@@ -156,7 +156,7 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 			}
 
 			if prevOutput.Type == types.TxTypeScriptStore {
-				// script가 없다. 
+				// script가 없다.
 				continue
 			}
 			scriptSig := input.ScriptSig
@@ -189,11 +189,14 @@ func (txs *TXs) TransactionValidation(tx *types.GhostTransaction, dataTx *types.
 }
 
 func (txs *TXs) TransactionMergeValidation(tx *types.GhostTransaction, dataTx *types.GhostDataTransaction,
-	txContainer *store.TxContainer, mergeTxContainer *store.TxContainer, blockId uint32) *TxChkResult {
+	txContainer *store.TxContainer, mergeTxContainer *store.TxContainer, blockId uint32, startBlockId uint32) *TxChkResult {
 	var transferCoin, getherCoin uint64 = 0, 0
 	var gFuncParam []gvm.GFuncParam
 
-	if checkTx := txContainer.CheckExistTxBefore(tx.TxId, blockId); checkTx {
+	if checkTx := mergeTxContainer.CheckExistTxBefore(tx.TxId, blockId); checkTx {
+		return &TxChkResult{TxChkResult_AlreadyExist}
+	}
+	if checkTx := txContainer.CheckExistTxBefore(tx.TxId, startBlockId); checkTx {
 		return &TxChkResult{TxChkResult_AlreadyExist}
 	}
 	if tx.Body.InputCounter != uint32(len(tx.Body.Vin)) {
@@ -260,7 +263,7 @@ func (txs *TXs) TransactionMergeValidation(tx *types.GhostTransaction, dataTx *t
 			}
 
 			if prevOutput.Type == types.TxTypeScriptStore {
-				// script가 없다. 
+				// script가 없다.
 				continue
 			}
 
