@@ -53,6 +53,10 @@ func (log *GLogger) RegisterLoggerMap(logMap map[LogLevel]bool) {
 	log.loging = logMap
 }
 
+func (log *GLogger) GetLoggerMap() map[LogLevel]bool {
+	return log.loging
+}
+
 func GetFullLogger() map[LogLevel]bool {
 	return map[LogLevel]bool{
 		Default:         true,
