@@ -127,7 +127,7 @@ func (fileService *FileService) ResponseFileSq(requestHeaderInfo *p2p.RequestHea
 			Master:      p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), nil, 0, fileService.localAddr),
 			RequestType: packets.FileRequestType_GetFileData,
 			Filename:    sq.Filename,
-			StartOffset: sq.StartPos + Buffer_Size,
+			StartOffset: sq.StartPos + uint64(sq.BufferSize),
 		}
 		fileService.FileLogger(newSq)
 		newSqData, err := proto.Marshal(newSq)
