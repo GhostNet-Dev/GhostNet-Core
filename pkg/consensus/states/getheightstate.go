@@ -14,11 +14,11 @@ type GetHeigtestState struct {
 	glog          *glogger.GLogger
 	maxHeight     uint32
 	selectNode    string
-	candidatePool map[uint32][]string
+	candidatePool sync.Map //map[uint32][]string
 }
 
 func (s *GetHeigtestState) Initialize() {
-	s.candidatePool = make(map[uint32][]string)
+	s.candidatePool = sync.Map{}
 	s.maxHeight = s.blockMachine.blockContainer.BlockHeight()
 	go s.TimerExpired(nil)
 }
@@ -39,10 +39,10 @@ func (s *GetHeigtestState) RecvBlockHeight(height uint32, pubKey string) {
 	if s.maxHeight < height {
 		s.maxHeight = height
 		s.selectNode = pubKey
-		if node, exist := s.candidatePool[height]; !exist {
-			s.candidatePool[height] = []string{pubKey}
+		if node, exist := s.candidatePool.Load(height); !exist {
+			s.candidatePool.Store(height, []string{pubKey})
 		} else {
-			s.candidatePool[height] = append(node, pubKey)
+			s.candidatePool.Store(height, append(node.([]string), pubKey))
 		}
 	}
 	s.glog.DebugOutput(s, fmt.Sprint(height), glogger.BlockConsensus)
@@ -63,7 +63,7 @@ func (s *GetHeigtestState) TimerExpired(context interface{}) bool {
 	<-time.After(time.Second * 8)
 
 	curBlockHeight := s.blockMachine.blockContainer.BlockHeight()
-	pubKey, candiList, maxHeight := s.blockMachine.BlockServer.CheckValidNode(s.candidatePool, s.maxHeight)
+	pubKey, candiList, maxHeight := s.blockMachine.BlockServer.CheckValidNode(&s.candidatePool, s.maxHeight)
 	if maxHeight > curBlockHeight && maxHeight != 0 {
 		s.blockMachine.SetHeighestCandidatePool(candiList)
 		s.blockMachine.SetTargetHeight(maxHeight)

@@ -3,6 +3,7 @@ package blockmanager
 import (
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/gnetwork"
@@ -80,14 +81,18 @@ func (blockMgr *BlockManager) CheckHeightForRebuild(neighborHeight uint32) bool 
 	return currHeight < neighborHeight
 }
 
-func (blockMgr *BlockManager) CheckValidNode(candidatePool map[uint32][]string, maxHeight uint32) (string, []string, uint32) {
-	trycount := len(candidatePool)
+func (blockMgr *BlockManager) CheckValidNode(candidatePool *sync.Map, maxHeight uint32) (string, []string, uint32) {
+	trycount := 0
+	candidatePool.Range(func(k, v interface{}) bool {
+		trycount++
+		return true
+	})
 	i := 0
 	for target := maxHeight; i < trycount; target-- {
-		if candiList, exist := candidatePool[target]; exist {
-			for _, pubKey := range candiList {
+		if candiList, exist := candidatePool.Load(target); exist {
+			for _, pubKey := range candiList.([]string) {
 				if blockMgr.master.CheckNodeInfo(pubKey) {
-					return pubKey, candiList, target
+					return pubKey, candiList.([]string), target
 				}
 				i++
 			}

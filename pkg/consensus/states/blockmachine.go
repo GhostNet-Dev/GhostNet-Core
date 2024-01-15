@@ -2,6 +2,7 @@ package states
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/consensus"
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/glogger"
@@ -18,7 +19,7 @@ type IBlockServer interface {
 	MergeErrorNotification(pubKey string, result bool)
 	BlockServerInitStart()
 	CheckHeightForRebuild(uint32) bool
-	CheckValidNode(map[uint32][]string, uint32) (string, []string, uint32)
+	CheckValidNode(*sync.Map, uint32) (string, []string, uint32)
 }
 
 type BlockMachine struct {
