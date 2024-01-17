@@ -145,7 +145,8 @@ func (io *ScriptIoHandler) ReadScriptData(key []byte) (data []byte) {
 	return dataTx.Data
 }
 
-func (io *ScriptIoHandler) WriteScriptData(uniqKey, data []byte) (key []byte) {
+func (io *ScriptIoHandler) WriteScriptData(uniqKey, data []byte) (key []byte,
+	tx *types.GhostTransaction, dataTx *types.GhostDataTransaction) {
 	prevs := io.scriptTxPtr // for mapping
 
 	if ref := io.scriptIo.loadRefTx(uniqKey, io.toAddr); len(ref) != 0 {
@@ -162,13 +163,13 @@ func (io *ScriptIoHandler) WriteScriptData(uniqKey, data []byte) (key []byte) {
 		FeeAddr:   store.AdamsAddress(),
 		FeeBroker: io.feeBrokerAddr,
 	}
-	tx, dataTx := io.scriptIo.tXs.CreateScriptDataTx(*txInfo, uniqKey, data)
+	tx, dataTx = io.scriptIo.tXs.CreateScriptDataTx(*txInfo, uniqKey, data)
 	tx = io.scriptIo.tXs.InkTheContract(tx, io.wallet.GetGhostAddress())
 
 	io.scriptIo.blockManager.SendDataTx(tx, dataTx, nil)
 
 	key = dataTx.TxId
-	return key
+	return key, tx, dataTx
 }
 
 func (io *ScriptIoHandler) UpdateScriptData(uniqKey, data []byte) (key []byte) {
@@ -179,7 +180,7 @@ func (io *ScriptIoHandler) UpdateScriptData(uniqKey, data []byte) (key []byte) {
 		Prevs:     prevMap,
 		FromAddr:  io.wallet.MyPubKey(),
 		ToAddr:    io.toAddr,
-		Broker:    io.brokerAddr,//io.wallet.GetMasterNodeAddr(),
+		Broker:    io.brokerAddr, //io.wallet.GetMasterNodeAddr(),
 		FeeAddr:   store.AdamsAddress(),
 		FeeBroker: io.feeBrokerAddr,
 	}
@@ -194,7 +195,7 @@ func (io *ScriptIoHandler) UpdateScriptData(uniqKey, data []byte) (key []byte) {
 
 func (io *ScriptIo) loadRefTx(key, toAddr []byte) (ret []types.PrevOutputParam) {
 	ret = io.bc.TxContainer.SelectOutputLatests(types.TxTypeScriptStore, toAddr, key, 0, 1)
-	return  ret
+	return ret
 }
 
 func (io *ScriptIo) loadDataTx(dataTxId []byte) *types.GhostDataTransaction {
