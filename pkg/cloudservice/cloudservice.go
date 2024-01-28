@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/GhostNet-Dev/GhostNet-Core/pkg/fileservice"
@@ -15,7 +16,7 @@ type CloudService struct {
 	fileService *fileservice.FileService
 	tTree       *gnetwork.TrieTreeMap
 	glog        *glogger.GLogger
-	streamId    map[string](chan *fileservice.FileObject)
+	streamId    *sync.Map //map[string](chan *fileservice.FileObject)
 }
 
 func NewCloudService(fileService *fileservice.FileService,
@@ -24,24 +25,28 @@ func NewCloudService(fileService *fileservice.FileService,
 		fileService: fileService,
 		tTree:       tTree,
 		glog:        glog,
-		streamId:    make(map[string]chan *fileservice.FileObject),
+		streamId:    &sync.Map{}, //make(map[string]chan *fileservice.FileObject),
 	}
 }
 
 func (cloud *CloudService) ReleaseChannel(filename string) {
-	if _, exist := cloud.streamId[filename]; !exist {
+	ch, exist := cloud.streamId.Load(filename)
+	if !exist {
 		log.Print("already released stream = ", filename)
 		return
 	}
-	close(cloud.streamId[filename])
-	delete(cloud.streamId, filename)
+	close(ch.(chan *fileservice.FileObject))
+	cloud.streamId.Delete(filename)
 }
 
 func (cloud *CloudService) ReadFromCloudSync(filename string, ipAddr *net.UDPAddr) *fileservice.FileObject {
 	defer cloud.ReleaseChannel(filename)
 	cloud.glog.DebugOutput(cloud, fmt.Sprint("cloud download = ", filename), glogger.Default)
-	if _, exist := cloud.streamId[filename]; !exist {
-		cloud.streamId[filename] = make(chan *fileservice.FileObject, 1)
+
+	ch, exist := cloud.streamId.Load(filename)
+	if !exist {
+		ch = make(chan *fileservice.FileObject, 1)
+		cloud.streamId.Store(filename, ch)
 	}
 
 	if ipAddr == nil {
@@ -51,7 +56,7 @@ func (cloud *CloudService) ReadFromCloudSync(filename string, ipAddr *net.UDPAdd
 	cloud.fileService.SendGetFile(filename, ipAddr, cloud.DownloadDone, nil)
 
 	select {
-	case fileObj := <-cloud.streamId[filename]:
+	case fileObj := <-ch.(chan *fileservice.FileObject):
 		return fileObj
 	case <-time.After(time.Second * time.Duration(16)):
 		cloud.glog.DebugOutput(cloud, fmt.Sprint("timeout download = ", filename), glogger.Default)
@@ -60,5 +65,9 @@ func (cloud *CloudService) ReadFromCloudSync(filename string, ipAddr *net.UDPAdd
 }
 
 func (cloud *CloudService) DownloadDone(fileObj *fileservice.FileObject, context interface{}) {
-	cloud.streamId[fileObj.Filename] <- fileObj
+	if ch, exist := cloud.streamId.Load(fileObj.Filename); exist {
+		ch.(chan *fileservice.FileObject) <- fileObj
+	} else {
+		cloud.glog.DebugOutput(cloud, fmt.Sprint("download done miss = ", fileObj.Filename), glogger.Default)
+	}
 }
