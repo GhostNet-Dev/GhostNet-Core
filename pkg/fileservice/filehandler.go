@@ -100,6 +100,7 @@ func (fileService *FileService) ResponseFileSq(requestHeaderInfo *p2p.RequestHea
 	if err := proto.Unmarshal(header.PacketData, sq); err != nil {
 		log.Fatal(err)
 	}
+	fileService.FileLogger(sq)
 
 	cq := &packets.ResponseFilePacketCq{
 		Master: p2p.MakeMasterPacket(fileService.owner.GetPubAddress(), sq.Master.GetRequestId(), 0, fileService.localAddr),
