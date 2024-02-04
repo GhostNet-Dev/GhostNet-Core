@@ -288,6 +288,8 @@ func (fileService *FileService) saveToFileObject(filename string, startPos uint6
 		log.Fatal(fileObj, startPos, bufSize)
 	}
 	copy(fileObj.Buffer[startPos:startPos+uint64(bufSize)], buffer[:])
+
+	fileService.FileLogger(fileObj)
 	fileObj.UpdateFileImage(startPos, uint64(bufSize))
 	if fileObj.CheckComplete() {
 		fileService.commitFile(fileObj)
