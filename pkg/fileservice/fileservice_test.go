@@ -142,3 +142,8 @@ func TestSaveToFileSystem(t *testing.T) {
 	os.Remove(filepath)
 
 }
+
+func TestUpdateFile(t *testing.T) {
+	obj := FileObject{}
+	obj.UpdateFileImage(0, 1024)
+}
