@@ -27,6 +27,9 @@ func (blocks *Blocks) blockValidation(startBlockId uint32, pairedBlock *types.Pa
 	// 이전 Block과 hash일치 여부
 	if prevBlockId > 0 && prevPairedBlock == nil { // for genesis block
 		prevPairedBlock = blocks.blockContainer.GetBlock(prevBlockId)
+		if prevPairedBlock == nil {
+			return false
+		}
 		prevHash := prevPairedBlock.Block.GetHashKey()
 		if !bytes.Equal(header.PreviousBlockHeaderHash, prevHash) {
 			return false
