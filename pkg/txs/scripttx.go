@@ -56,3 +56,31 @@ func (txs *TXs) CreateScriptDataTx(info TransferTxInfo, uniqKey []byte,
 	}
 	return txs.MakeTransaction(info, info.Prevs, nextOutputParam), dataTx
 }
+
+func (txs *TXs) CreateScriptMultiDataTx(info TransferTxInfo, uniqKeys,
+	data [][]byte) (tx *types.GhostTransaction, dataTxs []*types.GhostDataTransaction) {
+	nextOutputParam := map[types.TxOutputType][]types.NextOutputParam{}
+
+	for i, uniqKey := range uniqKeys {
+		dataTx := txs.MakeDataTx(uniqKey, data[i])
+		dataTxId := dataTx.TxId
+		nextOutputParam[types.TxTypeScriptStore] = append(nextOutputParam[types.TxTypeScriptStore],
+			types.NextOutputParam{
+				TxType:         types.TxTypeScriptStore,
+				RecvAddr:       info.ToAddr,
+				Broker:         info.Broker,
+				OutputScript:   uniqKey,
+				OutputScriptEx: dataTxId,
+				TransferCoin:   0,
+			}, types.NextOutputParam{
+				TxType:       types.TxTypeCoinTransfer,
+				RecvAddr:     info.FeeAddr,
+				Broker:       info.FeeBroker,
+				OutputScript: gvm.MakeLockScriptOut(info.FeeAddr),
+				TransferCoin: 0, // 현재는 free
+			})
+		dataTxs = append(dataTxs, dataTx)
+	}
+
+	return txs.MakeTransaction(info, info.Prevs, nextOutputParam), dataTxs
+}
